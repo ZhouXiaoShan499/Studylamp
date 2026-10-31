@@ -5,7 +5,7 @@ ESP32 只负责采集 16 kHz 单声道 s16le PCM 并通过 WebSocket 推过来�
 本目录负责离线语音识别（Vosk）、调用本地 Ollama 大模型、把回答文字回传。
 
 ```
-ESP32 ──WS(binary PCM)──▶ voice_server.py ──▶ Vosk ASR ──▶ Ollama(qwen3:14b)
+ESP32 ──WS(binary PCM)──▶ voice_server.py ──▶ Vosk ASR ──▶ Ollama(qwen3.5:9b)
    ▲                                                              │
    └───────────────── WS(JSON text reply) ◀───────────────────────┘
 ```
@@ -15,7 +15,7 @@ ESP32 ──WS(binary PCM)──▶ voice_server.py ──▶ Vosk ASR ──▶
 ```powershell
 # Ollama（已装可跳过）
 winget install Ollama.Ollama          # 或 https://ollama.com/download
-ollama pull qwen3:14b              # 质量优先；也可以拉 deepseek-r1:1.5b 图快
+ollama pull qwen3.5:9b              # 6.6 GB，12 GB 显存可全量加载；deepseek-r1:1.5b 更小但容易胡说
 ollama list
 
 # Python 依赖（Python 3.10+）
@@ -74,7 +74,7 @@ python test_client.py --url ws://192.168.1.23:8765
 | ESP32 → PC | 二进制帧 | 16 kHz / 16 bit / 单声道 PCM，每帧约 32 ms |
 | ESP32 → PC | `{"type":"audio_end","frames":N,"reason":"silence"}` | 一句话结束 |
 | ESP32 → PC | `{"type":"text","content":"你好"}` | 跳过 ASR，直接问大脑 |
-| PC → ESP32 | `{"type":"ready","model":"qwen3:14b","asr":true}` | 连接建立 |
+| PC → ESP32 | `{"type":"ready","model":"qwen3.5:9b","asr":true}` | 连接建立 |
 | PC → ESP32 | `{"type":"asr","text":"..."}` | 识别结果（先发，便于观察） |
 | PC → ESP32 | `{"type":"cmd","light":"on","brightness":80}` | **执行动作**：开关/亮度/色温/场景 |
 | PC → ESP32 | `{"type":"reply","text":"...","asr":"...","elapsed_ms":1234}` | 最终回答 |
@@ -94,7 +94,7 @@ python test_client.py --url ws://192.168.1.23:8765
 |------|------|------|
 | `--host` | `0.0.0.0` | 监听所有网卡（ESP32 必须能访问） |
 | `--port` | `8765` | 与 `secrets.h` 的 `LAMP_VOICE_SERVER_PORT` 一致 |
-| `--model` | `qwen3:14b` | 默认 14B：质量好、单句约 8 s；换 `deepseek-r1:1.5b` 更快但容易胡说 |
+| `--model` | `qwen3.5:9b` | 默认 9B：热机单句约 0.4 s（首句含 18 s 加载）；换 `deepseek-r1:1.5b` 更小但容易胡说 |
 | `--ollama` | `http://127.0.0.1:11434` | Ollama 地址 |
 | `--max-seconds` | `15` | 超长音频直接拒绝 |
 | `--timeout` | `120` | 大模型超时（秒） |

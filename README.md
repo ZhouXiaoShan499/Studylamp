@@ -81,7 +81,7 @@ start web\index.html
 
 ```powershell
 # 1) 大脑：安装 Ollama 后拉模型
-ollama pull deepseek-r1:1.5b
+ollama pull qwen3.5:9b
 
 # 2) PC 端依赖 + 自检（ASR + 大模型都 ok 才继续）
 cd server
