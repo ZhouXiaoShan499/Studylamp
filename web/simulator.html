@@ -4,11 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#0a0b09">
-<title>数字样机 · LAMP—1</title>
-<meta name="description" content="LAMP—1 交互数字样机：调节亮度、色温、双轴姿态与定时关闭，实时查看光场与仿真读数。">
+<title>数字样机 · 语音与光 · LAMP—1</title>
+<meta name="description" content="LAMP—1 交互数字样机：调节亮度、色温、双轴姿态与定时关闭，或进入语音仿真，看一句话如何变成灯光、点头与回答。">
 <meta property="og:type" content="website">
-<meta property="og:title" content="数字样机 · LAMP—1">
-<meta property="og:description" content="一盏会回应你的可动台灯。拖动灯头，调一束属于此刻的光。">
+<meta property="og:title" content="数字样机 · 语音与光 · LAMP—1">
+<meta property="og:description" content="一盏会听、会答、会动的台灯。调光，或进入语音仿真，看一句话如何变成光与动作。">
 <meta property="og:image" content="assets/og.jpg">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="assets/site.css">
@@ -844,6 +844,160 @@ button:focus-visible,a:focus-visible,input:focus-visible{
 .scene-note .note-sign::before{
   content:"";width:13px;height:1px;background:rgba(229,183,118,.5);
 }
+/* --------------------------------------------------------------- voice deck */
+.console{scroll-margin-top:calc(var(--site-header-h,68px) + 12px)}
+.console-tabs{
+  position:relative;z-index:1;flex:0 0 auto;
+  display:grid;grid-template-columns:1fr 1fr;gap:4px;
+  padding:7px 23px 0;
+  border-bottom:1px solid var(--line);
+}
+.console-tab{
+  position:relative;
+  display:inline-flex;align-items:center;justify-content:center;gap:7px;
+  height:34px;
+  border:0;border-bottom:1px solid transparent;
+  background:none;
+  color:#74786d;
+  font-family:var(--mono);
+  font-size:8.5px;letter-spacing:.08em;
+  transition:color .25s var(--ease),border-color .25s var(--ease);
+}
+.console-tab:hover{color:var(--text-soft)}
+.console-tab.is-active{color:var(--accent);border-bottom-color:var(--accent)}
+.console-tab .tab-dot{width:4px;height:4px;border-radius:50%;background:currentColor;opacity:.75}
+.console.is-voice .console-body > .group,
+.console.is-voice .console-body > .scene-note{display:none}
+.voice-pane{display:none}
+.console.is-voice .voice-pane{display:flex;flex-direction:column;flex:1 1 auto;min-height:0}
+.voice-head{
+  display:grid;grid-template-columns:52px 1fr;gap:13px;align-items:center;
+  padding:8px 0 16px;
+  border-bottom:1px solid var(--line);
+}
+.voice-orb{
+  position:relative;
+  display:grid;place-items:center;
+  width:52px;height:52px;
+  border:1px solid rgba(229,183,118,.28);
+  border-radius:50%;
+  background:radial-gradient(circle at 50% 40%,rgba(229,183,118,.2),rgba(229,183,118,.03) 64%,transparent 70%);
+  color:var(--accent);
+  box-shadow:inset 0 0 18px rgba(229,183,118,.06);
+}
+.voice-orb::before,.voice-orb::after{
+  content:"";position:absolute;inset:-5px;border-radius:50%;
+  border:1px solid rgba(229,183,118,.12);opacity:0;
+  transition:opacity .3s var(--ease);
+}
+.voice-orb::after{inset:-11px;border-color:rgba(229,183,118,.08)}
+.voice-pane.is-listening .voice-orb::before{opacity:1;animation:voiceRing 1.6s ease-out infinite}
+.voice-pane.is-listening .voice-orb::after{opacity:1;animation:voiceRing 1.6s ease-out .35s infinite}
+.voice-pane.is-speaking .voice-orb{box-shadow:inset 0 0 18px rgba(229,183,118,.12),0 0 28px rgba(229,183,118,.12)}
+@keyframes voiceRing{
+  0%{transform:scale(.82);opacity:.8}
+  100%{transform:scale(1.18);opacity:0}
+}
+.voice-orb__bars{display:flex;align-items:center;gap:2px;height:18px}
+.voice-orb__bars i{display:block;width:2px;height:7px;border-radius:2px;background:currentColor;animation:voiceBar 1.2s ease-in-out infinite;animation-play-state:paused;opacity:.55}
+.voice-orb__bars i:nth-child(2){height:13px;animation-delay:.12s}
+.voice-orb__bars i:nth-child(3){height:18px;animation-delay:.24s}
+.voice-orb__bars i:nth-child(4){height:11px;animation-delay:.36s}
+.voice-orb__bars i:nth-child(5){height:6px;animation-delay:.48s}
+.voice-pane.is-listening .voice-orb__bars i{animation-play-state:running;opacity:1}
+@keyframes voiceBar{
+  0%,100%{transform:scaleY(.55)}
+  50%{transform:scaleY(1.15)}
+}
+.voice-state-title{margin:0;color:#e8e1d5;font-size:12px;font-weight:500;line-height:1.4}
+.voice-state-text{margin:4px 0 0;color:#7f8377;font-size:9px;line-height:1.65}
+.voice-ptt{
+  width:100%;
+  display:flex;align-items:center;gap:12px;
+  margin:14px 0 0;padding:12px 14px;
+  border:1px solid rgba(229,183,118,.28);
+  border-radius:14px;
+  background:linear-gradient(135deg,rgba(229,183,118,.14),rgba(229,183,118,.03));
+  color:var(--accent);
+  text-align:left;
+  transition:background .25s var(--ease),border-color .25s var(--ease),transform .25s var(--ease);
+}
+.voice-ptt:hover{background:linear-gradient(135deg,rgba(229,183,118,.2),rgba(229,183,118,.05));border-color:rgba(229,183,118,.45)}
+.voice-ptt:active{transform:scale(.99)}
+.voice-ptt.is-listening{border-color:rgba(229,183,118,.65);box-shadow:0 0 0 3px rgba(229,183,118,.08)}
+.voice-ptt__icon{
+  width:32px;height:32px;flex:0 0 auto;
+  display:grid;place-items:center;
+  border-radius:50%;
+  background:rgba(229,183,118,.12);
+}
+.voice-ptt__icon svg{width:16px;height:16px}
+.voice-ptt strong{display:block;color:#f0e2cc;font-size:11px;font-weight:600;letter-spacing:.04em}
+.voice-ptt small{display:block;margin-top:2px;color:#9d8b73;font-family:var(--mono);font-size:7.5px;letter-spacing:.08em}
+.voice-transcript{
+  display:flex;flex-direction:column;gap:9px;
+  flex:1 1 auto;
+  max-height:none;min-height:132px;
+  margin:16px 0 0;padding:2px 2px 2px 0;
+  overflow-y:auto;
+  scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.13) transparent;
+  overscroll-behavior:contain;
+}
+.voice-transcript::-webkit-scrollbar{width:4px}
+.voice-transcript::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12);border-radius:99px}
+.voice-empty{display:flex;flex:1;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:24px 0;color:#767b6e;font-size:10px;line-height:1.7;text-align:center}
+.voice-empty::before{content:"VOICE READY";margin-bottom:2px;color:rgba(229,183,118,.55);font-family:var(--mono);font-size:8px;letter-spacing:.18em}
+.voice-empty[hidden]{display:none}
+.voice-empty span{display:block}
+.voice-bubble{
+  max-width:88%;
+  padding:9px 11px;
+  border:1px solid var(--line);
+  border-radius:12px;
+  background:rgba(255,255,255,.025);
+  color:#b9bdb0;
+  font-size:10px;line-height:1.65;
+}
+.voice-bubble p{margin:0}
+.voice-bubble--user{align-self:flex-end;background:rgba(229,183,118,.11);border-color:rgba(229,183,118,.2);color:#e6d6be}
+.voice-bubble--lamp{align-self:flex-start;border-color:rgba(242,237,226,.1);background:rgba(20,23,18,.82)}
+.voice-bubble__meta{display:block;margin-bottom:3px;color:#7d806f;font-family:var(--mono);font-size:7px;letter-spacing:.08em}
+.voice-bubble--lamp .voice-bubble__meta{color:#a48b68}
+.voice-suggestions{display:flex;flex-wrap:wrap;gap:6px;margin-top:13px}
+.voice-suggestions button{
+  height:25px;padding:0 9px;
+  border:1px solid var(--line);border-radius:999px;
+  background:rgba(255,255,255,.018);
+  color:#999d8f;
+  font-size:8.5px;
+  transition:color .25s var(--ease),border-color .25s var(--ease),background .25s var(--ease);
+}
+.voice-suggestions button:hover{color:var(--accent);border-color:rgba(229,183,118,.3);background:rgba(229,183,118,.06)}
+.voice-form{display:flex;gap:7px;margin-top:12px}
+.voice-form input{
+  flex:1;min-width:0;height:34px;padding:0 11px;
+  border:1px solid var(--line);border-radius:9px;
+  background:rgba(0,0,0,.18);
+  color:#ddd6c8;
+  font-size:10px;
+  outline:none;
+}
+.voice-form input:focus{border-color:rgba(229,183,118,.45)}
+.voice-form button{
+  height:34px;padding:0 12px;
+  border:1px solid rgba(229,183,118,.3);border-radius:9px;
+  background:rgba(229,183,118,.1);
+  color:var(--accent);
+  font-size:9px;
+}
+.voice-disclaimer{margin:11px 0 0;color:#5f6359;font-size:8px;line-height:1.6}
+@media (max-width:760px){
+  .console-tabs{padding:7px 18px 0}
+  .voice-head{grid-template-columns:44px 1fr;gap:11px}
+  .voice-orb{width:44px;height:44px}
+  .voice-transcript{max-height:260px}
+  .voice-ptt{padding:11px 12px}
+}
 /* --------------------------------------------------------------- responsive */
 @media (max-width:1180px){
   .app{padding-bottom:20px;min-height:calc(100svh - var(--site-header-h,62px))}
@@ -1386,7 +1540,7 @@ button:focus-visible,a:focus-visible,input:focus-visible{
         <div class="hero">
           <p class="eyebrow">LAMP—1 / Interactive model 001</p>
           <h1>光，<span class="accent">会回应你。</span></h1>
-          <p class="hero-desc">双轴云台与双色温混光。拖动灯头调整光束，或让它在睡前慢慢暗下来。本页演示光与动作，语音交互在真机上验证。</p>
+          <p class="hero-desc">双轴云台与双色温混光。拖动灯头调整光束，或切到语音台，看一句话如何变成光与动作。真实语音链路在真机上验证。</p>
           <div class="hero-meta">
             <span>5W</span><i></i><span>2700—6500K</span><i></i><span>Ra ≥ 90</span><i></i><span>2-AXIS</span>
           </div>
@@ -1429,11 +1583,11 @@ button:focus-visible,a:focus-visible,input:focus-visible{
       </div>
     </section>
 
-    <aside class="console" aria-label="灯光控制台">
+    <aside class="console" id="console" aria-label="灯光控制台">
       <header class="console-head">
         <div>
-          <p class="panel-kicker">CONTROL DECK / 02</p>
-          <h2 class="console-title">光控台<em>LIGHT</em></h2>
+          <p class="panel-kicker">INTERACTION DECK / 02</p>
+          <h2 class="console-title" id="consoleTitle">光控台<em>LIGHT</em></h2>
         </div>
         <div class="power-control">
           <span class="power-label" id="powerLabel">已开启</span>
@@ -1443,7 +1597,59 @@ button:focus-visible,a:focus-visible,input:focus-visible{
         </div>
       </header>
 
-      <div class="console-body">
+      <div class="console-tabs" role="group" aria-label="控制台模式">
+        <button class="console-tab is-active" type="button" data-console-tab="light" aria-pressed="true" aria-controls="consoleBody">光控 / LIGHT</button>
+        <button class="console-tab" type="button" data-console-tab="voice" aria-pressed="false" aria-controls="consoleBody">语音 / VOICE <span class="tab-dot" aria-hidden="true"></span></button>
+      </div>
+
+      <div class="console-body" id="consoleBody">
+        <div class="voice-pane" id="voicePane" aria-label="语音交互仿真">
+          <div class="voice-head">
+            <div class="voice-orb" aria-hidden="true">
+              <span class="voice-orb__bars"><i></i><i></i><i></i><i></i><i></i></span>
+            </div>
+            <div>
+              <p class="panel-kicker">VOICE LOOP / PTT</p>
+              <h3 class="voice-state-title" id="voiceStateTitle">按下说话，或点一句示例</h3>
+              <p class="voice-state-text" id="voiceStateText">前端仿真：不录音、不上传，回复来自本地脚本。</p>
+            </div>
+          </div>
+
+          <button class="voice-ptt" id="voicePtt" type="button" aria-describedby="voicePttHint">
+            <span class="voice-ptt__icon" aria-hidden="true">
+              <svg viewBox="0 0 16 16" fill="none">
+                <rect x="6" y="2" width="4" height="7" rx="2" stroke="currentColor" stroke-width="1.2"/>
+                <path d="M4 7.5a4 4 0 0 0 8 0M8 11.5V14M5.5 14h5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+              </svg>
+            </span>
+            <span><strong>按住说话</strong><small id="voicePttHint">松开结束 · 仿真不会录音</small></span>
+          </button>
+
+          <div class="voice-transcript" id="voiceTranscript" role="log" aria-live="polite" aria-label="语音对话记录">
+            <div class="voice-empty" id="voiceEmpty">
+              <span>试试说：把灯调暖一点</span>
+              <span>或者：帮我计时 25 分钟</span>
+            </div>
+          </div>
+
+          <div class="voice-suggestions" role="group" aria-label="示例语音指令">
+            <button type="button" data-voice-prompt="把灯调暖一点">调暖一点</button>
+            <button type="button" data-voice-prompt="太亮了，暗一点">暗一点</button>
+            <button type="button" data-voice-prompt="帮我计时 25 分钟">计时 25 分钟</button>
+            <button type="button" data-voice-prompt="点点头">点点头</button>
+            <button type="button" data-voice-prompt="讲个笑话">讲个笑话</button>
+            <button type="button" data-voice-prompt="现在几点">现在几点</button>
+          </div>
+
+          <form class="voice-form" id="voiceForm">
+            <label class="sr-only" for="voiceInput">输入一句对台灯说的话</label>
+            <input id="voiceInput" type="text" autocomplete="off" maxlength="60" placeholder="也可以直接输入一句话…">
+            <button type="submit">发送</button>
+          </form>
+
+          <p class="voice-disclaimer">仿真模式：不打开麦克风、不上传语音、不调用真实大模型。</p>
+        </div>
+
         <section class="group" aria-labelledby="sceneHeading">
           <div class="group-head">
             <h3 id="sceneHeading">光场景</h3>
@@ -1710,6 +1916,11 @@ button:focus-visible,a:focus-visible,input:focus-visible{
   let lastReadoutFrame = 0;
   let toastTimer = 0;
   let resetSpinTimer = 0;
+  let voiceBusy = false;
+  let voiceListening = false;
+  let voicePttTimer = 0;
+  let voiceTurnTimer = 0;
+  let voiceSampleIndex = 0;
 
   const $ = (selector, root = document) => root.querySelector(selector);
   const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
@@ -1769,6 +1980,19 @@ button:focus-visible,a:focus-visible,input:focus-visible{
   const toastEl = $('#toast');
   const announcer = $('#announcer');
   const resetBtn = $('#resetBtn');
+  const consoleEl = $('#console');
+  const consoleBody = $('#consoleBody');
+  const consoleTitle = $('#consoleTitle');
+  const consoleTabs = $$('.console-tab');
+  const voicePane = $('#voicePane');
+  const voiceStateTitle = $('#voiceStateTitle');
+  const voiceStateText = $('#voiceStateText');
+  const voicePtt = $('#voicePtt');
+  const voiceTranscript = $('#voiceTranscript');
+  const voiceEmpty = $('#voiceEmpty');
+  const voiceForm = $('#voiceForm');
+  const voiceInput = $('#voiceInput');
+  const voiceSuggestions = $$('.voice-suggestions [data-voice-prompt]');
 
   /* ----------------------------------------------------------------- utils */
   const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
@@ -2253,6 +2477,200 @@ button:focus-visible,a:focus-visible,input:focus-visible{
     syncTimerUI();
   }
 
+  /* --------------------------------------------------------------- voice sim */
+  const VOICE_SAMPLES = [
+    '把灯调暖一点',
+    '太亮了，暗一点',
+    '帮我计时 25 分钟',
+    '点点头',
+    '讲个笑话',
+    '现在几点'
+  ];
+
+  function setConsoleMode(mode) {
+    const isVoice = mode === 'voice';
+    consoleEl.classList.toggle('is-voice', isVoice);
+    consoleTabs.forEach(tab => {
+      const active = tab.dataset.consoleTab === mode;
+      tab.classList.toggle('is-active', active);
+      tab.setAttribute('aria-pressed', String(active));
+    });
+    consoleTitle.innerHTML = isVoice ? '语音台<em>VOICE</em>' : '光控台<em>LIGHT</em>';
+    consoleEl.setAttribute('aria-label', isVoice ? '语音交互仿真' : '灯光控制台');
+    consoleBody.scrollTop = 0;
+  }
+
+  function setVoiceState(kind, title, text) {
+    voicePane.classList.remove('is-listening', 'is-thinking', 'is-speaking');
+    if (kind) voicePane.classList.add(`is-${kind}`);
+    voiceStateTitle.textContent = title;
+    voiceStateText.textContent = text;
+    if (kind === 'listening') announce('正在听。仿真模式不会录音。');
+  }
+
+  function addVoiceBubble(role, text) {
+    if (!text) return;
+    voiceEmpty.hidden = true;
+    const bubble = document.createElement('div');
+    bubble.className = `voice-bubble voice-bubble--${role}`;
+    const meta = document.createElement('span');
+    meta.className = 'voice-bubble__meta';
+    meta.textContent = role === 'user' ? '你 · 输入' : 'LAMP—1 · 脚本仿真';
+    const body = document.createElement('p');
+    body.textContent = text;
+    bubble.append(meta, body);
+    voiceTranscript.append(bubble);
+    voiceTranscript.scrollTop = voiceTranscript.scrollHeight;
+  }
+
+  function setVoiceLight(next = {}) {
+    if (!state.power) setPower(true, { silent: true });
+    if (typeof next.brightness === 'number') {
+      state.brightness = clamp(next.brightness, LIMITS.brightness[0], LIMITS.brightness[1]);
+    }
+    if (typeof next.cct === 'number') {
+      state.cct = clamp(next.cct, LIMITS.cct[0], LIMITS.cct[1]);
+    }
+    state.preset = 'manual';
+    syncPowerUI();
+    syncLightControls();
+    syncSceneButtons();
+  }
+
+  function startVoiceTimer(minutes) {
+    if (state.timer.active) cancelTimer({ silent: true });
+    state.selectedMinutes = clamp(minutes, 1, 240);
+    startTimer();
+  }
+
+  function answerVoice(text) {
+    const t = text.replace(/\s+/g, '');
+
+    if (/(计时|倒计时|番茄|分钟)/.test(t)) {
+      const match = t.match(/(\d{1,3})分钟/);
+      let minutes = match ? Number(match[1]) : 25;
+      if (/半小时/.test(t)) minutes = 30;
+      if (/(一小时|一个小时)/.test(t)) minutes = 60;
+      minutes = clamp(minutes, 1, 240);
+      startVoiceTimer(minutes);
+      return `好，${minutes} 分钟后关灯。到点我会把光慢慢收掉。`;
+    }
+    if (/(关灯|关掉|熄灭)/.test(t)) {
+      setPower(false);
+      return '好，灯关了。桌面留给黑暗，我还在。';
+    }
+    if (/(晚安|睡觉)/.test(t)) {
+      applyScene('night', { silent: true });
+      startVoiceTimer(30);
+      return '晚安。我把光调到 1% 的夜灯，30 分钟后自动关。';
+    }
+    if (/(开灯|打开灯|亮起来)/.test(t)) {
+      setPower(true);
+      return '灯开了。要不要再暖一点？';
+    }
+    if (/(阅读|看书|学习)/.test(t)) {
+      applyScene('study', { silent: true });
+      return '切到阅读光：4300K，100%。纸面上的字应该清楚了。';
+    }
+    if (/(办公|工作)/.test(t)) {
+      applyScene('office', { silent: true });
+      return '切到办公光：5200K，80%。屏幕和纸笔之间会清醒一点。';
+    }
+    if (/(休息|放松)/.test(t)) {
+      applyScene('rest', { silent: true });
+      return '切到休息光：2700K，35%。先慢下来。';
+    }
+    if (/(夜灯|小夜灯)/.test(t)) {
+      applyScene('night', { silent: true });
+      return '切到夜灯：2700K，1%。只留一点光。';
+    }
+    if (/(暖|黄光)/.test(t)) {
+      setVoiceLight({ cct: state.cct - 700 });
+      return `暖了一点，现在是 ${state.cct}K / ${state.brightness}%。`;
+    }
+    if (/(冷|白光|清爽)/.test(t)) {
+      setVoiceLight({ cct: state.cct + 700 });
+      return `冷了一点，现在是 ${state.cct}K / ${state.brightness}%。`;
+    }
+    if (/(太亮|刺眼|暗一点|调暗|降低亮度)/.test(t)) {
+      setVoiceLight({ brightness: state.brightness - 15 });
+      return `调暗了，现在是 ${state.cct}K / ${state.brightness}%。`;
+    }
+    if (/(太暗|亮一点|调亮|提高亮度)/.test(t)) {
+      setVoiceLight({ brightness: state.brightness + 15 });
+      return `调亮了，现在是 ${state.cct}K / ${state.brightness}%。`;
+    }
+    if (/(点头|点一下头)/.test(t)) {
+      triggerMove('nod');
+      return '好，点一下头。';
+    }
+    if (/(左转|向左|看左边)/.test(t)) {
+      triggerMove('left');
+      return '好，我往左看。';
+    }
+    if (/(右转|向右|看右边)/.test(t)) {
+      triggerMove('right');
+      return '好，我往右看。';
+    }
+    if (/(笑话|逗我|有趣)/.test(t)) {
+      triggerMove('nod');
+      return '为什么台灯从不加班？因为它一到点就自动关灯。';
+    }
+    if (/(几点|时间)/.test(t)) {
+      const now = new Date();
+      return `现在是 ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}。`;
+    }
+    if (/(天气|气温)/.test(t)) {
+      return '我还没接天气服务。等云端工具接上，再告诉你。';
+    }
+    if (/(你好|在吗|hi|hello)/i.test(t)) {
+      triggerMove('nod');
+      return '我在。你可以让我调光、计时，或者只是聊两句。';
+    }
+
+    return `我听见了「${text}」。这是前端仿真，真实回答要等云端大模型接入。`;
+  }
+
+  function runVoiceTurn(text) {
+    const clean = String(text || '').trim();
+    if (!clean || voiceBusy) return;
+    voiceBusy = true;
+    window.clearTimeout(voiceTurnTimer);
+    addVoiceBubble('user', clean);
+    setVoiceState('thinking', '正在听懂…', '把这句话交给仿真脚本，不连接真实服务。');
+    voiceTurnTimer = window.setTimeout(() => {
+      const response = answerVoice(clean);
+      setVoiceState('speaking', '正在回应…', '灯会用声音、灯光和动作回答。');
+      addVoiceBubble('lamp', response);
+      voiceBusy = false;
+      voiceTurnTimer = window.setTimeout(() => {
+        if (voiceBusy) return;
+        setVoiceState('', '已回应', '可以继续问，或切回光控台。');
+      }, 680);
+    }, 620);
+  }
+
+  function startVoiceListening() {
+    if (voiceBusy || voiceListening) return;
+    voiceListening = true;
+    voicePtt.classList.add('is-listening');
+    voicePtt.setAttribute('aria-pressed', 'true');
+    setVoiceState('listening', '正在听…', '仿真模式不会打开麦克风；松开后从示例里取一句。');
+    window.clearTimeout(voicePttTimer);
+    voicePttTimer = window.setTimeout(() => stopVoiceListening(), 3200);
+  }
+
+  function stopVoiceListening() {
+    if (!voiceListening) return;
+    voiceListening = false;
+    window.clearTimeout(voicePttTimer);
+    voicePtt.classList.remove('is-listening');
+    voicePtt.setAttribute('aria-pressed', 'false');
+    const sample = VOICE_SAMPLES[voiceSampleIndex % VOICE_SAMPLES.length];
+    voiceSampleIndex += 1;
+    runVoiceTurn(sample);
+  }
+
   /* ------------------------------------------------------------------- reset */
   function resetAll() {
     cancelQuickMotion();
@@ -2435,12 +2853,47 @@ button:focus-visible,a:focus-visible,input:focus-visible{
 
   timerBtn.addEventListener('click', startTimer);
 
+  consoleTabs.forEach(tab => {
+    tab.addEventListener('click', () => setConsoleMode(tab.dataset.consoleTab));
+  });
+
+  voiceSuggestions.forEach(button => {
+    button.addEventListener('click', () => runVoiceTurn(button.dataset.voicePrompt));
+  });
+
+  voiceForm.addEventListener('submit', event => {
+    event.preventDefault();
+    const text = voiceInput.value;
+    voiceInput.value = '';
+    runVoiceTurn(text);
+  });
+
+  voicePtt.addEventListener('pointerdown', event => {
+    event.preventDefault();
+    startVoiceListening();
+  });
+  ['pointerup', 'pointercancel', 'pointerleave'].forEach(type => {
+    voicePtt.addEventListener(type, stopVoiceListening);
+  });
+  voicePtt.addEventListener('keydown', event => {
+    if (event.key === ' ' || event.key === 'Enter') {
+      event.preventDefault();
+      startVoiceListening();
+    }
+  });
+  voicePtt.addEventListener('keyup', event => {
+    if (event.key === ' ' || event.key === 'Enter') {
+      event.preventDefault();
+      stopVoiceListening();
+    }
+  });
+
   document.addEventListener('keydown', event => {
     if (event.key === 'Escape') {
       stage.classList.remove('is-aiming');
       if (draggingHead) closeHeadDrag();
     }
-    if (event.key.toLowerCase() === 'r' && !event.metaKey && !event.ctrlKey && event.target.tagName !== 'INPUT') {
+    if (event.key.toLowerCase() === 'r' && !event.metaKey && !event.ctrlKey && !['INPUT', 'TEXTAREA', 'SELECT', 'BUTTON'].includes(event.target.tagName)) {
       resetAll();
     }
   });
@@ -2512,9 +2965,13 @@ button:focus-visible,a:focus-visible,input:focus-visible{
 
     // Lets marketing pages deep-link a specific light recipe, e.g.
     // simulator.html?scene=night — keeping the first rendered frame in sync.
-    const requestedScene = new URLSearchParams(window.location.search).get('scene');
+    const params = new URLSearchParams(window.location.search);
+    const requestedScene = params.get('scene');
     if (requestedScene && Object.prototype.hasOwnProperty.call(SCENES, requestedScene)) {
       applyScene(requestedScene, { silent: true });
+    }
+    if (params.get('mode') === 'voice') {
+      setConsoleMode('voice');
     }
 
     view.cct = state.cct;
