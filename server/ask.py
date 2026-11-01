@@ -125,7 +125,7 @@ def ask(host: str, model: str, prompt: str, stream: bool, timeout: int) -> str:
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description="Ask local DeepSeek through Ollama")
     parser.add_argument("prompt", nargs="*", help="question; omit for interactive mode")
-    parser.add_argument("--model", default="qwen3.5:9b")
+    parser.add_argument("--model", default="qwen3.5:4b")
     parser.add_argument("--host", default="http://127.0.0.1:11434")
     parser.add_argument("--timeout", type=int, default=120)
     parser.add_argument("--stream", action="store_true", help="stream tokens as they are generated")

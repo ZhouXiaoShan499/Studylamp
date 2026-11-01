@@ -339,7 +339,7 @@ async def main_async(args):
 
 def parse_args():
     p = argparse.ArgumentParser()
-    p.add_argument("--model", default=os.environ.get("LAMP_MODEL", "qwen3.5:9b"))
+    p.add_argument("--model", default=os.environ.get("LAMP_MODEL", "qwen3.5:4b"))
     p.add_argument("--ollama", default=os.environ.get("OLLAMA_URL", "http://127.0.0.1:11434/api/chat"))
     p.add_argument("--asr-dir", default=os.environ.get("LAMP_ASR_DIR", DEFAULT_ASR_DIR))
     p.add_argument("--http-port", type=int, default=8080)

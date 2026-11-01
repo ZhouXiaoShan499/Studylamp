@@ -420,7 +420,7 @@ def parse_args(argv=None):
     parser = argparse.ArgumentParser(description="LAMP-1 LAN voice bridge (Vosk + Ollama)")
     parser.add_argument("--host", default="0.0.0.0", help="bind address (default: all interfaces)")
     parser.add_argument("--port", type=int, default=8765)
-    parser.add_argument("--model", default="qwen3.5:9b", help="Ollama model name")
+    parser.add_argument("--model", default="qwen3.5:4b", help="Ollama model name")
     parser.add_argument("--ollama", default="http://127.0.0.1:11434", help="Ollama base URL")
     parser.add_argument("--vosk-model", default=str(DEFAULT_VOSK_MODEL), help="Vosk model folder")
     parser.add_argument("--max-seconds", type=int, default=15, help="reject longer utterances")

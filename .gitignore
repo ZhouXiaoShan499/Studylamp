@@ -43,6 +43,9 @@ server/models/
 # 服务端调试产物（录制的音频/截图）
 server/debug/
 
+# 语音服务运行日志
+server/logs/
+
 # 探测/临时文件
 _tmp_*.txt
 .dsh-write-probe.txt
