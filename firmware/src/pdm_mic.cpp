@@ -99,8 +99,13 @@ bool begin() {
     i2s_config_t cfg = {};
     cfg.mode = static_cast<i2s_mode_t>(I2S_MODE_MASTER | I2S_MODE_RX);
     cfg.sample_rate = MIC_SAMPLE_RATE;
-    cfg.bits_per_sample = I2S_BITS_PER_SAMPLE_16BIT;
-    cfg.channel_format = I2S_CHANNEL_FMT_ONLY_LEFT;
+    // 和 idf/lamp_voice 的已验证配置保持一致：INMP441 的 24 bit 数据左对齐在
+    // 32 bit 槽里，且要求 WS 周期 64 BCLK（每声道 32 bit）。用 16 bit 槽只有
+    // 32 BCLK，麦克风会错位输出、读数极小甚至全 0。
+    cfg.bits_per_sample = I2S_BITS_PER_SAMPLE_32BIT;
+    // 按左右双声道成帧（每声道 32 bit -> WS 周期 64 BCLK，INMP441 必需），
+    // 读取时只取左声道那一路。legacy API 的 mono 会缩短 WS 周期，不能用。
+    cfg.channel_format = I2S_CHANNEL_FMT_RIGHT_LEFT;
     cfg.communication_format = I2S_COMM_FORMAT_STAND_I2S;
     cfg.intr_alloc_flags = ESP_INTR_FLAG_LEVEL1;
     cfg.dma_buf_count = 8;
@@ -127,23 +132,18 @@ bool begin() {
         i2s_driver_uninstall(kPort);
         return false;
     }
-    i2s_set_clk(kPort, MIC_SAMPLE_RATE, I2S_BITS_PER_SAMPLE_16BIT, I2S_CHANNEL_MONO);
+    i2s_set_clk(kPort, MIC_SAMPLE_RATE, I2S_BITS_PER_SAMPLE_32BIT, I2S_CHANNEL_STEREO);
 #endif
 
     sReady = true;
     Serial.printf("[mic] INMP441 I2S ready: %u Hz mono, BCLK=%u WS=%u SD=%u\n",
                   static_cast<unsigned>(MIC_SAMPLE_RATE), PIN_VOICE_TX, PIN_VOICE_WS, PIN_VOICE_RX);
 
-    // 启动自检：立刻读 20 ms。全 0 通常意味着 WS/BCLK 没接、L/R 悬空或模块没供电。
+    // 启动自检：立刻读一批。全 0 通常意味着 WS/BCLK 没接、L/R 悬空或模块没供电。
+    // 统一走 read()，这样 32 bit 槽的两种实现都能得到同一份 16 bit 样本。
     int16_t probe[320];
-    size_t got = 0;
-#if PDMMIC_USE_STD
-    const esp_err_t probeErr = i2s_channel_read(sRx, probe, sizeof(probe), &got, pdMS_TO_TICKS(300));
-#else
-    const esp_err_t probeErr = i2s_read(kPort, probe, sizeof(probe), &got, pdMS_TO_TICKS(300));
-#endif
-    const size_t n = got / sizeof(int16_t);
-    if (probeErr == ESP_OK && n > 0) {
+    const size_t n = read(probe, 320, 300);
+    if (n > 0) {
         int16_t mn = probe[0];
         int16_t mx = probe[0];
         for (size_t i = 1; i < n; ++i) {
@@ -154,8 +154,7 @@ bool begin() {
                       mn, mx, static_cast<uint16_t>(probe[0]), n > 1 ? static_cast<uint16_t>(probe[1]) : 0,
                       n > 2 ? static_cast<uint16_t>(probe[2]) : 0, n > 3 ? static_cast<uint16_t>(probe[3]) : 0);
     } else {
-        Serial.printf("[mic] selftest read failed: %d got=%u\n", static_cast<int>(probeErr),
-                      static_cast<unsigned>(got));
+        Serial.println("[mic] selftest read failed: 0 samples");
     }
     return true;
 }
@@ -202,23 +201,27 @@ size_t read(int16_t* samples, size_t count, uint32_t timeout_ms) {
     }
     return n;
 #else
-    const size_t bytes_wanted = count * sizeof(int16_t);
+    // 32 bit 立体声帧：[左, 右] 两个 int32 一帧，只取左声道（L/R 接 GND）。
+    static int32_t raw[512 * 2];
     size_t bytes_read = 0;
-    const esp_err_t err = i2s_read(kPort, samples, bytes_wanted, &bytes_read, pdMS_TO_TICKS(timeout_ms));
+    const size_t bytes_wanted = count * 2 * sizeof(int32_t);
+    const esp_err_t err =
+        i2s_read(kPort, raw, bytes_wanted, &bytes_read, pdMS_TO_TICKS(timeout_ms));
     if (err != ESP_OK) return 0;
-    const size_t n = bytes_read / sizeof(int16_t);
-    if (MIC_GAIN > 1) {
-        for (size_t i = 0; i < n; ++i) {
-            int32_t value = static_cast<int32_t>(samples[i]) * MIC_GAIN;
+    const size_t frames = bytes_read / (2 * sizeof(int32_t));
+    for (size_t i = 0; i < frames; ++i) {
+        int32_t value = raw[i * 2] >> 16;  // 24 bit 左对齐 -> 高 16 bit
+        if (MIC_GAIN > 1) {
+            value *= MIC_GAIN;
             if (value > 32767) {
                 value = 32767;
             } else if (value < -32768) {
                 value = -32768;
             }
-            samples[i] = static_cast<int16_t>(value);
         }
+        samples[i] = static_cast<int16_t>(value);
     }
-    return n;
+    return frames;
 #endif
 }
 

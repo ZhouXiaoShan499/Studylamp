@@ -647,6 +647,10 @@ void setup() {
 
     lighting::begin();
     motion::begin();
+    // 蜂鸣器此前从未 attach 通道，beepTick 一直在往一个没配置的通道写值，
+    // 所以按键/定时器的提示音其实从来没响过。10 bit 下 1<<9 正好约 50 % 占空。
+    pwm::attach(PIN_BUZZER, CH_BUZZER, LED_PWM_HZ, 10);
+    pwm::write(PIN_BUZZER, CH_BUZZER, 0);
     timers::begin();
     timers::setHandler(onTimerFire);
     irengine::begin();
