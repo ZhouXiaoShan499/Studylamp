@@ -785,6 +785,7 @@
   font-family:var(--site-mono);
   font-size:7.5px;letter-spacing:.03em;
 }
+.voice-cta-row{display:flex;flex-wrap:wrap;align-items:center;gap:16px;margin-top:22px}
 @media (prefers-reduced-motion:reduce){
   .voice-wave__arc,.voice-wave__bar{animation:none}
 }
@@ -1444,6 +1445,7 @@
   font-size:17px;
   line-height:1.7;
 }
+.control-links{display:flex;flex-wrap:wrap;gap:18px}
 @media (max-width:900px){
   .product-control__grid{grid-template-columns:1fr;gap:34px}
   .product-control__media{aspect-ratio:1.8}
