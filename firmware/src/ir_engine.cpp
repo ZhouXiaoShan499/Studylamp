@@ -71,7 +71,9 @@ const char* stateText(LearnState value) {
 
 void begin() {
     irsend.begin();
-    irrecv.disableIRIn();
+    // IRrecv 构造后默认就是 idle（未 enableIRIn，timer 句柄为 NULL）。
+    // 不能在此调用 irrecv.disableIRIn()：它在 ESP32 上会无条件对 NULL 的
+    // timer 调 timerAlarmDisable()，导致 LoadProhibited 崩溃。
     state = LearnState::Idle;
     Serial.printf("[ir] receiver=%u sender=%u\n", PIN_IR_RECV, PIN_IR_SEND);
 }
@@ -187,8 +189,8 @@ bool send(uint8_t slot) {
     }
 
     const bool wasLearning = isLearning();
-    if (wasLearning) cancelLearn();
-    irrecv.disableIRIn();  // never hear our own burst
+    if (wasLearning) cancelLearn();  // 内部 finish() 已 disableIRIn，timer 已初始化，安全
+    irrecv.pause();  // 用 pause 而非 disableIRIn：未 enableIRIn 时 timer 为 NULL，disableIRIn 会崩溃
 
     for (uint8_t i = 0; i < IR_SEND_REPEATS; ++i) {
         irsend.sendRaw(record.raw, record.len, record.freq_khz);

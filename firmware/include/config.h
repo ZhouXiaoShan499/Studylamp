@@ -66,15 +66,20 @@ constexpr uint8_t PIN_VOICE_TX = 16;  // BCLK
 constexpr uint8_t PIN_VOICE_RX = 17;  // SD (mic -> ESP32)
 constexpr uint8_t PIN_VOICE_WS = 18;  // WS / LRCLK
 
-// ---- LEDC channels (ESP32-C3/S3 low-speed group; one timer per group) ------
-// channels 8 and 9 share timer 4 (both 4 kHz) -> OK
-// channels 10 and 11 share timer 5 (both 50 Hz) -> OK
-// channel 12 uses timer 6 (4 kHz buzzer)
-constexpr uint8_t CH_LED_WARM = 8;
-constexpr uint8_t CH_LED_COOL = 9;
-constexpr uint8_t CH_SERVO_TILT = 10;
-constexpr uint8_t CH_SERVO_YAW = 11;
-constexpr uint8_t CH_BUZZER = 12;
+// ---- LEDC channels ---------------------------------------------------------
+// ESP32-S3 只有 8 个 LEDC 通道（SOC_LEDC_CHANNEL_NUM = 8，通道号 0..7），
+// arduino-esp32 在 chan >= 8 时直接 log_e 后返回 0 —— PWM 根本不会建立，
+// ledcWrite 静默无效。之前照抄经典 ESP32 的 8..12 号通道，导致灯/舵机/蜂鸣器
+// 全都没有输出（按键能记日志、但灯不亮），这里必须改用 0..4。
+// timer 绑定规则：timer = (chan / 2) % 4，同一 timer 的两个通道必须同频同分辨率。
+//   chan 0,1 -> timer 0 (4 kHz, 12 bit)  : 暖白、冷白
+//   chan 2,3 -> timer 1 (50 Hz, 14 bit)  : 俯仰、水平舵机
+//   chan 4   -> timer 2 (4 kHz, 10 bit)  : 蜂鸣器
+constexpr uint8_t CH_LED_WARM = 0;
+constexpr uint8_t CH_LED_COOL = 1;
+constexpr uint8_t CH_SERVO_TILT = 2;
+constexpr uint8_t CH_SERVO_YAW = 3;
+constexpr uint8_t CH_BUZZER = 4;
 
 constexpr uint32_t LED_PWM_HZ = 4000;
 constexpr uint8_t LED_PWM_BITS = 12;   // 4096 steps
