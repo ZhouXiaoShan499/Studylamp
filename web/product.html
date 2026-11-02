@@ -4,14 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#080907">
-<title>产品 · LAMP—1 智能交互台灯</title>
-<meta name="description" content="了解 LAMP—1 的光、动作与语音交互：双色温混光、安静的双轴云台、按键说话的 AI 对话，以及离线定时。">
+<title>产品 · LAMP—1 AI 学习桌面机器人</title>
+<meta name="description" content="了解 LAMP—1 的语音、动作与状态反馈：云端问答、总线舵机、1.09″ TFT 表情与 WS2812B 状态灯环。照明功能已取消。">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="assets/site.css">
 <link rel="stylesheet" href="assets/pages.css">
 <meta property="og:type" content="website">
 <meta property="og:title" content="产品 · LAMP—1">
-<meta property="og:description" content="一盏先让你舒服，再让你惊喜的灯。">
+<meta property="og:description" content="一个会听、会答、会动的桌面学习机器人。">
 <meta property="og:image" content="assets/og.jpg">
 <script>document.documentElement.classList.add('js');</script>
 <script src="assets/site.js" defer></script>
@@ -30,7 +30,7 @@
         </svg>
       </span>
       <span class="site-brand__name">LAMP—1</span>
-      <span class="site-brand__tag">会回应的光</span>
+      <span class="site-brand__tag">AI 学习机器人</span>
     </a>
 
     <nav class="site-nav" aria-label="主导航">
@@ -57,11 +57,11 @@
       <nav class="site-menu__nav" aria-label="移动端导航">
         <a href="index.html">概览 <span>01 / OVERVIEW</span></a>
         <a href="product.html" aria-current="page">产品 <span>02 / THE OBJECT</span></a>
-        <a href="simulator.html">数字样机 <span>03 / LIGHT FIELD</span></a>
+        <a href="simulator.html">数字样机 <span>03 / DIGITAL TWIN</span></a>
         <a href="technology.html">技术 <span>04 / ENGINEERING</span></a>
       </nav>
       <div class="site-menu__foot">
-        <p>一盏会回应的可动台灯。<br>概念样机 001 · 非量产</p>
+        <p>一个会听、会答、会动的桌面机器人。<br>概念样机 001 · 非量产</p>
         <a class="site-button site-button--primary" href="simulator.html">打开数字样机
           <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8h9M8.5 3.5 13 8l-4.5 4.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </a>
@@ -77,10 +77,10 @@
       <div class="product-hero__head">
         <div>
           <p class="site-kicker">02 / THE OBJECT</p>
-          <h1 class="product-hero__title" id="productTitle">一盏灯，<br>陪桌面慢慢呼吸。</h1>
+          <h1 class="product-hero__title" id="productTitle">一个伙伴，<br>坐在书桌旁边。</h1>
         </div>
         <div class="product-hero__aside">
-          <p>LAMP—1 不是把更多功能塞进桌面，而是让一盏灯多做一点：听懂你的一句话，把头转向你，把回答放进光里。</p>
+          <p>LAMP—1 不是把更多功能塞进桌面，而是让桌面多一个能对话的实体：听懂你的一句话，把头转向你，再用表情、灯环和声音回应。</p>
           <div class="site-actions-row">
             <a class="site-button site-button--primary" href="simulator.html">打开数字样机
               <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8h9M8.5 3.5 13 8l-4.5 4.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -93,86 +93,65 @@
       </div>
 
       <figure class="product-hero__stage">
-        <img src="assets/lamp-wide.webp" width="1800" height="1000" alt="LAMP—1 在深色桌面场景中的整体形态与光场" fetchpriority="high">
+        <img src="assets/lamp-wide.webp" width="1800" height="1000" alt="LAMP—1 台灯阶段概念渲染，深色桌面场景（整机形态待重做）" fetchpriority="high">
         <span class="product-stage-label product-stage-label--top"><span class="mini-dot"></span>OBJECT STUDY / 001</span>
-        <span class="product-stage-label product-stage-label--right">4300K · STUDY</span>
+        <span class="product-stage-label product-stage-label--right">BUS SERVO · TFT</span>
         <figcaption class="product-stage-quote">
           <span>DESIGN NOTE</span>
-          <blockquote>光不必喧哗，<br>但应该被感知。</blockquote>
+          <blockquote>回应不必喧哗，<br>但应该被看见。</blockquote>
         </figcaption>
       </figure>
 
       <div class="product-hero__foot">
         <span>CONCEPT RENDER / 非量产</span>
-        <span>AI 语音 · 双轴动作 · 双色温 · 离线定时</span>
+        <span>AI 语音 · 总线舵机 · 屏幕表情 · 状态灯环</span>
       </div>
     </div>
   </section>
 
-  <!-- -------------------------------------------------------------- light -->
-  <section class="site-section product-light" aria-labelledby="productLightTitle">
+  <!-- -------------------------------------------------------------- feedback -->
+  <section class="site-section product-light" aria-labelledby="productFeedbackTitle">
     <div class="site-wrap">
       <div class="product-section-head" data-reveal>
         <div>
-          <p class="site-kicker">01 / LIGHT</p>
-          <h2 class="site-title" id="productLightTitle">不是照得更亮，<br><span class="accent">而是照得刚刚好。</span></h2>
+          <p class="site-kicker">01 / FEEDBACK</p>
+          <h2 class="site-title" id="productFeedbackTitle">不靠一块屏，<br><span class="accent">靠整个身体回应。</span></h2>
         </div>
-        <p class="site-lead site-lead--small">两路白光混色，从 2700K 的暖黄到 6500K 的冷白。你看到的是一束连续的光，背后是两只校准过的灯珠通道。</p>
+        <p class="site-lead site-lead--small">语音负责内容，动作负责存在感，屏幕与灯环负责状态。三者同步，用户不必盯着设备，也知道它在听、在想，还是已经回答完了。</p>
       </div>
 
-      <div class="light-lab" data-reveal>
-        <div class="light-lab__panel">
-          <div class="light-lab__topline">
-            <span>DUAL CHANNEL / CALIBRATED</span>
-            <span>STUDY PRESET</span>
-          </div>
-          <div class="light-lab__readout">
-            <span class="light-lab__value">4300<small>K</small></span>
-            <span class="light-lab__percent">100<small>%</small></span>
-          </div>
-          <div class="cct-meter" aria-hidden="true">
-            <div class="cct-meter__glow"></div>
-            <span class="cct-meter__marker" style="left:43%"></span>
-            <span class="cct-meter__marker cct-meter__marker--soft" style="left:18%"></span>
-            <span class="cct-meter__marker cct-meter__marker--soft" style="left:66%"></span>
-            <span class="cct-meter__marker cct-meter__marker--soft" style="left:88%"></span>
-          </div>
-          <div class="cct-meter__labels">
-            <span>2700K / WARM</span>
-            <span>4300K / STUDY</span>
-            <span>6500K / COOL</span>
-          </div>
-          <div class="light-wave" aria-hidden="true">
-            <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
-          </div>
-          <p class="light-lab__note">色温不是滤镜。<br>是两路真实白光的比例。</p>
-        </div>
-
-        <div class="light-lab__details">
-          <div class="lab-detail">
-            <span class="lab-detail__index">A</span>
-            <div><strong>双通道混光</strong><p>3000K / 6000K 两路白光，用比例而不是屏幕色去还原色温。</p></div>
-          </div>
-          <div class="lab-detail">
-            <span class="lab-detail__index">B</span>
-            <div><strong>五档校准</strong><p>2700 / 3500 / 4300 / 5200 / 6500K，预设值实测后再写入设备。</p></div>
-          </div>
-          <div class="lab-detail">
-            <span class="lab-detail__index">C</span>
-            <div><strong>无可视频闪</strong><p>4 kHz PWM 与 12-bit 调光，让相机和眼睛都不容易捕捉到闪烁。</p></div>
-          </div>
-          <div class="lab-detail">
-            <span class="lab-detail__index">D</span>
-            <div><strong>低亮夜灯</strong><p>最低 1% 的输出，保留一点光，不打扰已经暗下来的房间。</p></div>
-          </div>
-        </div>
+      <div class="detail-grid">
+        <article class="detail-card" data-reveal>
+          <span class="detail-card__index">01 / VOICE</span>
+          <h3>回答，从扬声器出来</h3>
+          <p>云端 ASR 听懂问题，大模型组织答案，TTS 读出来。回答控制在几句话内，不打断手上的事。</p>
+          <span class="detail-card__meta">ASR · LLM · TTS</span>
+        </article>
+        <article class="detail-card" data-reveal style="--reveal-delay:.06s">
+          <span class="detail-card__index">02 / MOTION</span>
+          <h3>转头，点头</h3>
+          <p>1–2 个总线舵机负责最必要的两个动作：开口时转向你，答完轻轻点头。到位即停，不持续嗡鸣。</p>
+          <span class="detail-card__meta">BUS SERVO / 1—2</span>
+        </article>
+        <article class="detail-card" data-reveal style="--reveal-delay:.12s">
+          <span class="detail-card__index">03 / FACE</span>
+          <h3>1.09″ 表情屏</h3>
+          <p>聆听、思考、回答、计时各有表情。屏幕只给一眼能懂的信息，不要求你读完一段文字。</p>
+          <span class="detail-card__meta">TFT / 240 × 240</span>
+        </article>
+        <article class="detail-card" data-reveal style="--reveal-delay:.18s">
+          <span class="detail-card__index">04 / RING</span>
+          <h3>48mm 状态灯环</h3>
+          <p>WS2812B 灯环只表达状态：待机、聆听、回答、提醒。它不做照明，也不参与阅读光。</p>
+          <span class="detail-card__meta">WS2812B / STATUS ONLY</span>
+        </article>
       </div>
 
       <div class="product-spec-strip" data-reveal style="--reveal-delay:.08s">
-        <div><span>LED POWER</span><strong>5.0<small>W</small></strong></div>
-        <div><span>CENTER LUX</span><strong>500<small>lx @ 40cm · 目标</small></strong></div>
-        <div><span>COLOR RENDERING</span><strong>Ra≥90</strong></div>
-        <div><span>FREQUENCY</span><strong>4<small>kHz PWM</small></strong></div>
+        <div><span>VOICE</span><strong>云端<small>ASR · LLM · TTS</small></strong></div>
+        <div><span>MOTION</span><strong>1—2<small>总线舵机</small></strong></div>
+        <div><span>DISPLAY</span><strong>1.09<small>inch TFT</small></strong></div>
+        <div><span>VISION</span><strong>GC0308<small>阶段二</small></strong></div>
       </div>
     </div>
   </section>
@@ -183,26 +162,26 @@
       <div class="product-motion__copy" data-reveal>
         <p class="site-kicker">02 / MOVEMENT</p>
         <h2 class="site-title" id="productMotionTitle">安静地转动，<br>不打断思路。</h2>
-        <p class="site-lead">双轴云台让灯头转向、俯仰，找到一个不需要起身的角度。它移动得很慢，到位后就松开舵机，把嗡嗡声留在机械里，而不是房间里。</p>
+        <p class="site-lead">总线舵机让头部转向说话的人，或在回答结束时轻轻点头。它移动得很慢，到位后就松开舵机，把嗡嗡声留在机械里，而不是房间里。</p>
 
         <div class="motion-sequence">
           <div><span>00</span><strong>慢起</strong><small>S-CURVE</small></div>
-          <div><span>01</span><strong>移动</strong><small>75°/s</small></div>
+          <div><span>01</span><strong>移动</strong><small>YAW · PITCH</small></div>
           <div><span>02</span><strong>到位</strong><small>SETTLE</small></div>
           <div><span>03</span><strong>释放</strong><small>NO HUM</small></div>
         </div>
 
-        <a class="site-text-link" href="simulator.html">在数字样机中转动灯头
+        <a class="site-text-link" href="simulator.html">在数字样机中转动它
           <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8h9M8.5 3.5 13 8l-4.5 4.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </a>
       </div>
 
       <figure class="product-motion__media" data-reveal style="--reveal-delay:.08s">
-        <img src="assets/detail-head.webp" width="1400" height="1000" loading="lazy" alt="LAMP—1 圆形灯头与灯臂连接处的特写">
-        <span class="product-stage-label product-stage-label--top"><span class="mini-dot"></span>TWO AXES / ONE GESTURE</span>
+        <img src="assets/detail-head.webp" width="1400" height="1000" loading="lazy" alt="LAMP—1 早期样机头部与关节特写（台灯阶段渲染）">
+        <span class="product-stage-label product-stage-label--top"><span class="mini-dot"></span>ONE GESTURE / TWO AXES</span>
         <span class="motion-ring" aria-hidden="true"></span>
-        <span class="motion-tick motion-tick--a">T / 10—55°</span>
-        <span class="motion-tick motion-tick--b">Y / ±60°</span>
+        <span class="motion-tick motion-tick--a">YAW / 转头</span>
+        <span class="motion-tick motion-tick--b">PITCH / 点头</span>
         <figcaption>动作的存在感，应该刚好让人知道它在回应。</figcaption>
       </figure>
     </div>
@@ -221,20 +200,21 @@
 
       <div class="product-control__grid">
         <figure class="product-control__media" data-reveal>
-          <img src="assets/detail-desk.webp" width="1600" height="800" loading="lazy" alt="LAMP—1 灯座特写，包含模式显示、电源触摸键和三个状态指示点">
-          <span class="product-stage-label product-stage-label--top"><span class="mini-dot"></span>BASE / KEYS + DISPLAY</span>
-          <span class="control-callout control-callout--screen">0.96″ OLED</span>
-          <span class="control-callout control-callout--button">POWER / TOUCH</span>
+          <img src="assets/detail-desk.webp" width="1600" height="800" loading="lazy" alt="LAMP—1 早期样机底座特写（台灯阶段渲染）">
+          <span class="product-stage-label product-stage-label--top"><span class="mini-dot"></span>BASE / KEY + STATUS</span>
+          <span class="control-callout control-callout--screen">1.09″ TFT / 目标</span>
+          <span class="control-callout control-callout--button">PTT / 按键</span>
           <figcaption>按键在底座，屏幕只在你需要时亮起。</figcaption>
         </figure>
 
         <div class="product-control__copy" data-reveal style="--reveal-delay:.08s">
           <div class="key-grid">
             <div><span>KEY 01</span><strong>对话</strong><p>短按开始拾音，再按结束；回答从扬声器播出。</p></div>
-            <div><span>KEY 02</span><strong>灯光</strong><p>短按开关灯；长按在四组光场景之间循环。</p></div>
-            <div><span>KEY 03</span><strong>计时</strong><p>短按开始或暂停倒计时；长按取消。</p></div>
+            <div><span>KEY 02</span><strong>计时</strong><p>短按开始或暂停专注计时；长按取消。</p></div>
+            <div><span>KEY 03</span><strong>静音</strong><p>长按关闭播报与动作，只保留屏幕与灯环。</p></div>
           </div>
           <p class="control-quote">好的智能不该先要求一本说明书。它应该在你按下说话键之后，就听懂你要什么。</p>
+          <p class="control-quote">当前台架只有 1 个按键；上图是整机按键布局的设计目标。</p>
           <div class="control-links">
             <a class="site-text-link" href="simulator.html?mode=voice#console">打开语音仿真
               <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8h9M8.5 3.5 13 8l-4.5 4.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -254,87 +234,95 @@
       <div class="product-section-head" data-reveal>
         <div>
           <p class="site-kicker">04 / TIME</p>
-          <h2 class="site-title" id="productTimeTitle">从清醒，<br>到困倦。</h2>
+          <h2 class="site-title" id="productTimeTitle">从坐下，<br>到站起来。</h2>
         </div>
-        <p class="site-lead site-lead--small">一天里不需要一直“更亮”。LAMP—1 让光随时刻改变，也用一次倒计时，替你关掉最后一点光。</p>
+        <p class="site-lead site-lead--small">一天的学习不需要更多提醒，而是更少打断。LAMP—1 把番茄钟、休息提醒和今日时长放在桌面上：一句话开始，一次点头结束。</p>
       </div>
 
       <div class="moment-grid" data-reveal style="--reveal-delay:.06s">
         <article class="moment-card">
           <div class="moment-card__top"><span class="moment-time">09:12</span><span class="moment-orb moment-orb--day" aria-hidden="true"></span></div>
-          <h3>开始工作</h3>
-          <p>屏幕与纸笔之间，需要更接近日光的中性白。</p>
-          <span class="moment-data">5200K <i>·</i> 80%</span>
+          <h3>开始专注</h3>
+          <p>说一句「开始 45 分钟专注」，屏幕进入计时，灯环缓慢呼吸。</p>
+          <span class="moment-data">45 MIN <i>·</i> FOCUS</span>
         </article>
         <article class="moment-card">
-          <div class="moment-card__top"><span class="moment-time">21:40</span><span class="moment-orb moment-orb--rest" aria-hidden="true"></span></div>
-          <h3>慢下来</h3>
-          <p>把桌面收成一团暖光，留给一杯茶和一段没有消息的时间。</p>
-          <span class="moment-data">2700K <i>·</i> 35%</span>
+          <div class="moment-card__top"><span class="moment-time">09:57</span><span class="moment-orb moment-orb--rest" aria-hidden="true"></span></div>
+          <h3>休息一下</h3>
+          <p>计时结束，语音提醒 + 转头看向你；休息十分钟，不碰手机。</p>
+          <span class="moment-data">10 MIN <i>·</i> BREAK</span>
         </article>
         <article class="moment-card">
-          <div class="moment-card__top"><span class="moment-time">23:50</span><span class="moment-orb moment-orb--night" aria-hidden="true"></span></div>
-          <h3>不惊动睡意</h3>
-          <p>最后一点光只够看清脚下。倒计时结束，房间重新变暗。</p>
-          <span class="moment-data">2700K <i>·</i> 1%</span>
+          <div class="moment-card__top"><span class="moment-time">21:30</span><span class="moment-orb moment-orb--night" aria-hidden="true"></span></div>
+          <h3>今天到此</h3>
+          <p>问一句「今天学了多久」，它播报本次专注时长，然后进入待机。</p>
+          <span class="moment-data">QUERY <i>·</i> TODAY</span>
         </article>
       </div>
 
       <div class="timer-band">
         <div class="timer-band__copy">
           <span class="site-kicker">TIMER / 最长 24 小时</span>
-          <p>睡前设一次就好。倒计时结束自动关灯；离线时也能准确倒数。</p>
+          <p>说一句就开始。倒计时结束会语音提醒，屏幕与灯环同步提示，不依赖手机。</p>
         </div>
         <div class="timer-band__chips" aria-hidden="true">
           <span>15</span><span>30</span><span class="is-active">45</span><span>60</span><small>MIN</small>
         </div>
-        <a class="site-text-link" href="simulator.html">设置一次倒计时
+        <a class="site-text-link" href="simulator.html">在样机里设置一次计时
           <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8h9M8.5 3.5 13 8l-4.5 4.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </a>
       </div>
     </div>
   </section>
 
-  <!-- -------------------------------------------------------------- details -->
-  <section class="site-section product-details" aria-labelledby="productDetailsTitle">
+  <!-- ------------------------------------------------------------ boundaries -->
+  <section class="site-section product-details" aria-labelledby="productBoundariesTitle">
     <div class="site-wrap">
       <div class="product-section-head" data-reveal>
         <div>
-          <p class="site-kicker">05 / DETAILS</p>
-          <h2 class="site-title" id="productDetailsTitle">细节，<br>不急着被看见。</h2>
+          <p class="site-kicker">05 / BOUNDARIES</p>
+          <h2 class="site-title" id="productBoundariesTitle">边界，<br>也写进产品里。</h2>
         </div>
-        <p class="site-lead site-lead--small">我们把注意力放在每天会碰到、看到、听到的地方。它们不会出现在第一张海报上，但会决定这盏灯是否值得留在桌面上。</p>
+        <p class="site-lead site-lead--small">少做一点，反而更容易把该做的做好。下面四条是 LAMP—1 主动划定的边界，也是它和「什么都能做」的桌面设备最大的区别。</p>
       </div>
 
-      <div class="detail-grid">
-        <article class="detail-card" data-reveal>
-          <span class="detail-card__index">01 / OPTICS</span>
-          <h3>30° 遮光角</h3>
-          <p>PMMA 扩散板藏在灯头内，不把灯珠直接暴露给眼睛。</p>
-          <span class="detail-card__meta">PMMA DIFFUSER</span>
+      <div class="tech-choice-grid">
+        <article class="tech-choice-card" data-reveal>
+          <div class="tech-choice-card__head"><span>01</span><span>NO LIGHTING</span></div>
+          <h3>没有照明，<br>也不假装有。</h3>
+          <p>照明模组已取消。灯环只表达状态，不做阅读光，也不参与色温调节。</p>
+          <div class="tech-choice-card__data">
+            <span>STATUS ONLY</span><span>WS2812B</span>
+          </div>
         </article>
-        <article class="detail-card" data-reveal style="--reveal-delay:.06s">
-          <span class="detail-card__index">02 / DISPLAY</span>
-          <h3>0.96″ OLED</h3>
-          <p>显示对话状态、计时和倒计时。它只在必要时提供一行答案。</p>
-          <span class="detail-card__meta">MONOCHROME / I2C</span>
+        <article class="tech-choice-card" data-reveal style="--reveal-delay:.06s">
+          <div class="tech-choice-card__head"><span>02</span><span>PRESENCE ONLY</span></div>
+          <h3>只判断有人，<br>不判断认真。</h3>
+          <p>GC0308 第一阶段只做人员在场检测。「在桌前」不等于「在学习」，不对外宣传学习状态识别。</p>
+          <div class="tech-choice-card__data">
+            <span>GC0308</span><span>PHASE 2</span>
+          </div>
         </article>
-        <article class="detail-card" data-reveal style="--reveal-delay:.12s">
-          <span class="detail-card__index">03 / MOTION</span>
-          <h3>金属齿舵机</h3>
-          <p>金属齿轮与双轴限位，目标寿命 20,000 次往复动作。</p>
-          <span class="detail-card__meta">MG90S / MG996R</span>
+        <article class="tech-choice-card" data-reveal style="--reveal-delay:.12s">
+          <div class="tech-choice-card__head"><span>03</span><span>PUSH TO TALK</span></div>
+          <h3>按下才听，<br>不做常驻监听。</h3>
+          <p>首版用按键开始拾音，避免误唤醒。只有按下对话键才上传语音，隐私边界清楚。</p>
+          <div class="tech-choice-card__data">
+            <span>PTT</span><span>NO WAKE WORD</span>
+          </div>
         </article>
-        <article class="detail-card" data-reveal style="--reveal-delay:.18s">
-          <span class="detail-card__index">04 / NIGHT</span>
-          <h3>夜间静音</h3>
-          <p>22:00 后只留灯光变化，不做动作提示也不播报；安静是功能，不是妥协。</p>
-          <span class="detail-card__meta">QUIET HOURS</span>
+        <article class="tech-choice-card" data-reveal style="--reveal-delay:.18s">
+          <div class="tech-choice-card__head"><span>04</span><span>LOCAL FIRST</span></div>
+          <h3>断网，<br>也还能计时。</h3>
+          <p>网络只负责问答。计时、状态提示与本地交互留在设备上，断网时仍然可用。</p>
+          <div class="tech-choice-card__data">
+            <span>ESP TIMER</span><span>NVS</span>
+          </div>
         </article>
       </div>
 
       <div class="product-details__foot" data-reveal>
-        <p>结构、热与寿命数据仍待工程样机验证。目前页面展示的是设计目标与概念渲染。</p>
+        <p>结构、热与寿命数据仍待工程样机验证。目前页面展示的是设计目标与台灯阶段的概念渲染。</p>
         <a class="site-text-link" href="technology.html#specs">查看完整规格
           <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8h9M8.5 3.5 13 8l-4.5 4.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </a>
@@ -346,15 +334,15 @@
   <section class="product-end">
     <div class="site-wrap product-end__inner">
       <div class="product-end__copy" data-reveal>
-        <p class="site-kicker">NEXT / LIGHT FIELD</p>
-        <h2>把灯留在这里，<br>把光调到你的此刻。</h2>
-        <p>打开数字样机，试着拖动灯头、切换色温，或者让它在四十五分钟后自己暗下来。</p>
-        <a class="site-button site-button--primary" href="simulator.html">进入光场样机
+        <p class="site-kicker">NEXT / DIGITAL TWIN</p>
+        <h2>把它留在桌上，<br>让它陪你学一会儿。</h2>
+        <p>打开数字样机，转动头部、设置一次专注计时，或者进入语音仿真，看一句话如何变成回答与动作。</p>
+        <a class="site-button site-button--primary" href="simulator.html">进入数字样机
           <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8h9M8.5 3.5 13 8l-4.5 4.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </a>
       </div>
       <a class="product-end__media" href="simulator.html" data-reveal style="--reveal-delay:.08s" aria-label="进入 LAMP—1 数字样机">
-        <img src="assets/lamp-hero.webp" width="1200" height="1500" loading="lazy" alt="LAMP—1 概念台灯竖版光影渲染">
+        <img src="assets/lamp-hero.webp" width="1200" height="1500" loading="lazy" alt="LAMP—1 台灯阶段概念渲染竖版">
         <span>SIMULATION / OPEN</span>
       </a>
     </div>
@@ -375,7 +363,7 @@
           <span class="site-brand__name">LAMP—1</span>
         </a>
         <div class="footer-brand-copy">
-          <p>一盏会听、会答、会动的桌面台灯。语音、双轴与双色温，让 AI 回到桌面。</p>
+          <p>一个放在桌面上的 AI 学习机器人。语音、动作、屏幕与灯环，让 AI 回到桌面。</p>
           <div class="footer-brand-links">
             <a class="site-text-link" href="simulator.html">打开数字样机
               <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8h9M8.5 3.5 13 8l-4.5 4.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -396,7 +384,7 @@
       <div class="footer-note">
         <h3>项目状态 / Status</h3>
         <span class="footer-prototype"><i aria-hidden="true"></i>概念样机 · 非量产</span>
-        <p>LAMP—1 处于概念设计与 MVP 验证阶段。页面中的照度、识别与响应数据为设计目标，最终以工程实测为准。</p>
+        <p>LAMP—1 处于概念设计与 MVP 验证阶段。RIG-Arm 套件与灯环尚未到位，页面中的参数为设计目标，最终以工程实测为准。</p>
       </div>
     </div>
 
@@ -408,7 +396,7 @@
         <span>DESK OBJECT / CONCEPT 001</span>
       </div>
       <div class="meta-set">
-        <span>让光，有回应。</span>
+        <span>让 AI，坐到桌面上。</span>
         <a href="#top">回到顶部 ↑</a>
       </div>
     </div>

@@ -4,14 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#080907">
-<title>技术 · LAMP—1 工程笔记</title>
-<meta name="description" content="LAMP—1 的系统架构、照明与云台参数、语音交互链路、离线定时，以及当前工程验证边界。">
+<title>技术 · LAMP—1 AI 学习机器人工程笔记</title>
+<meta name="description" content="LAMP—1 的系统架构、语音链路、总线舵机、屏幕与灯环、摄像头在场检测，以及当前工程验证边界。">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="assets/site.css">
 <link rel="stylesheet" href="assets/pages.css">
 <meta property="og:type" content="website">
 <meta property="og:title" content="技术 · LAMP—1">
-<meta property="og:description" content="把复杂，藏在光后面。LAMP—1 工程笔记与规格。">
+<meta property="og:description" content="把复杂，藏在回应后面。LAMP—1 工程笔记与规格。">
 <meta property="og:image" content="assets/og.jpg">
 <script>document.documentElement.classList.add('js');</script>
 <script src="assets/site.js" defer></script>
@@ -30,7 +30,7 @@
         </svg>
       </span>
       <span class="site-brand__name">LAMP—1</span>
-      <span class="site-brand__tag">会回应的光</span>
+      <span class="site-brand__tag">AI 学习机器人</span>
     </a>
 
     <nav class="site-nav" aria-label="主导航">
@@ -57,11 +57,11 @@
       <nav class="site-menu__nav" aria-label="移动端导航">
         <a href="index.html">概览 <span>01 / OVERVIEW</span></a>
         <a href="product.html">产品 <span>02 / THE OBJECT</span></a>
-        <a href="simulator.html">数字样机 <span>03 / LIGHT FIELD</span></a>
+        <a href="simulator.html">数字样机 <span>03 / DIGITAL TWIN</span></a>
         <a href="technology.html" aria-current="page">技术 <span>04 / ENGINEERING</span></a>
       </nav>
       <div class="site-menu__foot">
-        <p>一盏会回应的可动台灯。<br>概念样机 001 · 非量产</p>
+        <p>一个会听、会答、会动的桌面机器人。<br>概念样机 001 · 非量产</p>
         <a class="site-button site-button--primary" href="simulator.html">打开数字样机
           <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8h9M8.5 3.5 13 8l-4.5 4.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </a>
@@ -77,13 +77,13 @@
     <div class="site-wrap tech-hero__inner">
       <div class="tech-hero__copy">
         <p class="site-kicker">04 / ENGINEERING NOTES</p>
-        <h1 class="tech-hero__title" id="techTitle">把复杂，<br><span>藏在光后面。</span></h1>
-        <p class="site-lead">一盏小台灯要同时完成照明、双轴动作、语音对话和定时。云端负责听懂，设备负责回应；LAMP—1 把能并行的放进单循环，把不能妥协的写进边界。</p>
+        <h1 class="tech-hero__title" id="techTitle">把复杂，<br><span>藏在回应后面。</span></h1>
+        <p class="site-lead">一个桌面机器人要同时完成拾音、云端问答、语音播报、转头点头和状态显示。云端负责听懂，设备负责回应；LAMP—1 把能并行的放进单循环，把不能妥协的写进边界。</p>
         <div class="tech-hero__indices">
           <div><span>MCU</span><strong>ESP32-S3</strong></div>
-          <div><span>VOICE</span><strong>1<small>m</small></strong></div>
-          <div><span>DIM</span><strong>12<small>bit</small></strong></div>
-          <div><span>PIVOT</span><strong>2<small>axis</small></strong></div>
+          <div><span>VOICE</span><strong>1<small>m 近场</small></strong></div>
+          <div><span>SERVO</span><strong>1—2<small>总线</small></strong></div>
+          <div><span>VISION</span><strong>GC0308<small>阶段二</small></strong></div>
         </div>
         <div class="tech-hero__links">
           <a class="site-button site-button--primary" href="#specs">直接看规格
@@ -97,16 +97,16 @@
 
       <figure class="tech-hero__media" data-reveal>
         <div class="tech-photo">
-          <img src="assets/detail-head.webp" width="1400" height="1000" loading="lazy" alt="LAMP—1 灯头结构特写，光扩散板与金属灯壳">
+          <img src="assets/detail-head.webp" width="1400" height="1000" loading="lazy" alt="LAMP—1 早期样机头部结构特写（台灯阶段渲染）">
           <span class="tech-corner tech-corner--tl" aria-hidden="true"></span>
           <span class="tech-corner tech-corner--tr" aria-hidden="true"></span>
           <span class="tech-corner tech-corner--bl" aria-hidden="true"></span>
           <span class="tech-corner tech-corner--br" aria-hidden="true"></span>
-          <span class="tech-photo__label tech-photo__label--a">PMMA DIFFUSER / 30° SHIELD</span>
-          <span class="tech-photo__label tech-photo__label--b">PIVOT / MG90S</span>
+          <span class="tech-photo__label tech-photo__label--a">SERVO JOINT / BUS</span>
+          <span class="tech-photo__label tech-photo__label--b">TFT / STATUS FACE</span>
           <span class="tech-photo__axis" aria-hidden="true">FIG. 01</span>
         </div>
-        <figcaption>组装前的灯头总成 / 概念渲染</figcaption>
+        <figcaption>早期样机头部结构 / 台灯阶段渲染</figcaption>
       </figure>
     </div>
   </section>
@@ -117,16 +117,16 @@
       <div class="product-section-head" data-reveal>
         <div>
           <p class="site-kicker">01 / SYSTEM MAP</p>
-          <h2 class="site-title" id="systemTitle">一盏灯的<br>神经系统。</h2>
+          <h2 class="site-title" id="systemTitle">一个机器人，<br>一套神经系统。</h2>
         </div>
-        <p class="site-lead site-lead--small">照明、语音、云台和定时共享一个非阻塞主循环。输入、反馈、电源与网络预算在固件里被放在同一张图上考虑。</p>
+        <p class="site-lead site-lead--small">语音、动作、屏幕、灯环和定时共享一个非阻塞主循环。输入、反馈、电源与网络预算在固件里被放在同一张图上考虑。</p>
       </div>
 
       <div class="system-map" data-reveal tabindex="0" role="region" aria-label="LAMP—1 系统架构图，小屏幕可左右滚动">
         <div class="system-map__hint">← 横向滑动查看 →</div>
         <svg viewBox="0 0 1200 620" role="img" aria-labelledby="sysMapTitle sysMapDesc">
           <title id="sysMapTitle">LAMP—1 系统架构图</title>
-          <desc id="sysMapDesc">ESP32-S3 主控连接三个物理按键、I2S 麦克风与 OLED 显示，输出双色温 LED、两只舵机和扬声器，并通过 Wi-Fi 连接云端语音服务，使用 NVS 与 LittleFS 存储配置和日志。</desc>
+          <desc id="sysMapDesc">ESP32-S3 主控连接物理按键、I2S 麦克风与 TFT 显示，输出状态灯环、总线舵机和扬声器，并通过 Wi-Fi 连接云端语音服务，使用 NVS 与 LittleFS 存储配置和日志；摄像头作为阶段二输入。</desc>
           <defs>
             <marker id="sysDot" viewBox="0 0 8 8" refX="4" refY="4" markerWidth="5" markerHeight="5">
               <circle cx="4" cy="4" r="2.5" fill="#9b845f"/>
@@ -164,15 +164,15 @@
           <g>
             <rect x="70" y="104" width="220" height="72" rx="8" fill="rgba(255,255,255,.32)" stroke="#a6977d"/>
             <text x="89" y="132" fill="#8d7e66" font-family="'SFMono-Regular','Cascadia Mono',Consolas,monospace" font-size="8" letter-spacing="1.1">3 × PHYSICAL KEYS</text>
-            <text x="89" y="155" fill="#3e372d" font-family="'Segoe UI','Microsoft YaHei',sans-serif" font-size="13">对话 / 灯光 / 计时</text>
+            <text x="89" y="155" fill="#3e372d" font-family="'Segoe UI','Microsoft YaHei',sans-serif" font-size="13">对话 / 计时 / 静音</text>
 
             <rect x="70" y="209" width="220" height="72" rx="8" fill="rgba(255,255,255,.32)" stroke="#a6977d"/>
-            <text x="89" y="237" fill="#8d7e66" font-family="'SFMono-Regular','Cascadia Mono',Consolas,monospace" font-size="8" letter-spacing="1.1">I2S MIC / INMP441</text>
-            <text x="89" y="260" fill="#3e372d" font-family="'Segoe UI','Microsoft YaHei',sans-serif" font-size="13">近场拾音 · 32-bit</text>
+            <text x="89" y="237" fill="#8d7e66" font-family="'SFMono-Regular','Cascadia Mono',Consolas,monospace" font-size="8" letter-spacing="1.1">I2S MIC / ONBOARD</text>
+            <text x="89" y="260" fill="#3e372d" font-family="'Segoe UI','Microsoft YaHei',sans-serif" font-size="13">近场拾音 · 16 kHz</text>
 
             <rect x="70" y="314" width="220" height="72" rx="8" fill="rgba(255,255,255,.32)" stroke="#a6977d"/>
-            <text x="89" y="342" fill="#8d7e66" font-family="'SFMono-Regular','Cascadia Mono',Consolas,monospace" font-size="8" letter-spacing="1.1">0.96″ OLED / I2C</text>
-            <text x="89" y="365" fill="#3e372d" font-family="'Segoe UI','Microsoft YaHei',sans-serif" font-size="13">状态 / 对话 / 倒计时</text>
+            <text x="89" y="342" fill="#8d7e66" font-family="'SFMono-Regular','Cascadia Mono',Consolas,monospace" font-size="8" letter-spacing="1.1">1.09″ TFT / SPI</text>
+            <text x="89" y="365" fill="#3e372d" font-family="'Segoe UI','Microsoft YaHei',sans-serif" font-size="13">表情 / 对话 / 计时</text>
           </g>
 
           <!-- MCU -->
@@ -183,8 +183,8 @@
             <text x="600" y="197" text-anchor="middle" fill="#897b65" font-family="'SFMono-Regular','Cascadia Mono',Consolas,monospace" font-size="7" letter-spacing="1">16 MB FLASH / 8 MB PSRAM</text>
 
             <g font-family="'SFMono-Regular','Cascadia Mono',Consolas,monospace" font-size="8" fill="#4f4638" letter-spacing=".6">
-              <text x="451" y="247">01</text><text x="485" y="247">LIGHTING</text><text x="704" y="247" text-anchor="end" fill="#91816a">4 kHz · 12-bit</text>
-              <text x="451" y="283">02</text><text x="485" y="283">MOTION</text><text x="704" y="283" text-anchor="end" fill="#91816a">2-AXIS · INTERLOCK</text>
+              <text x="451" y="247">01</text><text x="485" y="247">VISION</text><text x="704" y="247" text-anchor="end" fill="#91816a">GC0308 · PHASE 2</text>
+              <text x="451" y="283">02</text><text x="485" y="283">MOTION</text><text x="704" y="283" text-anchor="end" fill="#91816a">BUS SERVO · UART</text>
               <text x="451" y="319">03</text><text x="485" y="319">VOICE / CLOUD</text><text x="704" y="319" text-anchor="end" fill="#91816a">ASR · LLM · TTS</text>
               <text x="451" y="355">04</text><text x="485" y="355">TIMERS</text><text x="704" y="355" text-anchor="end" fill="#91816a">8 TASK SLOTS</text>
               <text x="451" y="391">05</text><text x="485" y="391">UI / STORE</text><text x="704" y="391" text-anchor="end" fill="#91816a">NON-BLOCKING</text>
@@ -198,16 +198,16 @@
           <!-- outputs -->
           <g>
             <rect x="908" y="90" width="222" height="68" rx="8" fill="rgba(255,255,255,.32)" stroke="#a6977d"/>
-            <text x="926" y="117" fill="#8d7e66" font-family="'SFMono-Regular','Cascadia Mono',Consolas,monospace" font-size="8" letter-spacing="1.1">DUAL-CCT LED</text>
-            <text x="926" y="139" fill="#3e372d" font-family="'Segoe UI','Microsoft YaHei',sans-serif" font-size="13">3000K + 6000K 混光</text>
+            <text x="926" y="117" fill="#8d7e66" font-family="'SFMono-Regular','Cascadia Mono',Consolas,monospace" font-size="8" letter-spacing="1.1">STATUS RING</text>
+            <text x="926" y="139" fill="#3e372d" font-family="'Segoe UI','Microsoft YaHei',sans-serif" font-size="13">WS2812B · 48 mm</text>
 
             <rect x="908" y="169" width="222" height="60" rx="8" fill="rgba(255,255,255,.32)" stroke="#a6977d"/>
-            <text x="926" y="194" fill="#8d7e66" font-family="'SFMono-Regular','Cascadia Mono',Consolas,monospace" font-size="8" letter-spacing="1.1">SERVO / TILT</text>
-            <text x="926" y="214" fill="#3e372d" font-family="'Segoe UI','Microsoft YaHei',sans-serif" font-size="13">10—55°</text>
+            <text x="926" y="194" fill="#8d7e66" font-family="'SFMono-Regular','Cascadia Mono',Consolas,monospace" font-size="8" letter-spacing="1.1">SERVO / PITCH</text>
+            <text x="926" y="214" fill="#3e372d" font-family="'Segoe UI','Microsoft YaHei',sans-serif" font-size="13">点头</text>
 
             <rect x="908" y="240" width="222" height="60" rx="8" fill="rgba(255,255,255,.32)" stroke="#a6977d"/>
             <text x="926" y="265" fill="#8d7e66" font-family="'SFMono-Regular','Cascadia Mono',Consolas,monospace" font-size="8" letter-spacing="1.1">SERVO / YAW</text>
-            <text x="926" y="285" fill="#3e372d" font-family="'Segoe UI','Microsoft YaHei',sans-serif" font-size="13">±60°</text>
+            <text x="926" y="285" fill="#3e372d" font-family="'Segoe UI','Microsoft YaHei',sans-serif" font-size="13">转头</text>
 
             <rect x="908" y="311" width="222" height="60" rx="8" fill="rgba(255,255,255,.32)" stroke="#a6977d"/>
             <text x="926" y="336" fill="#8d7e66" font-family="'SFMono-Regular','Cascadia Mono',Consolas,monospace" font-size="8" letter-spacing="1.1">I2S AMP / SPEAKER</text>
@@ -229,7 +229,7 @@
           </g>
 
           <g fill="#9d8e76" font-family="'SFMono-Regular','Cascadia Mono',Consolas,monospace" font-size="7" letter-spacing=".5">
-            <text x="70" y="588">LAMP—1 / SYSTEM MAP v0.2</text>
+            <text x="70" y="588">LAMP—1 / SYSTEM MAP v0.3</text>
             <text x="1130" y="588" text-anchor="end">CONCEPT ARCHITECTURE</text>
           </g>
         </svg>
@@ -250,27 +250,27 @@
 
       <div class="tech-choice-grid">
         <article class="tech-choice-card" data-reveal>
-          <div class="tech-choice-card__head"><span>01</span><span>LIGHT</span></div>
-          <h3>两路白光，<br>五个校准点。</h3>
-          <p>3000K 与 6000K 两路 LED 按比例混色，用 Gamma 2.2 曲线过渡。色温不是屏幕上的滤镜，而是灯珠真实的输出比例。</p>
+          <div class="tech-choice-card__head"><span>01</span><span>STATUS RING</span></div>
+          <h3>灯环只做状态，<br>不做照明。</h3>
+          <p>WS2812B 48mm 灯环由 RMT 驱动，用颜色与呼吸节奏提示待机、聆听、回答和提醒。照明模组已取消。</p>
           <div class="tech-choice-card__data">
-            <span>4 kHz PWM</span><span>12 bit</span><span>Ra≥90</span>
+            <span>WS2812B</span><span>48 mm</span><span>RMT</span>
           </div>
         </article>
         <article class="tech-choice-card" data-reveal style="--reveal-delay:.06s">
           <div class="tech-choice-card__head"><span>02</span><span>MOTION</span></div>
           <h3>每一步，<br>都有边界。</h3>
-          <p>软件限位叠在机械挡块之前。两轴不同时运动，动作时灯光降到 70%，到位 350ms 后松开舵机。</p>
+          <p>软件限位叠在机械挡块之前。总线舵机带回位置反馈，动作到位后松开，避免持续堵转与嗡鸣。</p>
           <div class="tech-choice-card__data">
-            <span>±60° YAW</span><span>10—55° TILT</span><span>75°/s</span>
+            <span>UART BUS</span><span>1—2 AXIS</span><span>SOFT LIMIT</span>
           </div>
         </article>
         <article class="tech-choice-card" id="voice" data-reveal style="--reveal-delay:.12s">
           <div class="tech-choice-card__head"><span>03</span><span>VOICE</span></div>
           <h3>不急着唤醒，<br>先把一句话听清。</h3>
-          <p>v1 用按键开始拾音，避开误唤醒；VAD 判断句尾，云端完成识别、对话和语音合成。只有按下对话键才上传语音；断网时，灯光、动作和倒计时仍然可用。</p>
+          <p>v1 用按键开始拾音，避开误唤醒；VAD 判断句尾，云端完成识别、对话和语音合成。只有按下对话键才上传语音；断网时，计时与本地状态仍然可用。</p>
           <div class="tech-choice-card__data">
-            <span>PRESS-TO-TALK</span><span>VAD</span><span>CLOUD ASR + LLM</span>
+            <span>PRESS-TO-TALK</span><span>VAD</span><span>CLOUD ASR/LLM/TTS</span>
           </div>
         </article>
         <article class="tech-choice-card" data-reveal style="--reveal-delay:.18s">
@@ -297,39 +297,39 @@
       </div>
 
       <div class="spec-grid" data-reveal>
-        <section class="spec-group" aria-labelledby="specLight">
-          <div class="spec-group__head"><span>01</span><h3 id="specLight">照明 / LIGHTING</h3></div>
+        <section class="spec-group" aria-labelledby="specFeedback">
+          <div class="spec-group__head"><span>01</span><h3 id="specFeedback">交互反馈 / FEEDBACK</h3></div>
           <dl class="spec-list">
-            <div><dt>光源</dt><dd>双通道 3000K + 6000K</dd></div>
-            <div><dt>色温</dt><dd>2700—6500K · 5 档</dd></div>
-            <div><dt>整灯功率</dt><dd>5.0 W</dd></div>
-            <div><dt>中心照度</dt><dd>≥500 lx @40cm <em>设计目标</em></dd></div>
-            <div><dt>显色指数</dt><dd>Ra ≥90 <em>设计目标</em></dd></div>
-            <div><dt>调光</dt><dd>4 kHz · 12-bit · Gamma 2.2</dd></div>
+            <div><dt>屏幕</dt><dd>1.09″ TFT · 240×240</dd></div>
+            <div><dt>灯环</dt><dd>WS2812B · 48 mm</dd></div>
+            <div><dt>灯环定位</dt><dd>仅状态提示 · 不做照明</dd></div>
+            <div><dt>屏幕内容</dt><dd>聆听 / 思考 / 回答 / 计时</dd></div>
+            <div><dt>语音</dt><dd>云端 ASR · LLM · TTS</dd></div>
+            <div><dt>播报</dt><dd>MAX98357 + 扬声器 <em>设计目标</em></dd></div>
           </dl>
         </section>
 
         <section class="spec-group" aria-labelledby="specMotion">
           <div class="spec-group__head"><span>02</span><h3 id="specMotion">运动 / MOTION</h3></div>
           <dl class="spec-list">
-            <div><dt>俯仰</dt><dd>10—55° · 初始 30°</dd></div>
-            <div><dt>转向</dt><dd>±60° · 初始 0°</dd></div>
-            <div><dt>动作曲线</dt><dd>75°/s · S 曲线缓动</dd></div>
-            <div><dt>舵机</dt><dd>MG90S / MG996R</dd></div>
-            <div><dt>电源协同</dt><dd>双轴互锁 · 动作时亮度 ×0.7</dd></div>
-            <div><dt>释放策略</dt><dd>到位 350ms 后断开 PWM</dd></div>
+            <div><dt>动作</dt><dd>转头 / 点头</dd></div>
+            <div><dt>舵机</dt><dd>总线舵机 · UART · 1—2 个</dd></div>
+            <div><dt>位置反馈</dt><dd>总线协议读取</dd></div>
+            <div><dt>动作曲线</dt><dd>S 曲线缓动 <em>设计目标</em></dd></div>
+            <div><dt>限位</dt><dd>软件限位 + 机械挡块</dd></div>
+            <div><dt>释放策略</dt><dd>到位后松开舵机</dd></div>
           </dl>
         </section>
 
         <section class="spec-group" aria-labelledby="specVoice">
           <div class="spec-group__head"><span>03</span><h3 id="specVoice">语音 / VOICE</h3></div>
           <dl class="spec-list">
-            <div><dt>麦克风</dt><dd>INMP441 · I2S</dd></div>
+            <div><dt>麦克风</dt><dd>INMP441（当前）/ 板载麦（目标）</dd></div>
             <div><dt>拾音</dt><dd>近场 1m <em>设计目标</em></dd></div>
             <div><dt>触发</dt><dd>按键说话（v1）</dd></div>
             <div><dt>识别</dt><dd>云端 ASR</dd></div>
             <div><dt>对话</dt><dd>云端大模型 · 限长回答</dd></div>
-            <div><dt>播报</dt><dd>TTS · 扬声器 <em>设计目标</em></dd></div>
+            <div><dt>播报</dt><dd>TTS · MAX98357 <em>设计目标</em></dd></div>
           </dl>
         </section>
 
@@ -338,7 +338,8 @@
           <dl class="spec-list">
             <div><dt>主控</dt><dd>ESP32-S3 N16R8</dd></div>
             <div><dt>存储</dt><dd>16 MB Flash / 8 MB PSRAM</dd></div>
-            <div><dt>显示</dt><dd>0.96″ OLED · I2C <em>Plus/Pro</em></dd></div>
+            <div><dt>显示</dt><dd>1.09″ TFT · SPI <em>目标</em></dd></div>
+            <div><dt>摄像头</dt><dd>GC0308 · 阶段二</dd></div>
             <div><dt>网络</dt><dd>Wi-Fi 2.4 GHz · HTTPS</dd></div>
             <div><dt>定时</dt><dd>8 任务 · 10s—24h</dd></div>
             <div><dt>时基</dt><dd>SNTP / 可选 RTC / 离线倒计时</dd></div>
@@ -349,11 +350,11 @@
         <section class="spec-group" aria-labelledby="specElectrical">
           <div class="spec-group__head"><span>05</span><h3 id="specElectrical">电气 / POWER</h3></div>
           <dl class="spec-list">
-            <div><dt>输入</dt><dd>5V 2A（Basic/Plus）· 4A（Pro）</dd></div>
-            <div><dt>典型电流</dt><dd>900 mA（不含动作）</dd></div>
-            <div><dt>峰值设计</dt><dd>1646 mA（Pro · 互锁后）</dd></div>
-            <div><dt>LED 热设计</dt><dd>满载壳温 52.8℃ @30℃ 环境</dd></div>
-            <div><dt>语音链路</dt><dd>INMP441 + I2S 功放 <em>规划</em></dd></div>
+            <div><dt>输入</dt><dd>5V 2A（台架）· 舵机独立供电</dd></div>
+            <div><dt>舵机供电</dt><dd>独立电源 · 与主控共地</dd></div>
+            <div><dt>典型电流</dt><dd>待实测</dd></div>
+            <div><dt>峰值电流</dt><dd>待实测</dd></div>
+            <div><dt>热设计</dt><dd>待实测</dd></div>
             <div><dt>安全</dt><dd>未认证 <em>概念样机</em></dd></div>
           </dl>
         </section>
@@ -361,8 +362,8 @@
         <section class="spec-group" aria-labelledby="specNotes">
           <div class="spec-group__head"><span>06</span><h3 id="specNotes">测量与已知边界</h3></div>
           <dl class="spec-list">
-            <div><dt>照度</dt><dd>40cm 中心 ≥500 lx · 待实测</dd></div>
-            <div><dt>频闪</dt><dd>波动深度 &lt;5% · 待实测</dd></div>
+            <div><dt>语音识别</dt><dd>真实桌面噪声下待实测</dd></div>
+            <div><dt>在场检测</dt><dd>有人 / 无人 · 待验证</dd></div>
             <div><dt>噪声</dt><dd>动作 &lt;45 dB(A) @1m · 目标</dd></div>
             <div><dt>寿命</dt><dd>动作 ≥20,000 次 · 目标</dd></div>
             <div><dt>认证</dt><dd>CCC / CE · 尚未启动</dd></div>
@@ -392,7 +393,7 @@
           <ul>
             <li><span>01</span>需求边界与产品概念文档</li>
             <li><span>02</span>ESP32-S3 固件骨架与模块划分</li>
-            <li><span>03</span>面包板按键 → 照明点亮通路</li>
+            <li><span>03</span>面包板按键 → 状态输出通路（台架）</li>
             <li><span>04</span>语音链路在开发板跑通（拾音 → 转写 → 大模型回复）</li>
           </ul>
         </div>
@@ -401,8 +402,8 @@
           <ul>
             <li><span>01</span>真实桌面噪声下的识别率与 1m 拾音</li>
             <li><span>02</span>语音响应延迟、打断与播报自然度</li>
-            <li><span>03</span>照度、频闪与光学均匀度</li>
-            <li><span>04</span>LED 热、舵机噪声与结构寿命</li>
+            <li><span>03</span>总线舵机动作、限位与噪声</li>
+            <li><span>04</span>摄像头在场检测的稳定性</li>
             <li><span>05</span>用户是否会长期使用语音与动作</li>
           </ul>
         </div>
@@ -410,10 +411,10 @@
           <div class="status-column__head"><span class="status-mark status-mark--no"></span>首版不做 / NOT YET</div>
           <ul>
             <li><span>01</span>唤醒词与连续对话</li>
-            <li><span>02</span>学习任务与提醒（后续扩展）</li>
-            <li><span>03</span>摄像头 / 视觉 / 坐姿识别</li>
+            <li><span>02</span>学习任务与提醒（阶段三）</li>
+            <li><span>03</span>坐姿 / 专注度识别</li>
             <li><span>04</span>手机 App 与账号体系</li>
-            <li><span>05</span>电池供电与订阅服务</li>
+            <li><span>05</span>照明与电池供电</li>
           </ul>
         </div>
       </div>
@@ -434,7 +435,7 @@
       <div class="tech-end__copy" data-reveal>
         <p class="site-kicker">TRY THE LOOP</p>
         <h2>参数是冷的。<br>说一句话，才是真的。</h2>
-        <p>数字样机先把光与动作交给你；语音交互在真机上验证。去转一下灯头，看看它如何回应。</p>
+        <p>数字样机先把动作与状态交给你；语音交互在真机上验证。去转一下头部，看看它如何回应。</p>
         <div class="site-actions-row">
           <a class="site-button site-button--primary" href="simulator.html">打开数字样机
             <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8h9M8.5 3.5 13 8l-4.5 4.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -465,7 +466,7 @@
           <span class="site-brand__name">LAMP—1</span>
         </a>
         <div class="footer-brand-copy">
-          <p>一盏会听、会答、会动的桌面台灯。语音、双轴与双色温，让 AI 回到桌面。</p>
+          <p>一个放在桌面上的 AI 学习机器人。语音、动作、屏幕与灯环，让 AI 回到桌面。</p>
           <div class="footer-brand-links">
             <a class="site-text-link" href="simulator.html">打开数字样机
               <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8h9M8.5 3.5 13 8l-4.5 4.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -486,7 +487,7 @@
       <div class="footer-note">
         <h3>项目状态 / Status</h3>
         <span class="footer-prototype"><i aria-hidden="true"></i>概念样机 · 非量产</span>
-        <p>LAMP—1 处于概念设计与 MVP 验证阶段。页面中的照度、识别与响应数据为设计目标，最终以工程实测为准。</p>
+        <p>LAMP—1 处于概念设计与 MVP 验证阶段。RIG-Arm 套件与灯环尚未到位，页面中的参数为设计目标，最终以工程实测为准。</p>
       </div>
     </div>
 
@@ -498,7 +499,7 @@
         <span>DESK OBJECT / CONCEPT 001</span>
       </div>
       <div class="meta-set">
-        <span>让光，有回应。</span>
+        <span>让 AI，坐到桌面上。</span>
         <a href="#top">回到顶部 ↑</a>
       </div>
     </div>
