@@ -993,17 +993,17 @@
   position:relative;
   margin:clamp(30px,4.6vw,58px) 0 0;
   overflow:hidden;
-  aspect-ratio:1.82;
+  aspect-ratio:1.6;
   border:1px solid rgba(30,27,22,.19);
   border-radius:clamp(18px,2.5vw,28px);
-  background:#0c0e0a;
+  background:#e6ddcc;
   box-shadow:0 20px 65px rgba(45,35,22,.18);
 }
-.product-hero__stage img{width:100%;height:100%;object-fit:cover;object-position:center 44%}
+.product-hero__stage img{width:100%;height:100%;object-fit:cover;object-position:center 48%}
 .product-hero__stage::after{
   content:"";position:absolute;inset:0;pointer-events:none;
-  background:linear-gradient(0deg,rgba(5,6,4,.66) 0%,transparent 44%),
-             linear-gradient(90deg,rgba(5,6,4,.35),transparent 40%);
+  background:linear-gradient(0deg,rgba(24,17,8,.62) 0%,rgba(24,17,8,.18) 26%,transparent 48%),
+             linear-gradient(90deg,rgba(24,17,8,.22),transparent 38%);
   box-shadow:inset 0 0 0 1px rgba(255,255,255,.04);
 }
 .product-stage-label--top{top:17px;left:18px}
@@ -1048,6 +1048,153 @@
   .product-stage-quote{left:18px;bottom:18px}
   .product-stage-quote blockquote{font-size:21px}
   .product-hero__foot{flex-direction:column;align-items:flex-start;gap:6px}
+}
+
+/* ==========================================================================
+   PRODUCT / structure
+   ========================================================================== */
+.product-structure{padding-block:clamp(46px,6vw,80px);border-bottom:1px solid rgba(30,27,22,.13)}
+.structure-grid{
+  display:grid;
+  grid-template-columns:minmax(0,max-content) minmax(0,1fr);
+  gap:clamp(28px,4.6vw,64px);
+  align-items:start;
+}
+
+.structure-plate{
+  margin:0;
+  padding:clamp(16px,2vw,24px);
+  border:1px solid rgba(30,27,22,.16);
+  border-radius:clamp(16px,2vw,22px);
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.9),rgba(250,248,244,.72));
+  box-shadow:0 18px 48px rgba(45,35,22,.1),inset 0 1px 0 rgba(255,255,255,.9);
+}
+.structure-plate__frame{
+  position:relative;
+  display:flex;align-items:center;justify-content:center;
+  padding:clamp(26px,3.4vw,44px) clamp(22px,3vw,40px);
+  border-radius:clamp(10px,1.2vw,14px);
+  background:#fbfaf7;
+  border:1px solid rgba(30,27,22,.1);
+  overflow:hidden;
+  text-decoration:none;
+  color:inherit;
+  cursor:zoom-in;
+  transition:border-color .3s ease,background .3s ease;
+}
+a.structure-plate__frame:hover{
+  border-color:rgba(30,27,22,.26);
+  background:#fff;
+}
+.structure-grid > .structure-plate .structure-plate__frame img{
+  width:auto;
+  height:clamp(340px,38vw,460px);
+  max-width:100%;
+}
+.structure-figures{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:clamp(18px,2.4vw,32px);
+  margin-top:clamp(18px,2.4vw,32px);
+}
+/* 工程图纸感的十字准星 + 网格 */
+.structure-plate__frame::before{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background-image:
+    linear-gradient(rgba(30,27,22,.045) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(30,27,22,.045) 1px,transparent 1px);
+  background-size:26px 26px;
+  -webkit-mask-image:radial-gradient(70% 70% at 50% 50%,#000 30%,transparent 78%);
+  mask-image:radial-gradient(70% 70% at 50% 50%,#000 30%,transparent 78%);
+}
+.structure-plate__frame img{
+  position:relative;z-index:1;
+  width:100%;max-width:440px;height:auto;
+  border-radius:8px;
+  border:1px solid rgba(30,27,22,.09);
+  background:#fff;
+}
+.structure-plate__tag,
+.structure-plate__note{
+  position:absolute;z-index:2;
+  color:#8a7b64;
+  font-family:var(--site-mono);
+  font-size:7px;letter-spacing:.13em;
+  white-space:nowrap;
+}
+.structure-plate__tag{top:14px;left:16px}
+.structure-plate__note{bottom:13px;right:16px}
+.structure-plate figcaption{
+  margin-top:14px;padding-inline:2px;
+  color:#6d6353;
+  font-size:10.5px;line-height:1.72;
+}
+
+.structure-specs{
+  display:grid;
+  gap:1px;
+  background:rgba(30,27,22,.12);
+  border:1px solid rgba(30,27,22,.12);
+  border-radius:clamp(14px,1.8vw,18px);
+  overflow:hidden;
+}
+.structure-spec{
+  padding:clamp(15px,1.9vw,20px) clamp(16px,2.1vw,22px);
+  background:#f0eadf;
+}
+.structure-spec__index{
+  display:block;
+  color:#8f8168;
+  font-family:var(--site-mono);
+  font-size:7px;letter-spacing:.14em;
+  margin-bottom:9px;
+}
+.structure-spec strong{
+  display:block;
+  color:#1e1b16;
+  font-size:clamp(21px,2.4vw,27px);
+  font-weight:350;
+  letter-spacing:-.035em;
+  line-height:1.1;
+}
+.structure-spec strong em{
+  margin-left:3px;
+  font-style:normal;
+  font-size:.52em;
+  color:#8a7b64;
+  letter-spacing:0;
+}
+.structure-spec p{
+  margin:7px 0 0;
+  color:#6d6353;
+  font-size:10.5px;line-height:1.66;
+}
+.structure-specs__note{
+  margin:0;
+  padding:14px clamp(16px,2.1vw,22px) 15px;
+  background:#efe8dc;
+  color:#8a7b64;
+  font-family:var(--site-mono);
+  font-size:7.5px;line-height:1.7;letter-spacing:.04em;
+}
+
+@media (max-width:900px){
+  .structure-grid{grid-template-columns:1fr;gap:24px}
+  .structure-figures{grid-template-columns:1fr}
+  .structure-grid > .structure-plate .structure-plate__frame img{height:auto;width:min(100%,420px)}
+  .structure-plate__frame{padding:clamp(22px,4vw,34px)}
+  .structure-plate__frame img{max-width:100%}
+  .structure-specs{grid-template-columns:1fr 1fr}
+  .structure-specs__note{grid-column:1 / -1}
+}
+@media (max-width:560px){
+  .product-structure{padding-block:36px}
+  .structure-plate{padding:12px}
+  .structure-plate__frame{padding:20px 16px}
+  .structure-plate__tag,.structure-plate__note{font-size:6px}
+  .structure-specs{grid-template-columns:1fr}
+  .structure-specs__note{grid-column:auto}
 }
 
 /* ==========================================================================
