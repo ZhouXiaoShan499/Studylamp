@@ -5,7 +5,7 @@
 
 [官网](https://zhouxiaoshan499.github.io/lamp/) · [数字样机](https://zhouxiaoshan499.github.io/lamp/simulator.html?mode=voice) · [产品定位与开发规划](docs/11-AI学习机器人产品定位与开发规划.md) · [仓库文档](#文档导航)
 
-![LAMP—1 书桌场景概念渲染：白色圆底座、单柱中段一个黑色摩擦关节，顶部白色圆盘头，正面宽灯环围住凸面视窗](docs/design/scene-desk.jpg)
+![LAMP—1 书桌场景概念渲染：白色圆底座、单柱中段一个黑色摩擦关节，顶部白色圆盘头，正面宽灯环围住凸面视窗](web/assets/scene-desk.jpg)
 
 *图为 REV C 形态的书桌场景概念渲染（白壳全包 · 宽导光环 · 单柱摩擦关节），非量产。*
 
