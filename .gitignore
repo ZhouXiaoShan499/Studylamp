@@ -51,3 +51,6 @@ _tmp_*.txt
 # 工业设计稿（AI 生成渲染图与中间稿，体积大；仅本地参考，不入库）
 # 网页实际引用的图纸已复制到 web/assets/，正常入库
 docs/design/
+
+# 未被网页引用的备用渲染图（结构总览图，暂未使用）
+web/assets/structure-overview.webp
