@@ -1,0 +1,102 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 660" width="1000" height="660">
+<defs>
+  <marker id="a" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+    <path d="M2 1L8 5L2 9" fill="none" stroke="#8E8A80" stroke-width="1.4" stroke-linecap="round"/>
+  </marker>
+  <style>
+    .ttl { font-family:"PingFang SC","Microsoft YaHei",sans-serif; font-size:19px; fill:#2C2C2A; font-weight:500; }
+    .sub { font-family:"PingFang SC","Microsoft YaHei",sans-serif; font-size:11.5px; fill:#8A877E; }
+    .t1  { font-family:"PingFang SC","Microsoft YaHei",sans-serif; font-size:12px; fill:#2C2C2A; }
+    .t2  { font-family:"PingFang SC","Microsoft YaHei",sans-serif; font-size:10.5px; fill:#6E6B64; }
+    .mono{ font-family:"SF Mono",Consolas,monospace; font-size:10.5px; fill:#8A877E; letter-spacing:.03em; }
+    .dim { stroke:#8E8A80; stroke-width:1; fill:none; }
+    .lead{ stroke:#B4B2A9; stroke-width:0.9; fill:none; }
+    .ctr { stroke:#C9C3B4; stroke-width:0.8; stroke-dasharray:9 3 2 3; }
+  </style>
+</defs>
+
+<rect width="1000" height="660" fill="#FBFAF7"/>
+
+<text class="ttl" x="40" y="46">头部叉架 · 水平剖面</text>
+<text class="sub" x="40" y="70">过 J4 俯仰轴横切 · 比例 1:4 · 单位 mm · 这是渲染图最容易画错的一处：叉架必须两侧支承，不是单侧悬臂</text>
+<line x1="40" y1="88" x2="960" y2="88" stroke="#D3D1C7" stroke-width="1"/>
+
+<!-- ============ 主剖面 ============ -->
+<g>
+  <!-- 中心线 -->
+  <line x1="180" y1="285" x2="760" y2="285" class="ctr"/>
+
+  <!-- P09 左叉架（含舵机腔） -->
+  <rect x="238" y="189" width="104" height="192" rx="4" fill="#F1EDE4" stroke="#2C2C2A" stroke-width="1.4"/>
+  <!-- 舵机 -->
+  <rect x="248" y="205" width="80" height="160" rx="3" fill="#5F5E5A" stroke="#2C2C2A" stroke-width="1"/>
+  <!-- 输出轴凸台 -->
+  <rect x="328" y="273" width="14" height="24" fill="#7A7870" stroke="#2C2C2A" stroke-width="0.9"/>
+
+  <!-- 头部 -->
+  <rect x="350" y="229" width="320" height="112" rx="10" fill="#F1EDE4" stroke="#2C2C2A" stroke-width="1.6"/>
+  <!-- 舵盘（嵌在头部左面） -->
+  <circle cx="386" cy="285" r="21" fill="#E6DFD1" stroke="#2C2C2A" stroke-width="1.2"/>
+  <circle cx="386" cy="285" r="6" fill="#5F5E5A"/>
+  <!-- 右侧轴孔 -->
+  <circle cx="656" cy="285" r="14" fill="#E6DFD1" stroke="#2C2C2A" stroke-width="1.1"/>
+
+  <!-- P10 右支承臂 -->
+  <rect x="678" y="229" width="24" height="112" rx="3" fill="#F1EDE4" stroke="#2C2C2A" stroke-width="1.4"/>
+  <!-- 轴承 -->
+  <circle cx="690" cy="285" r="10" fill="#B4B2A9" stroke="#2C2C2A" stroke-width="1.1"/>
+  <circle cx="690" cy="285" r="3.6" fill="#FBFAF7" stroke="#2C2C2A" stroke-width="0.9"/>
+
+  <!-- 旋转轴线（点划线，非实体） -->
+  <line x1="238" y1="285" x2="708" y2="285" stroke="#BA7517" stroke-width="0.9" stroke-dasharray="14 4 3 4"/>
+  <!-- 舵机输出轴 ⌀5 → 压入舵盘 -->
+  <rect x="342" y="275" width="44" height="20" fill="#C98A2E" stroke="#BA7517" stroke-width="0.7"/>
+  <!-- 头部右侧轴销 ⌀8 → 进 P10 轴承 -->
+  <rect x="648" y="269" width="42" height="32" fill="#C98A2E" stroke="#BA7517" stroke-width="0.7"/>
+
+  <!-- ⌀80 尺寸 -->
+  <line x1="350" y1="160" x2="670" y2="160" class="dim" marker-start="url(#a)" marker-end="url(#a)"/>
+  <text x="510" y="152" text-anchor="middle" class="mono">⌀80 头部</text>
+
+  <!-- 总宽尺寸 -->
+  <line x1="238" y1="440" x2="702" y2="440" class="dim" marker-start="url(#a)" marker-end="url(#a)"/>
+  <text x="470" y="434" text-anchor="middle" class="mono">116 全宽（26 + 2 + 80 + 2 + 6）</text>
+
+  <!-- 左标注 -->
+  <text class="t1" x="40" y="248">P09 头颈叉架-左</text>
+  <text class="t2" x="40" y="266">PA-CF · 内含 J4 舵机腔</text>
+  <text class="t2" x="40" y="282">腔壁厚 3.0 · 承受全部扭矩反力</text>
+  <line x1="176" y1="258" x2="236" y2="266" class="lead"/>
+
+  <!-- 右标注 -->
+  <text class="t1" x="722" y="248">P10 支承臂</text>
+  <text class="t2" x="722" y="266">PA-CF · 仅 6 厚</text>
+  <text class="t2" x="722" y="282">内装 ⌀8 轴承，只承弯不传扭</text>
+  <line x1="722" y1="258" x2="704" y2="266" class="lead"/>
+
+  <!-- 舵机标注 -->
+  <line x1="292" y1="369" x2="292" y2="392" class="lead"/>
+  <text class="t2" x="292" y="406" text-anchor="middle">40×20 总线舵机</text>
+
+  <!-- 舵盘标注 -->
+  <line x1="386" y1="264" x2="386" y2="210" class="lead"/>
+  <text class="t2" x="346" y="204" text-anchor="start">舵盘 + M2.5 锁死</text>
+
+  <!-- 轴标注 -->
+  <line x1="546" y1="283" x2="546" y2="200" class="lead"/>
+  <text class="t2" x="556" y="194" text-anchor="middle">左舵盘 ⌀20 / 右轴销 ⌀8</text>
+</g>
+
+<line x1="40" y1="470" x2="960" y2="470" stroke="#D3D1C7" stroke-width="1"/>
+
+<!-- ============ 说明 ============ -->
+<text class="t1" x="40" y="498">为什么必须是双侧</text>
+
+<text class="t2" x="40" y="522">① 单侧悬臂：头部 150 g 挂在轴的一端，倾覆力矩全部压在舵机输出轴和一级齿轮上，轴会弯、齿会磨，</text>
+<text class="t2" x="40" y="540">　　表现就是「用几个月头就歪了」，且无法靠提高舵机扭矩解决——那是弯矩，不是扭矩。</text>
+<text class="t2" x="40" y="564">② 双侧支承：同一弯矩由 P09 侧壁与 P10 轴承分担，轴由悬臂梁变为简支梁，挠度降一个数量级，头部姿态才稳。</text>
+<text class="t2" x="40" y="588">③ 装配：舵机入 P09 → 舵盘压入头部左面并锁 M2.5 → 头部就位 → 装 P10 与 ⌀8 轴承 → 穿轴 → 侧向顶丝锁死。</text>
+<text class="t2" x="40" y="612">④ 配合：舵盘 / 头部过渡配合；轴 / 轴承 ⌀8 H7-g6；两腿与头部各留 2 间隙，避免转动时摩擦掉粉。</text>
+
+<text class="mono" x="40" y="640">SHEET 03 · HEAD FORK / SECTION　·　对应结构图 SHEET 01 / 02 与分件表 P09 / P10</text>
+</svg>

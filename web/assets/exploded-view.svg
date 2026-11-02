@@ -1,0 +1,266 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1240 940" width="1240" height="940">
+<title>LAMP—1 拆件爆炸图</title>
+<desc>底座与臂（左，1.8:1）、头部叠层（右，3:1）的爆炸视图，附装配顺序与关键校核。</desc>
+<style>
+  .t0{font-family:"PingFang SC","Microsoft YaHei","Helvetica Neue",Arial,sans-serif;font-size:28px;font-weight:500;fill:#2C2C2A}
+  .t2{font-family:"PingFang SC","Microsoft YaHei","Helvetica Neue",Arial,sans-serif;font-size:10.5px;fill:#888780}
+  .tm{font-family:"SF Mono",Consolas,Monaco,monospace;font-size:10px;fill:#5F5E5A;letter-spacing:0.06em}
+  .sec{font-family:"PingFang SC","Microsoft YaHei",Arial,sans-serif;font-size:14px;font-weight:500;fill:#2C2C2A}
+  .pn{font-family:"SF Mono",Consolas,Monaco,monospace;font-size:10.5px;fill:#BA7517;letter-spacing:0.04em}
+  .nm{font-family:"PingFang SC","Microsoft YaHei",Arial,sans-serif;font-size:11.5px;fill:#2C2C2A}
+  .sp{font-family:"PingFang SC","Microsoft YaHei",Arial,sans-serif;font-size:10px;fill:#888780}
+  .lead{stroke:#C8C5BC;stroke-width:0.7;fill:none}
+  .ctr{stroke:#B4B2A9;stroke-width:0.7;stroke-dasharray:8 3 2 3}
+  .shell{fill:#F1EDE4;stroke:#8E8A80;stroke-width:1.1}
+  .hard{fill:#E4DFD0;stroke:#7C786C;stroke-width:1.1}
+  .dark{fill:#2C2C2A;stroke:#1A1A17;stroke-width:1}
+  .pcb{fill:#4A5B45;stroke:#33402F;stroke-width:1}
+  .amber{fill:#F6DFB2;stroke:#D9A65A;stroke-width:1}
+</style>
+
+<rect x="20" y="20" width="1200" height="900" fill="none" stroke="#D3D1C7" stroke-width="1"/>
+<rect x="20" y="20" width="1200" height="72" fill="#F7F5F0" stroke="#D3D1C7" stroke-width="1"/>
+<text class="t0" x="48" y="62">LAMP—1 · 拆件爆炸</text>
+<text class="tm" x="1192" y="52" text-anchor="end">SHEET 05 / EXPLODED · REV C</text>
+<text class="tm" x="1192" y="70" text-anchor="end">左 1.8:1 · 右 3:1 ｜ UNIT mm</text>
+<line x1="40" y1="92" x2="1200" y2="92" stroke="#D3D1C7" stroke-width="1"/>
+
+<line x1="300" y1="112" x2="300" y2="884" class="ctr"/>
+<line x1="830" y1="112" x2="830" y2="884" class="ctr"/>
+
+<!-- ============ 左列：底座与臂 ============ -->
+<text class="sec" x="40" y="118">A　底座与臂</text>
+<text class="t2" x="40" y="136">自下而上 8 层 · 1.8:1</text>
+
+<!-- L8 上立柱 + 头颈 -->
+<g>
+<path d="M284 222 L284 152 Q284 140 294 138 L302 136 L302 172 L318 172 L318 136 L326 138 Q336 140 336 152 L336 222 Z" class="shell"/>
+<path d="M284 190 L290 184 L296 196 L302 184 L308 196 L314 184 L316 186" fill="none" stroke="#B9B5A9" stroke-width="1"/>
+<path d="M284 198 L290 192 L296 204 L302 192 L308 204 L314 192 L316 194" fill="none" stroke="#B9B5A9" stroke-width="1"/>
+<text class="sp" x="310" y="214" text-anchor="middle" font-size="8.5">110</text>
+<line x1="278" y1="190" x2="168" y2="190" class="lead"/>
+<text class="pn" x="164" y="176" text-anchor="end">P06 + P09</text>
+<text class="nm" x="164" y="190" text-anchor="end">上立柱 + 头颈</text>
+<text class="sp" x="164" y="204" text-anchor="end">长 110 · 顶端分叉</text>
+</g>
+
+<!-- L7 摩擦关节 -->
+<g>
+<rect x="262" y="265" width="8" height="16" class="hard"/>
+<rect x="330" y="265" width="8" height="16" class="hard"/>
+<rect x="270" y="257" width="60" height="32" rx="6" class="dark"/>
+<line x1="282" y1="259" x2="282" y2="287" stroke="#5F5E5A" stroke-width="1"/>
+<line x1="292" y1="257" x2="292" y2="289" stroke="#5F5E5A" stroke-width="1"/>
+<line x1="308" y1="257" x2="308" y2="289" stroke="#5F5E5A" stroke-width="1"/>
+<line x1="318" y1="259" x2="318" y2="287" stroke="#5F5E5A" stroke-width="1"/>
+<circle cx="300" cy="273" r="7" fill="#F7F5F0" stroke="#8E8A80" stroke-width="0.9"/>
+<line x1="258" y1="273" x2="168" y2="273" class="lead"/>
+<text class="pn" x="164" y="259" text-anchor="end">P21</text>
+<text class="nm" x="164" y="273" text-anchor="end">摩擦关节</text>
+<text class="sp" x="164" y="287" text-anchor="end">&#8960;34 · 腔位兼容舵机</text>
+</g>
+
+<!-- L6 下立柱 -->
+<g>
+<rect x="284" y="324" width="32" height="80" rx="3" class="shell"/>
+<rect x="292" y="330" width="16" height="26" rx="2" class="hard"/>
+<path d="M284 366 L290 360 L296 372 L302 360 L308 372 L314 360 L316 362" fill="none" stroke="#B9B5A9" stroke-width="1"/>
+<path d="M284 374 L290 368 L296 380 L302 368 L308 380 L314 368 L316 370" fill="none" stroke="#B9B5A9" stroke-width="1"/>
+<text class="sp" x="300" y="398" text-anchor="middle" font-size="8.5">145</text>
+<line x1="278" y1="364" x2="168" y2="364" class="lead"/>
+<text class="pn" x="164" y="350" text-anchor="end">P05</text>
+<text class="nm" x="164" y="364" text-anchor="end">下立柱</text>
+<text class="sp" x="164" y="378" text-anchor="end">长 145 · 图中折断</text>
+</g>
+
+<!-- L5 上壳 -->
+<g>
+<rect x="183" y="439" width="234" height="61" rx="6" class="shell"/>
+<rect x="244" y="439" width="112" height="10" class="hard"/>
+<rect x="288" y="431" width="24" height="9" rx="4" class="shell"/>
+<line x1="183" y1="467" x2="417" y2="467" stroke="#DCD6C6" stroke-width="0.9"/>
+<line x1="178" y1="469" x2="168" y2="469" class="lead"/>
+<text class="pn" x="164" y="455" text-anchor="end">P01</text>
+<text class="nm" x="164" y="469" text-anchor="end">底座上壳</text>
+<text class="sp" x="164" y="483" text-anchor="end">&#8960;130 &#215; 34</text>
+</g>
+
+<!-- L4 J1 舵机 + 转盘 -->
+<g>
+<rect x="244" y="544" width="112" height="18" rx="3" class="hard"/>
+<rect x="292" y="562" width="16" height="12" fill="#7A7870" stroke="#5F5E5A" stroke-width="0.8"/>
+<rect x="264" y="574" width="72" height="36" rx="2" class="dark"/>
+<circle cx="300" cy="553" r="5" fill="#F7F5F0" stroke="#5F5E5A" stroke-width="0.8"/>
+<line x1="240" y1="553" x2="168" y2="553" class="lead"/>
+<text class="pn" x="164" y="539" text-anchor="end">P03 + P15</text>
+<text class="nm" x="164" y="553" text-anchor="end">J1 舵机 + 转盘</text>
+<text class="sp" x="164" y="567" text-anchor="end">&#8960;62 / 40 &#215; 20</text>
+</g>
+
+<!-- L3 电源板 -->
+<g>
+<rect x="219" y="675" width="162" height="16" rx="2" class="pcb"/>
+<rect x="232" y="653" width="44" height="22" rx="2" fill="#3D4A38" stroke="#33402F" stroke-width="0.9"/>
+<rect x="282" y="659" width="34" height="16" rx="2" fill="#3D4A38" stroke="#33402F" stroke-width="0.9"/>
+<rect x="322" y="655" width="40" height="20" rx="2" fill="#3D4A38" stroke="#33402F" stroke-width="0.9"/>
+<line x1="214" y1="683" x2="168" y2="683" class="lead"/>
+<text class="pn" x="164" y="669" text-anchor="end">P20</text>
+<text class="nm" x="164" y="683" text-anchor="end">电源与分线板</text>
+<text class="sp" x="164" y="697" text-anchor="end">降压 6A · 功放</text>
+</g>
+
+<!-- L2 电池 -->
+<g>
+<rect x="241" y="718" width="117" height="67" rx="6" class="hard"/>
+<line x1="241" y1="751" x2="358" y2="751" stroke="#7C786C" stroke-width="0.9"/>
+<rect x="348" y="727" width="16" height="7" rx="1" fill="#8E8A80"/>
+<rect x="348" y="770" width="16" height="7" rx="1" fill="#8E8A80"/>
+<text class="sp" x="299" y="743" text-anchor="middle" font-size="9">2S 7.4V</text>
+<line x1="236" y1="751" x2="168" y2="751" class="lead"/>
+<text class="pn" x="164" y="737" text-anchor="end">P18</text>
+<text class="nm" x="164" y="751" text-anchor="end">电池组 2S</text>
+<text class="sp" x="164" y="765" text-anchor="end">65 &#215; 37 &#215; 19</text>
+</g>
+
+<!-- L1 底板 -->
+<g>
+<rect x="183" y="822" width="234" height="32" rx="4" class="shell"/>
+<rect x="183" y="848" width="234" height="6" fill="#3A3A36"/>
+<rect x="198" y="830" width="62" height="14" rx="2" fill="none" stroke="#B9B5A9" stroke-width="0.8" stroke-dasharray="3 2"/>
+<rect x="266" y="828" width="68" height="20" rx="2" class="hard"/>
+<rect x="340" y="830" width="62" height="14" rx="2" fill="none" stroke="#B9B5A9" stroke-width="0.8" stroke-dasharray="3 2"/>
+<circle cx="207" cy="837" r="1.8" fill="#8E8A80"/><circle cx="393" cy="837" r="1.8" fill="#8E8A80"/>
+<line x1="178" y1="837" x2="168" y2="837" class="lead"/>
+<text class="pn" x="164" y="823" text-anchor="end">P02</text>
+<text class="nm" x="164" y="837" text-anchor="end">底座底板</text>
+<text class="sp" x="164" y="851" text-anchor="end">&#8960;130 &#215; 18</text>
+</g>
+
+<!-- ============ 中间：装配顺序 ============ -->
+<line x1="434" y1="112" x2="434" y2="884" stroke="#E3DFD4" stroke-width="1"/>
+<line x1="700" y1="112" x2="700" y2="884" stroke="#E3DFD4" stroke-width="1"/>
+<text class="sec" x="450" y="118">装配顺序</text>
+<text class="t2" x="450" y="136">ASSEMBLY / 6 步</text>
+
+<circle cx="460" cy="166" r="9" fill="#2C2C2A"/><text x="460" y="170" text-anchor="middle" font-size="9.5" fill="#F7F5F0">1</text>
+<text class="nm" x="478" y="163">底板 &#8594; 配重 &#215;3 &#8594; 电池 &#8594; 电源板</text>
+<text class="sp" x="478" y="179">先压配重，再锁板；4&#215;M3 热熔</text>
+
+<circle cx="460" cy="226" r="9" fill="#2C2C2A"/><text x="460" y="230" text-anchor="middle" font-size="9.5" fill="#F7F5F0">2</text>
+<text class="nm" x="478" y="223">J1 舵机进沉槽，转盘压输出轴</text>
+<text class="sp" x="478" y="239">线从 &#8960;14 过孔穿出，留 60 余量</text>
+
+<circle cx="460" cy="286" r="9" fill="#2C2C2A"/><text x="460" y="290" text-anchor="middle" font-size="9.5" fill="#F7F5F0">3</text>
+<text class="nm" x="478" y="283">上壳扣合，按键与导光柱先对位</text>
+<text class="sp" x="478" y="299">4&#215;M3 自底部反锁，扭矩 0.4 N&#183;m</text>
+
+<circle cx="460" cy="346" r="9" fill="#2C2C2A"/><text x="460" y="350" text-anchor="middle" font-size="9.5" fill="#F7F5F0">4</text>
+<text class="nm" x="478" y="343">下立柱 &#8594; 摩擦关节 &#8594; 上立柱</text>
+<text class="sp" x="478" y="359">关节腔位同时兼容 40&#215;20 舵机</text>
+
+<circle cx="460" cy="406" r="9" fill="#2C2C2A"/><text x="460" y="410" text-anchor="middle" font-size="9.5" fill="#F7F5F0">5</text>
+<text class="nm" x="478" y="403">后壳 &#8594; 主控 &#8594; 屏 &#8594; 光环 &#8594; 前壳</text>
+<text class="sp" x="478" y="419">逐层定位柱，屏靠 0.8 泡棉压紧</text>
+
+<circle cx="460" cy="466" r="9" fill="#2C2C2A"/><text x="460" y="470" text-anchor="middle" font-size="9.5" fill="#F7F5F0">6</text>
+<text class="nm" x="478" y="463">视窗压入前壳，凸面朝外</text>
+<text class="sp" x="478" y="479">点胶固化 24h，唇顶高出 0.8</text>
+
+<line x1="450" y1="512" x2="684" y2="512" stroke="#E3DFD4" stroke-width="1"/>
+<text class="sec" x="450" y="540">三条校核</text>
+
+<text class="nm" x="450" y="568">1　头颈全宽 116 = 26 + 2 + 80 + 2 + 6</text>
+<text class="sp" x="450" y="584">装配后测 J4 两端同轴度 &#8804; 0.1，否则点头会摆头</text>
+
+<text class="nm" x="450" y="616">2　承力件不用 PETG</text>
+<text class="sp" x="450" y="632">P03 / P09 / P10 / P21 走 PA-CF，PETG 只做外壳</text>
+
+<text class="nm" x="450" y="664">3　底座倾覆余量</text>
+<text class="sp" x="450" y="680">头 60 g + 臂 90 g，重心偏 55，配重 540 g 余 16%</text>
+
+<line x1="450" y1="706" x2="684" y2="706" stroke="#E3DFD4" stroke-width="1"/>
+<text class="t2" x="450" y="730">P 编号对应 printable-parts.csv；</text>
+<text class="t2" x="450" y="746">P18&#8211;P24 为 REV C 新增件号。</text>
+<text class="t2" x="450" y="772">左列立柱按折断画出，实际长度</text>
+<text class="t2" x="450" y="788">以 SHEET 01 总装图为准。</text>
+<text class="t2" x="450" y="814">盘类零件按剖视表达，虚线为内孔投影。</text>
+
+<!-- ============ 右列：头部叠层 ============ -->
+<text class="sec" x="716" y="118">B　头部叠层</text>
+<text class="t2" x="716" y="136">自后向前 6 层 · 3:1</text>
+
+<!-- H1 后壳 -->
+<g>
+<rect x="710" y="833" width="240" height="54" rx="10" class="shell"/>
+<circle cx="830" cy="860" r="9" fill="#F7F5F0" stroke="#8E8A80" stroke-width="0.9"/>
+<rect x="720" y="856" width="90" height="8" rx="4" class="hard"/>
+<rect x="850" y="856" width="90" height="8" rx="4" class="hard"/>
+<line x1="956" y1="860" x2="962" y2="860" class="lead"/>
+<text class="pn" x="966" y="856">P12</text>
+<text class="nm" x="966" y="870">头部后壳</text>
+<text class="sp" x="966" y="884">&#8960;80 &#215; 18 · 走线 &#8960;6</text>
+</g>
+
+<!-- H2 主控 -->
+<g>
+<rect x="762" y="724" width="135" height="24" rx="2" class="pcb"/>
+<rect x="778" y="716" width="30" height="10" rx="1" fill="#33402F"/>
+<rect x="818" y="718" width="22" height="8" rx="1" fill="#33402F"/>
+<rect x="856" y="716" width="26" height="10" rx="1" class="dark"/>
+<text class="sp" x="826" y="740" text-anchor="middle" font-size="8.5">ESP32-S3</text>
+<line x1="902" y1="736" x2="962" y2="736" class="lead"/>
+<text class="pn" x="966" y="732">P23</text>
+<text class="nm" x="966" y="746">主控</text>
+<text class="sp" x="966" y="760">RIG ESP32-S3 · 板载屏座</text>
+</g>
+
+<!-- H3 屏 -->
+<g>
+<rect x="788" y="600" width="84" height="14" rx="2" class="dark"/>
+<rect x="794" y="603" width="72" height="8" fill="#4F6152"/>
+<rect x="872" y="604" width="24" height="6" rx="1" fill="#B4762B"/>
+<line x1="900" y1="607" x2="962" y2="607" class="lead"/>
+<text class="pn" x="966" y="603">P22</text>
+<text class="nm" x="966" y="617">屏模组</text>
+<text class="sp" x="966" y="631">1.09&#8243; · 对角 27.7</text>
+</g>
+
+<!-- H4 导光环 -->
+<g>
+<rect x="758" y="478" width="30" height="14" rx="2" class="amber"/>
+<rect x="872" y="478" width="30" height="14" rx="2" class="amber"/>
+<line x1="788" y1="485" x2="872" y2="485" stroke="#D9A65A" stroke-width="0.7" stroke-dasharray="4 3"/>
+<text class="sp" x="830" y="470" text-anchor="middle" font-size="8.5">&#8960;28 内孔</text>
+<line x1="902" y1="485" x2="962" y2="485" class="lead"/>
+<text class="pn" x="966" y="481">P13</text>
+<text class="nm" x="966" y="495">导光环</text>
+<text class="sp" x="966" y="509">&#8960;28 &#8594; &#8960;48 · 厚 4</text>
+</g>
+
+<!-- H5 前壳 -->
+<g>
+<rect x="710" y="352" width="78" height="24" rx="5" class="shell"/>
+<rect x="872" y="352" width="78" height="24" rx="5" class="shell"/>
+<line x1="788" y1="364" x2="872" y2="364" stroke="#B9B5A9" stroke-width="0.7" stroke-dasharray="4 3"/>
+<line x1="788" y1="352" x2="788" y2="376" stroke="#B9B5A9" stroke-width="0.7" stroke-dasharray="2 2"/>
+<line x1="872" y1="352" x2="872" y2="376" stroke="#B9B5A9" stroke-width="0.7" stroke-dasharray="2 2"/>
+<text class="sp" x="830" y="344" text-anchor="middle" font-size="8.5">唇顶 · 视窗孔 &#8960;28</text>
+<line x1="956" y1="364" x2="962" y2="364" class="lead"/>
+<text class="pn" x="966" y="360">P11</text>
+<text class="nm" x="966" y="374">头部前壳</text>
+<text class="sp" x="966" y="388">&#8960;80 &#215; 8 · 白壳全包</text>
+</g>
+
+<!-- H6 视窗 -->
+<g>
+<path d="M788 228 L788 240 L872 240 L872 228 Q830 208 788 228 Z" fill="#1A1A17" stroke="#5A5750" stroke-width="1"/>
+<path d="M800 232 Q830 216 860 232" fill="none" stroke="#FFFFFF" stroke-opacity="0.22" stroke-width="1.2"/>
+<line x1="880" y1="230" x2="962" y2="230" class="lead"/>
+<text class="pn" x="966" y="226">P24</text>
+<text class="nm" x="966" y="240">视窗</text>
+<text class="sp" x="966" y="254">&#8960;28 · 凸面 4.8</text>
+</g>
+
+<text class="t2" x="710" y="906">后壳 18 / 主控 5 / 屏 4.4 / 光环 4 / 前壳 8 / 视窗 6.3 &#8594; 26 厚</text>
+</svg>
