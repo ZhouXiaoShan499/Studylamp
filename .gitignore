@@ -40,6 +40,10 @@ server/models/
 # 服务端调试产物（录制的音频/截图）
 server/debug/
 
+# 本地 agent 临时目录 / 服务端运行日志
+.workbuddy/
+server/logs/
+
 # 探测/临时文件
 _tmp_*.txt
 .dsh-write-probe.txt
