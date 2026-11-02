@@ -93,9 +93,9 @@
       </div>
 
       <figure class="product-hero__stage">
-        <img src="assets/lamp-wide.webp" width="1800" height="1000" alt="LAMP—1 台灯阶段概念渲染，深色桌面场景（整机形态待重做）" fetchpriority="high">
-        <span class="product-stage-label product-stage-label--top"><span class="mini-dot"></span>OBJECT STUDY / 001</span>
-        <span class="product-stage-label product-stage-label--right">BUS SERVO · TFT</span>
+        <img src="assets/lamp-hero-revc.webp" width="1500" height="944" alt="LAMP—1 放在浅色木书桌上：白色圆底座、单根立柱、中部一个黑色摩擦关节，顶部是白色圆盘头，正面一圈暖白光环围住黑色凸面视窗" fetchpriority="high">
+        <span class="product-stage-label product-stage-label--top"><span class="mini-dot"></span>OBJECT STUDY / REV C</span>
+        <span class="product-stage-label product-stage-label--right">WHITE SHELL · HALO RING</span>
         <figcaption class="product-stage-quote">
           <span>DESIGN NOTE</span>
           <blockquote>回应不必喧哗，<br>但应该被看见。</blockquote>
@@ -104,7 +104,75 @@
 
       <div class="product-hero__foot">
         <span>CONCEPT RENDER / 非量产</span>
-        <span>AI 语音 · 总线舵机 · 屏幕表情 · 状态灯环</span>
+        <span>白壳全包 · 摩擦关节 · 柔光状态环 · 屏幕表情</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ------------------------------------------------------------ structure -->
+  <section class="site-section product-structure light-band" aria-labelledby="productStructureTitle">
+    <div class="site-wrap">
+      <div class="product-section-head" data-reveal>
+        <div>
+          <p class="site-kicker">STRUCTURE / 整机形态</p>
+          <h2 class="site-title" id="productStructureTitle">一根立柱，<br><span class="accent">一个会看向你的头。</span></h2>
+        </div>
+        <p class="site-lead site-lead--small">底座里压着配重、电池与电源板，一根立柱把头部送到视线高度。立柱中段只有一个外露的黑色摩擦关节，其余机构都藏在壳里。全机 24 项零件、28 件。</p>
+      </div>
+
+      <div class="structure-grid">
+        <figure class="structure-plate" data-reveal>
+          <a class="structure-plate__frame" href="assets/lamp-revc-full.webp" target="_blank" rel="noopener">
+            <span class="structure-plate__tag">FIG. 01 / 整机</span>
+            <img src="assets/lamp-revc-full.webp" width="900" height="1134" loading="lazy" alt="LAMP—1 整机形态：白色圆底座接一根立柱，中部一个黑色摩擦关节，顶端是白色圆盘头，正面为暖白发光环与黑色凸面视窗">
+            <span class="structure-plate__note">REV C / 点开看大图</span>
+          </a>
+          <figcaption>整机高 280mm。立柱与头部之间靠摩擦关节调角，头部由后颈托起，壳内舵机负责俯仰。</figcaption>
+        </figure>
+
+        <div class="structure-specs" data-reveal style="--reveal-delay:.08s">
+          <div class="structure-spec">
+            <span class="structure-spec__index">A / HEIGHT</span>
+            <strong>约 280<em>mm</em></strong>
+            <p>整机高度，手动调角。</p>
+          </div>
+          <div class="structure-spec">
+            <span class="structure-spec__index">B / ARM</span>
+            <strong>两<em>段</em></strong>
+            <p>下立柱 145、上立柱 110，中间一个关节。</p>
+          </div>
+          <div class="structure-spec">
+            <span class="structure-spec__index">C / AXES</span>
+            <strong>3<em>轴</em></strong>
+            <p>底座旋转、中段调角、头部俯仰。</p>
+          </div>
+          <div class="structure-spec">
+            <span class="structure-spec__index">D / HEAD</span>
+            <strong>&#8960;80<em>&#215;26</em></strong>
+            <p>白壳全包，视窗 &#8960;28，导光环 &#8960;48。</p>
+          </div>
+          <p class="structure-specs__note">结构图为设计稿，尚未进入工程样机验证；尺寸以实测为准。</p>
+        </div>
+      </div>
+
+      <div class="structure-figures">
+        <figure class="structure-plate" data-reveal>
+          <a class="structure-plate__frame" href="assets/head-detail.svg" target="_blank" rel="noopener">
+            <span class="structure-plate__tag">FIG. 02 / 头部</span>
+            <img src="assets/head-detail.svg" width="1240" height="940" loading="lazy" alt="头部细节图纸：面盘三层同心分区、侧面厚度、四种状态灯语与参数表">
+            <span class="structure-plate__note">SHEET 04 / 点开看原图</span>
+          </a>
+          <figcaption>头部 26mm 厚：白壳包边 16、导光环带 10、视窗 &#8960;28。视窗是凸面，顶点仍低于外壳唇顶 0.8mm，跌落先撞壳。</figcaption>
+        </figure>
+
+        <figure class="structure-plate" data-reveal style="--reveal-delay:.08s">
+          <a class="structure-plate__frame" href="assets/exploded-view.svg" target="_blank" rel="noopener">
+            <span class="structure-plate__tag">FIG. 03 / 拆件</span>
+            <img src="assets/exploded-view.svg" width="1240" height="940" loading="lazy" alt="拆件爆炸图纸：左列为底座与臂的八层零件，右列为头部六层叠层，附装配顺序与三条校核">
+            <span class="structure-plate__note">SHEET 05 / 点开看原图</span>
+          </a>
+          <figcaption>28 件里 19 件要打印。黑色关节的腔位和 40&#215;20 舵机同尺寸——要电动时换上舵机即可，外壳不用改。</figcaption>
+        </figure>
       </div>
     </div>
   </section>

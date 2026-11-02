@@ -47,3 +47,7 @@ server/logs/
 # 探测/临时文件
 _tmp_*.txt
 .dsh-write-probe.txt
+
+# 工业设计稿（AI 生成渲染图与中间稿，体积大；仅本地参考，不入库）
+# 网页实际引用的图纸已复制到 web/assets/，正常入库
+docs/design/
