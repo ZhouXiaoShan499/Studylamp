@@ -1,142 +1,269 @@
-# 会动的桌面台灯（暂定名 LAMP-1）
+# LAMP—1 · AI 机器人交互台灯
 
-融合 **红外家电控制 + 智能照明 + 定时提醒 + 机械动作** 的桌面交互台灯。
-本仓库当前处于 **概念设计与最小原型验证阶段**，不含量产结论。
+> 一盏会听、会答、会动的桌面台灯。<br>ESP32-S3 做身体，云端大模型做大脑。
 
-## 一句话策略
+[官网](https://zhouxiaoshan499.github.io/lamp/) · [语音仿真](https://zhouxiaoshan499.github.io/lamp/simulator.html?mode=voice) · [项目总结](docs/09-智能交互台灯项目总结.md) · [语音产品化方案](docs/07-语音产品化方案.md)
 
-> 先红外、后学习；先刚需、后情绪；先验证、后扩展。
+![LAMP—1 概念渲染](web/assets/lamp-wide.webp)
+
+*概念渲染，非量产。*
+
+## 项目简介
+
+LAMP—1 是一盏把 AI 从屏幕里带到桌面上的台灯。它保留台灯的基础照明属性，同时用麦克风、双轴舵机和双色温 LED，让一次对话变成声音、光和动作。
+
+它不把电脑塞进灯里，而是采用 **「ESP32-S3 做身体 + 云端大模型做大脑」** 的低成本架构：
+
+- **身体**：ESP32-S3 负责拾音、灯光、舵机、按键、屏幕和本地定时；
+- **大脑**：负责语音识别、对话生成和语音合成（TTS 为下一阶段）；
+- **交互**：按键说话 → ASR/LLM 理解 → 语音、灯光和动作回应；开发期在电脑上跑，产品目标在云端。
+
+当前项目处于 **MVP / 概念样机阶段**，重点是先跑通语音闭环，再验证「光 + 动作」的联动，最后迁入 RIG-Arm（ESP32-S3 + 总线舵机 + 圆屏 + 麦克风/喇叭套件）做整机整合。
+
+> 一句话策略：**先能力、后硬件；先闭环、后场景；先验证、后承诺。**
+
+## 目标用户与场景
+
+| 用户 | 典型场景 |
+|------|----------|
+| 大学生 / 年轻学习者 | 学习计时、专注陪伴、桌面问答 |
+| 居家办公人群 | 语音问答、桌面照明、任务提醒 |
+| AI 硬件爱好者 | 可拆解、可扩展的桌面机器人 |
+
+产品落地场景以 **学习 / 办公桌面** 为主；技术底座是一套与具体硬件解耦的 AI 交互能力。学习计时、任务显示和状态反馈是后续要验证的叠加能力，不是当前已完成的功能。
+
+## 核心能力
+
+1. **AI 语音交互**：按下对话键说话，设备拾音并交给 ASR / LLM，回答以文本返回；语音播报（TTS）为下一阶段。v1 用按键触发，避免误唤醒和常驻监听。
+
+2. **机械动作反馈**：双轴云台让灯头转向、俯仰、点头。目标是把「回答结束」「进入休息」「完成任务」变成可感知的实体动作。
+
+3. **智能照明**：双色温混光、场景预设、亮度和色温调节（双色温灯板为整机目标）；灯光同时承担交互状态反馈。
+
+4. **学习 / 办公辅助**：当前已有倒计时；学习计时、任务提醒和状态显示是后续扩展。先验证「灯光 + 屏幕 + 动作」三通道联动是否真的比普通台灯 + 手机番茄钟更有价值。
+
+5. **网页数字样机**：浏览器里可调光、转灯头、设倒计时；新增 **语音仿真台**，用脚本模拟「说话 → 回答 → 灯光/动作联动」，方便演示和 UX 验证。
+
+## 当前状态
+
+| 模块 | 状态 | 说明 |
+|------|------|------|
+| 语音闭环 | ✅ 已跑通 | 开发板 + INMP441 + PC 端 Vosk/Ollama，文本回复 |
+| 照明 / 按键 | ✅ 已跑通 | 单通道调光、场景、按键、串口 CLI；双色温灯板待整机接入 |
+| 网页数字样机 | ✅ 已上线 | 光控 + 语音仿真（脚本，不接真实模型） |
+| 机械动作 | 🟡 代码就绪 | 舵机 PWM 代码已有，硬件未接；目标 RIG-Arm 总线舵机 |
+| 屏幕 / 扬声器 | ⬜ 未接入 | 1.09″ 圆屏 + 2W 喇叭为下一阶段 |
+| 云端 qwen | ⬜ 待接入 | 方案见 `docs/07`；当前是本地开发链路 |
+| 红外家电控制 | 🟡 后备方向 | 代码保留，未上硬件；不作为当前主线 |
+
+当前样机：**ESP32-S3-DEVKITC-1（N16R8）+ INMP441 + HW-479 + HW-483**。舵机、屏幕、喇叭尚未接入。
+
+## 系统架构
+
+```text
+用户按下对话键说话
+        │
+        ▼
+INMP441 麦克风 ──▶ ESP32-S3 ── Wi-Fi / WebSocket ──▶ ASR（Vosk / 云端）
+                    │                                   │
+                    │                                   ▼
+                    │                              LLM（Ollama / qwen）
+                    │                                   │
+                    ▼                                   ▼
+        双色温 LED / 双轴舵机 / OLED / 扬声器 ◀── 回复文本 / TTS
+```
+
+- **开发期链路**：ESP32 → PC `voice_server.py` → Vosk → Ollama → 文本回复；
+- **产品目标**：设备主动外连云服务，云端完成 ASR / LLM / TTS，设备只负责身体；
+- **本地保底**：断网时，灯光、按键和倒计时仍然可用（动作待硬件接入）；
+- **隐私边界**：v1 设计为只有按下对话键才上传语音，不做常驻监听。
 
 ## 仓库结构
 
-```
+```text
 lamp/
-├── README.md                     本文件：索引与现状
-├── docs/
-│   ├── 01-商业计划书.md           BP 主文档（含单位经济与三年财务）
-│   ├── 02-市场调研与竞品分析.md   TAM/SAM/SOM、竞品矩阵、调研脚本
-│   ├── 03-技术方案.md             硬件选型、引脚、红外/照明/机械/定时/语音
-│   ├── 04-MVP验证计划.md          三轮验证、指标阈值、测试协议
-│   ├── 05-风险与里程碑.md         风险登记册、决策门、预算
-│   ├── 06-面包板点亮验证.md       按键(GPIO4)开灯(GPIO5)最小通路与排错
-│   └── 06-语音AI链路实施手册.md   任务一/二/三：V829 麦克风 → Vosk → DeepSeek
-├── firmware/                     ESP32-S3 固件（Arduino/PlatformIO 与 ESP-IDF 两套）
-│   ├── src/bringup/              面包板 bring-up：只跑按键->灯，不依赖库
-│   ├── micropython/              面包板实测固件（板上当前运行的就是这份）
-│   ├── idf/lamp_voice/           ESP-IDF 版语音客户端（WiFi + PDM 麦克风 + TCP）
-│   ├── idf/pdm_probe/            ESP-IDF 版 PDM 麦克风探针
-│   └── include/secrets.h.example WiFi 与电脑 IP 模板（复制为 secrets.h）
-├── server/                       局域网语音服务（Vosk ASR + 本地大模型）
-│   ├── voice_server.py           WS 8765：PCM → ASR → DeepSeek → 回复（Arduino 版配套）
-│   ├── lamp_server.py            TCP 8766 + 网页 8080：Vosk → LLM（ESP-IDF 版配套）
-│   ├── ask.py                    终端直接问 DeepSeek（流式）
-│   ├── asr_test.py               用 wav 单独验证 Vosk
-│   ├── test_client.py            假 ESP32：不需要开发板即可验证整条链路
-│   ├── test_client_voice.py      voice_server.py 的 WebSocket 测试客户端
-│   └── models/                   vosk-model-small-cn-0.22（不入库）
-├── web/                          LAMP-1 官网（纯静态，浏览器直接打开 index.html）
-│   ├── index.html                概览首页
-│   ├── product.html              产品叙事与交互细节
-│   ├── simulator.html            交互数字样机
-│   ├── technology.html           系统架构、规格与验证边界
-│   └── assets/                   全站样式、脚本与产品渲染素材
-├── .github/workflows/pages.yml   GitHub Pages 自动部署
-└── tools/
-    └── mvp_calc.py               工程/商业计算器（BOM、功耗、热、单台经济、IR 存储自检）
+├── README.md                     本文件
+├── docs/                         方案、验证与项目记录
+│   ├── 01-商业计划书.md
+│   ├── 02-市场调研与竞品分析.md
+│   ├── 03-技术方案.md
+│   ├── 04-MVP验证计划.md
+│   ├── 05-风险与里程碑.md
+│   ├── 06-面包板点亮验证.md
+│   ├── 06-语音AI链路实施手册.md
+│   ├── 07-语音产品化方案.md
+│   ├── 08-对标AutonomousLamp模型接入方案.md
+│   └── 09-智能交互台灯项目总结.md
+├── firmware/                     ESP32-S3 固件
+│   ├── src/                      Arduino / PlatformIO 主固件
+│   │   ├── main.cpp
+│   │   ├── voice_client.cpp
+│   │   ├── pdm_mic.cpp           INMP441 I2S 采集
+│   │   ├── lighting.cpp
+│   │   ├── motion.cpp
+│   │   ├── timer_task.cpp
+│   │   ├── ui.cpp
+│   │   └── ir_engine.cpp / ir_store.cpp   红外后备代码
+│   ├── src/bringup/              按键 → 灯的最小验证
+│   ├── idf/lamp_voice/           ESP-IDF 语音客户端
+│   ├── idf/pdm_probe/            ESP-IDF 麦克风探针
+│   ├── micropython/              开发板 bring-up 脚本
+│   └── include/                  配置、引脚与 secrets 模板
+├── server/                       语音服务（开发链路）
+│   ├── voice_server.py           WS 8765：PCM → Vosk → Ollama
+│   ├── lamp_server.py            TCP 8766 + HTTP 8080（ESP-IDF 版配套）
+│   ├── ask.py                    终端直接问模型
+│   ├── asr_test.py               用 wav 单独验证 ASR
+│   ├── test_client.py            不用开发板验证完整链路
+│   └── models/                   Vosk 模型，不入库
+├── web/                          LAMP—1 官网与数字样机（纯静态）
+│   ├── index.html
+│   ├── product.html
+│   ├── simulator.html            光控 + 语音仿真
+│   ├── technology.html
+│   └── assets/
+├── tools/
+│   └── mvp_calc.py               BOM / 功耗 / 热 / 经济性计算器
+└── .github/workflows/pages.yml   GitHub Pages 自动部署
 ```
 
 ## 快速开始
 
-```bash
-# 重新生成文档中引用的全部数字（BOM / 功耗 / 热 / 单台经济 / IR 存储格式自检）
-python tools/mvp_calc.py all
+### 1. 官网与数字样机
 
-# 只跑固件 IR 存储格式的自检（9 项断言）
-python tools/mvp_calc.py selftest
+线上地址：
 
-# 编译固件（需 PlatformIO + ESP32 平台）
-cd firmware && pio run -e lamp_s3
+- 官网：<https://zhouxiaoshan499.github.io/lamp/>
+- 语音仿真：<https://zhouxiaoshan499.github.io/lamp/simulator.html?mode=voice>
 
-# 面包板最小验证：按键 -> 灯（不依赖 IR/舵机/LittleFS）
-cd firmware && pio run -e bringup -t upload && pio device monitor -b 115200
-```
-
-> 手上只有开发板 + HW-483 按键 + HW-479 RGB 模块时，**先跑 `-e bringup`**，
-> 不要直接烧 `lamp_s3`：那份固件的 GPIO4/5 是照明 PWM，按键在 13/14/15，
-> 与面包板接法冲突。步骤与排错见 `docs/06-面包板点亮验证.md`。
-
-### 官网与数字样机
+本地直接打开，无需构建：
 
 ```powershell
-# 无需构建、无需服务器，直接打开静态站点
 start web\index.html
 ```
 
-站点包含 **概览 / 产品 / 数字样机 / 技术** 四个页面，共享导航与响应式布局。
-数字样机支持拖动灯头、场景切换、色温/亮度/姿态控制、定时关闭，
-并可从首页光配方直接深链进入，例如 `web/simulator.html?scene=night`。
+语音仿真台是**前端脚本模拟**：不录音、不上传、不调用真实大模型。它演示的是「一句话如何变成灯光、计时和动作」，不是实际语音链路。
 
-推送到 `main` 后，`.github/workflows/pages.yml` 会自动将 `web/` 发布到 GitHub Pages。
+### 2. 编译固件
 
-### 语音链路（V829 麦克风 → 电脑 ASR → DeepSeek）
+需要 PlatformIO + ESP32-S3 平台。
 
 ```powershell
-# 1) 大脑：安装 Ollama 后拉模型
-ollama pull deepseek-r1:1.5b
+cd firmware
 
-# 2) PC 端依赖 + 自检（ASR + 大模型都 ok 才继续）
-cd server
-pip install -r requirements.txt
-python voice_server.py --check
+# 面包板最小验证：按键 → 灯
+pio run -e bringup -t upload
+pio device monitor -b 115200
 
-# 3) 不用开发板先验证整条链路
-python voice_server.py            # 终端 A
-python test_client.py             # 终端 B：wav → ASR → DeepSeek
-
-# 4) ESP32：填 WiFi/IP 后烧录，串口执行
-copy firmware\include\secrets.h.example firmware\include\secrets.h   # 再编辑
-mic test 10                       # 任务一：拍手/说话看 RMS 跳动
-voice status                      # 任务三：应显示 ws=up
-voice say 今天适合复习吗           # 跳过麦克风，直接测大脑
+# 完整固件：语音 + 照明 + 舵机 + 定时
+pio run -e lamp_s3 -t upload
 ```
 
-完整接线、预期串口输出与排障见 `docs/06-语音AI链路实施手册.md`。
+注意：
 
-> 仓库里目前有**两套并行的语音实现**：
-> **Arduino/PlatformIO 版**（`firmware/src/pdm_mic.cpp` + `firmware/src/voice_client.cpp` + `server/voice_server.py`，已实机验证）；
-> **ESP-IDF 版**（`firmware/idf/lamp_voice` + `server/lamp_server.py`，编译通过、待上板）。
-> 两者共用 `server/models/` 下的同一份 Vosk 模型，端口不冲突（8765 / 8766+8080）。
+- 当前主控为 ESP32-S3 N16R8（16 MB Flash / 8 MB PSRAM）；
+- INMP441 必须使用 32-bit 槽宽；
+- ESP32-S3 只有 LEDC 通道 0–7，主固件已改用 0–4；
+- 面包板只接按键/灯时先跑 `bringup`，不要直接烧完整固件。
 
-## 关键数字（由 `tools/mvp_calc.py` 计算，非拍脑袋）
+ESP-IDF 版本在 `firmware/idf/lamp_voice`，可用 `idf.py build` 单独构建；它不是当前主路径。
 
-| 项目 | 结果 |
+### 3. 启动语音服务（开发链路）
+
+需要 Python 3.10+、Ollama，以及本地 Vosk 模型。
+
+```powershell
+cd server
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+
+# 下载 Vosk 中文小模型到 server/models/
+New-Item -ItemType Directory -Force models | Out-Null
+Invoke-WebRequest https://alphacephei.com/vosk/models/vosk-model-small-cn-0.22.zip -OutFile models\vosk-model-small-cn-0.22.zip
+Expand-Archive models\vosk-model-small-cn-0.22.zip models
+
+# 大脑：默认 qwen3:14b，机器吃紧可换更小模型
+ollama pull qwen3:14b
+
+# 先自检 ASR + LLM
+python voice_server.py --check
+
+# 启动服务
+python voice_server.py
+```
+
+另开一个终端，不用开发板也能验证整条链路：
+
+```powershell
+python test_client.py
+python test_client.py --text "今天适合复习吗"
+```
+
+服务默认监听 `0.0.0.0:8765`。`lamp_server.py` 是 ESP-IDF 版的 TCP/HTTP 服务，端口 8766/8080，和 `voice_server.py` 不冲突。
+
+### 4. 让 ESP32 连上来
+
+1. 复制配置模板：
+
+   ```powershell
+   copy firmware\include\secrets.h.example firmware\include\secrets.h
+   ```
+
+2. 填入 Wi-Fi 名称、密码和运行 `voice_server.py` 的电脑 IP；
+3. 保证 ESP32 和电脑在同一网段，放行 8765 端口；
+4. 烧录后串口执行：
+
+   ```text
+   mic test 10
+   voice status
+   voice say 今天适合复习吗
+   ```
+
+更完整的接线、串口输出和排障见 `docs/06-语音AI链路实施手册.md`。
+
+## 文档导航
+
+| 文档 | 作用 |
 |------|------|
-| BOM（500 台批次） | 基础 84.90 / 进阶 96.60 / 旗舰 150.60 元 |
-| BOM（5000 台批次） | 基础 69.62 / 进阶 79.21 / 旗舰 123.49 元 |
-| 单台贡献毛利（5000 台批次） | 基础 30.99（20.8%）/ 进阶 65.90（33.1%）/ 旗舰 110.62（37.0%）元 |
-| 5V 电源裕量 | 基础/进阶 55.0%，旗舰 58.8%（固件互锁后） |
-| LED 结温（5W、30℃ 环境） | 52.8℃，余量 32.2℃ |
-| 混合结构盈亏平衡 | 364 台/月（月固定成本 1.8 万元） |
-| IR 存储格式 | 9/9 断言通过（含 CRC 校验、截断拒绝、越界拒绝） |
+| [09-智能交互台灯项目总结.md](docs/09-智能交互台灯项目总结.md) | **当前主文档**：定位、硬件演进、阶段目标、红外后备说明 |
+| [07-语音产品化方案.md](docs/07-语音产品化方案.md) | 语音产品化：云端 ASR/LLM/TTS、按键触发、成本与延迟 |
+| [08-对标AutonomousLamp模型接入方案.md](docs/08-对标AutonomousLamp模型接入方案.md) | 模型接入与 tool calling 迁移 |
+| [06-语音AI链路实施手册.md](docs/06-语音AI链路实施手册.md) | 麦克风、服务端、串口联调步骤 |
+| [06-面包板点亮验证.md](docs/06-面包板点亮验证.md) | 按键 → 灯的最小闭环 |
+| [03-技术方案.md](docs/03-技术方案.md) | 硬件、引脚、照明、机械、定时（部分为早期红外优先口径） |
+| [01-商业计划书.md](docs/01-商业计划书.md) | 早期商业与财务测算（历史口径） |
+| [02-市场调研与竞品分析.md](docs/02-市场调研与竞品分析.md) | 市场与竞品（早期红外主线视角） |
+| [04-MVP验证计划.md](docs/04-MVP验证计划.md) | 用户验证与指标阈值 |
+| [05-风险与里程碑.md](docs/05-风险与里程碑.md) | 风险登记册与阶段门 |
 
-## 重要结论（与直觉相反）
+> `docs/01–05` 保留早期「红外优先」的商业/技术口径，部分结论已被 `docs/07–09` 和当前实现取代。阅读时以 `docs/09` 为主。
 
-1. **基础版在 500 台试点批次下只有 10.5% 贡献毛利**，不能作为主力 SKU 起量。
-   首销应以 **进阶版（Plus）为主力**，基础版仅用于众筹低价引流或校园批量议价。
-2. **旗舰版的舵机必须做固件互锁**：两个舵机同时堵转叠加 LED 满载会把 5V/4A 电源压到边界。
-   `motion.cpp` 中的互斥 + 运动时降亮度是电源预算的组成部分，不是"锦上添花"。
-3. **红外数据必须存 LittleFS 而不是 NVS blob**：空调整帧 602 条原始码约 1.2KB，
-   多个槽位会撑爆 NVS 分区；详见 `mvp_calc.py selftest` 的第 2、7 项。
+## 边界与风险
 
-## 现状与边界（务必阅读）
+- 项目处于 **概念 / MVP 阶段**，不构成量产承诺；
+- 当前语音链路依赖电脑 + Ollama，**尚未做到「不插电脑」**；云端 qwen 是下一步；
+- 舵机、屏幕、喇叭尚未接入，机械动作与整机形态未验证；
+- 红外是后备方向：代码保留、硬件未接、未做真实机型兼容性测试；
+- 市场规模、用户付费意愿、学习场景需求均为待验证假设；
+- 未做 3C/CE、EMC、热、跌落和寿命测试；
+- 部分历史文档/代码注释仍保留 V829/PDM 或红外优先表述，以 `docs/07–09` 和实际接线为准。
 
-- 本文档中所有市场规模、用户偏好、付费意愿均为 **待验证假设**，不是调研结论。
-- 固件为 **参考骨架**：引脚号需按实际 PCB 修改；舵机与 LED 驱动电路未做 EMC/热实测。
-- 红外兼容性只在协议层设计，**未对真实空调机型做覆盖测试**，这是第一轮验证的核心内容。
-- 未做 3C/CE 认证，未做结构跌落与寿命测试。
+## 路线图
 
-## 文档阅读顺序
+| 阶段 | 目标 | 状态 |
+|------|------|------|
+| 1 | 语音闭环：拾音 → ASR → LLM → 回复 | ✅ 已跑通 |
+| 2 | 上云 + 配网 + tool calling，做到不依赖电脑 | 🟡 下一步 |
+| 3 | 迁入 RIG-Arm：舵机、圆屏、喇叭、整机结构 | ⬜ 待开始 |
+| 4 | 学习场景验证：计时、任务、状态反馈、用户测试 | ⬜ 待验证 |
 
-先读 `docs/01-商业计划书.md` 的执行摘要与"验证优先"章节，
-再读 `docs/04-MVP验证计划.md` 了解如何用最小成本证伪，
-最后读 `docs/03-技术方案.md` 安排具体实施。
+现阶段最重要的三件事：
+
+1. 把语音闭环做到「拔掉电脑也能用」；
+2. 干净地迁入 RIG-Arm，打通舵机与屏幕；
+3. 用真实用户验证「灯光 + 屏幕 + 动作」三通道联动是否值得做。
+
+---
+
+项目核心不是重新发明一款 AI 台灯，而是用可控的成本把「会回应的台灯」做出来。
