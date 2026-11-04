@@ -3,7 +3,7 @@
 > 一个放在桌面上的 AI 学习机器人：能听、能说、能看、会动。<br>
 > ESP32-S3 做身体，云端大模型做大脑。
 
-[官网](https://zhouxiaoshan499.github.io/lamp/) · [数字样机](https://zhouxiaoshan499.github.io/lamp/simulator.html?mode=voice) · [产品定位与开发规划](docs/11-AI学习机器人产品定位与开发规划.md) · [仓库文档](#文档导航)
+[官网](https://zhouxiaoshan499.github.io/Studylamp/) · [数字样机](https://zhouxiaoshan499.github.io/Studylamp/simulator.html?mode=voice) · [产品定位与开发规划](docs/11-AI学习机器人产品定位与开发规划.md) · [仓库文档](#文档导航)
 
 ![LAMP—1 书桌场景概念渲染：白色圆底座、单柱中段一个黑色摩擦关节，顶部白色圆盘头，正面宽灯环围住凸面视窗](web/assets/scene-desk.jpg)
 
@@ -251,8 +251,8 @@ lamp/
 
 线上地址：
 
-- 官网：<https://zhouxiaoshan499.github.io/lamp/>
-- 数字样机：<https://zhouxiaoshan499.github.io/lamp/simulator.html?mode=voice>
+- 官网：<https://zhouxiaoshan499.github.io/Studylamp/>
+- 数字样机：<https://zhouxiaoshan499.github.io/Studylamp/simulator.html?mode=voice>
 
 本地直接打开，无需构建：
 
