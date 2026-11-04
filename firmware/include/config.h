@@ -147,6 +147,23 @@ constexpr uint16_t CMD_DEDUP_MS = 1500;   // 同一命令去重窗口，防模�
 constexpr uint16_t VOICE_FRAME_GAP_MS = 20;  // 半截帧的超时，超时即复位状态机
 constexpr bool VOICE_NIGHT_GUARD = true;  // 22:00-07:00 只放行"关灯"
 
+// ---- 云端 ASR（阶段 0 语音闭环，见 docs/12）--------------------------------
+// 打开后 voice_client 不再连 PC 的 WebSocket：sendUtterance() 把整段 PCM 交给
+// cloud_asr，一次 HTTPS 换回文本，再走本地关键词匹配点灯。
+// 关掉则回到原来的"局域网 Vosk"路径，两条路互斥。
+#ifndef LAMP_CLOUD_ASR
+#define LAMP_CLOUD_ASR 1
+#endif
+// 1 = 百度短语音（裸 PCM 直传，要 API Key + Secret Key）
+// 2 = OpenAI /v1/audio/transcriptions（multipart，只要 API Key）
+#ifndef LAMP_CLOUD_ASR_PROVIDER
+#define LAMP_CLOUD_ASR_PROVIDER 1
+#endif
+constexpr uint16_t CLOUD_ASR_TIMEOUT_MS = 8000;
+constexpr uint16_t CLOUD_ASR_DEV_PID = 1537;  // 1537 = 普通话纯中文；方言/极速版改这里
+constexpr const char* CLOUD_ASR_CUID = "lamp01";
+constexpr const char* CLOUD_ASR_OPENAI_MODEL = "gpt-4o-mini-transcribe";
+
 // ---- misc ----------------------------------------------------------------
 constexpr const char* FW_VERSION = "0.1.0-mvp";
 constexpr const char* NVS_NAMESPACE = "lamp1";
