@@ -47,6 +47,14 @@ void buildLut() {
 }
 
 void channelsFor(uint16_t kelvin, uint8_t* warm_pct, uint8_t* cool_pct) {
+#if LAMP_SINGLE_CHANNEL
+    // 面包板只接了一路灯（HW-479 的 G 在 PIN_LED_COOL）：亮度全给冷通道。
+    // 否则默认 4300K 混光会把 44% 分给根本没接的暖通道，看着像"灯不够亮"。
+    (void)kelvin;
+    *warm_pct = 0;
+    *cool_pct = 100;
+    return;
+#else
     if (kelvin <= kCal[0].kelvin) {
         *warm_pct = kCal[0].warm_pct;
         *cool_pct = kCal[0].cool_pct;
@@ -68,6 +76,7 @@ void channelsFor(uint16_t kelvin, uint8_t* warm_pct, uint8_t* cool_pct) {
             return;
         }
     }
+#endif
 }
 
 // Max change per 20 ms tick so a 0..100 % ramp takes about LIGHT_RAMP_MS.
