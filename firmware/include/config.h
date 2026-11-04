@@ -121,6 +121,32 @@ constexpr uint16_t BTN_DEBOUNCE_MS = 20;
 constexpr uint16_t BTN_LONGPRESS_MS = 1200;
 constexpr uint16_t BTN_LEARN_LONGPRESS_MS = 3000;
 
+// ---- 面包板台架（阶段 0，见 docs/12）----------------------------------------
+// 按键有效电平。1 = 按下读到 LOW（模块上拉到 3V3，HW-483 最常见）；
+// 0 = 按下读到 HIGH（模块下拉到 GND）。接反的表现是"按键永远按住"或"完全没反应"，
+// 主固件此前把低有效写死了，换模块就得改代码，这里开个口子。
+#ifndef LAMP_BTN_ACTIVE_LOW
+#define LAMP_BTN_ACTIVE_LOW 1
+#endif
+
+// 单通道灯。面包板上只有 HW-479 的 G 接在 PIN_LED_COOL：
+// 打开后暖通道恒 0、亮度全给冷通道。否则默认 4300K 混光只给冷通道 56% 占空比，
+// 看着像"灯不够亮"，其实是色温配比，不是故障。
+#ifndef LAMP_SINGLE_CHANNEL
+#define LAMP_SINGLE_CHANNEL 0
+#endif
+
+// 离线语音模块（SU-03T / CI-03T 一类）。默认关：模块没到货前不参与编译。
+// 供电走开发板 5V 飞线，绝不接面包板 + 轨；模块 TX 是 3.3V 电平，直连即可。
+#ifndef LAMP_VOICE_UART
+#define LAMP_VOICE_UART 0
+#endif
+constexpr uint8_t PIN_VOICE_UART_RX = 47;
+constexpr uint32_t VOICE_UART_BAUD = 115200;
+constexpr uint16_t CMD_DEDUP_MS = 1500;   // 同一命令去重窗口，防模块重复上报
+constexpr uint16_t VOICE_FRAME_GAP_MS = 20;  // 半截帧的超时，超时即复位状态机
+constexpr bool VOICE_NIGHT_GUARD = true;  // 22:00-07:00 只放行"关灯"
+
 // ---- misc ----------------------------------------------------------------
 constexpr const char* FW_VERSION = "0.1.0-mvp";
 constexpr const char* NVS_NAMESPACE = "lamp1";
