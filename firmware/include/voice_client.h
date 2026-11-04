@@ -1,12 +1,14 @@
 #pragma once
-// ESP32 <-> PC voice link (task 3 of the voice spike).
+// 语音链路：INMP441 -> 16 kHz s16le -> 识别 -> 文本 -> 灯光动作。
 //
-//   V829 PDM mic -> 16 kHz s16le frames -> WebSocket (binary)
-//                -> PC: Vosk ASR -> Ollama/DeepSeek -> text reply -> Serial
+// 两种传输（编译期互斥，见 config.h 的 LAMP_CLOUD_ASR）：
+//   云端（默认）：整段 PCM 交给 cloud_asr，一次 HTTPS 换回文本，本地关键词点灯。
+//                 不需要第二台电脑；断网不可用。
+//   局域网（旧）：WebSocket 上传 -> PC 的 Vosk ASR -> Ollama -> text reply。
+//                 需要一台常开的电脑，适合没有云端 key 的场合。
 //
-// The module owns the VAD state machine and streams only the spoken part of an
-// utterance; the PC keeps the audio buffer and runs ASR when audio_end arrives.
-// Configuration (WiFi + server address) comes from include/secrets.h.
+// 模块自己管 VAD 状态机和"什么时候算说完"，上层只管 begin() + tick()。
+// WiFi 凭据来自 include/secrets.h；云端 key 来自 NVS（串口 `key` 写入）。
 
 #include <Arduino.h>
 
