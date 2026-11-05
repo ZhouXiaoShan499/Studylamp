@@ -25,13 +25,10 @@ namespace {
 
 constexpr const char* kNvsNamespace = "cloudasr";
 
-#if LAMP_CLOUD_ASR_PROVIDER == 2
-constexpr const char* kOpenAiHost = "api.openai.com";
-constexpr const char* kOpenAiPath = "/v1/audio/transcriptions";
-#else
+// 百度短语音的地址在两种 provider 下都要用：provider=2 时语音仍由百度转文字，
+// 只是拿到文字后再交给国产 LLM 判断动作。
 constexpr const char* kBaiduTokenUrl = "https://aip.baidubce.com/oauth/2.0/token";
 constexpr const char* kBaiduAsrUrl = "https://vop.baidu.com/server_api";
-#endif
 
 Preferences sPrefs;
 String sApiKey;
@@ -55,107 +52,10 @@ String cleanText(String text) {
     return text;
 }
 
-#if LAMP_CLOUD_ASR_PROVIDER == 2
-
-// ---------------------------------------------------------------------------
-// OpenAI /v1/audio/transcriptions：multipart/form-data + WAV 头。
-// 用裸 WiFiClientSecure 流式写，避免为了拼 multipart 再复制一份 64 KB 音频。
-// ---------------------------------------------------------------------------
-String recognizeOnce(const int16_t* pcm, size_t samples) {
-    WiFiClientSecure client;
-    client.setInsecure();  // 自用台架：跳过证书校验，产品化要换成根证书
-    client.setTimeout(CLOUD_ASR_TIMEOUT_MS / 1000);
-    if (!client.connect(kOpenAiHost, 443)) {
-        Serial.println("[asr] openai connect failed");
-        return String();
-    }
-
-    const uint32_t dataBytes = static_cast<uint32_t>(samples * sizeof(int16_t));
-    uint8_t wav[44] = {0};
-    const uint32_t riffSize = 36 + dataBytes;
-    const uint32_t sampleRate = MIC_SAMPLE_RATE;
-    const uint32_t byteRate = sampleRate * 2;
-    const uint32_t fmtLen = 16;
-    const uint16_t pcmFmt = 1;
-    const uint16_t channels = 1;
-    const uint16_t blockAlign = 2;
-    const uint16_t bits = 16;
-    memcpy(wav + 0, "RIFF", 4);
-    memcpy(wav + 4, &riffSize, 4);
-    memcpy(wav + 8, "WAVEfmt ", 8);
-    memcpy(wav + 16, &fmtLen, 4);
-    memcpy(wav + 20, &pcmFmt, 2);
-    memcpy(wav + 22, &channels, 2);
-    memcpy(wav + 24, &sampleRate, 4);
-    memcpy(wav + 28, &byteRate, 4);
-    memcpy(wav + 32, &blockAlign, 2);
-    memcpy(wav + 34, &bits, 2);
-    memcpy(wav + 36, "data", 4);
-    memcpy(wav + 40, &dataBytes, 4);
-
-    const char* boundary = "----lamp-utt-7d1f";
-    const String head = String("--") + boundary +
-                        "\r\nContent-Disposition: form-data; name=\"model\"\r\n\r\n" +
-                        CLOUD_ASR_OPENAI_MODEL + "\r\n";
-    const String fileHead = String("--") + boundary +
-                            "\r\nContent-Disposition: form-data; name=\"file\"; "
-                            "filename=\"utt.wav\"\r\nContent-Type: audio/wav\r\n\r\n";
-    const String tail = String("\r\n--") + boundary + "--\r\n";
-    const size_t total = head.length() + fileHead.length() + sizeof(wav) + dataBytes + tail.length();
-
-    client.printf(
-        "POST %s HTTP/1.1\r\nHost: %s\r\nAuthorization: Bearer %s\r\n"
-        "Content-Type: multipart/form-data; boundary=%s\r\nContent-Length: %u\r\n"
-        "Connection: close\r\n\r\n",
-        kOpenAiPath, kOpenAiHost, sApiKey.c_str(), boundary, static_cast<unsigned>(total));
-    client.print(head);
-    client.print(fileHead);
-    client.write(wav, sizeof(wav));
-
-    const uint8_t* raw = reinterpret_cast<const uint8_t*>(pcm);
-    for (size_t off = 0; off < dataBytes; off += 2048) {
-        const size_t n = (dataBytes - off < 2048) ? (dataBytes - off) : 2048;
-        client.write(raw + off, n);
-    }
-    client.print(tail);
-
-    String reply;
-    const uint32_t deadline = millis() + CLOUD_ASR_TIMEOUT_MS;
-    while (millis() < deadline) {
-        while (client.available() > 0) {
-            reply += static_cast<char>(client.read());
-            if (reply.length() > 4096) break;
-        }
-        if (!client.connected()) break;
-        delay(1);
-    }
-    client.stop();
-
-    const int sep = reply.indexOf("\r\n\r\n");
-    if (sep < 0) {
-        Serial.println("[asr] openai: no response body");
-        return String();
-    }
-    const String body = reply.substring(sep + 4);
-
-    JsonDocument doc;
-    if (deserializeJson(doc, body) != DeserializationError::Ok) {
-        Serial.printf("[asr] openai: bad json (%u bytes)\n", static_cast<unsigned>(body.length()));
-        return String();
-    }
-    if (!doc["error"].isNull()) {
-        const char* message = doc["error"]["message"] | "unknown";
-        Serial.printf("[asr] openai error: %s\n", message);
-        return String();
-    }
-    return cleanText(String(doc["text"] | ""));
-}
-
-#else
-
 // ---------------------------------------------------------------------------
 // 百度短语音：先换 token（有效期 30 天），再用 RAW 方式把裸 PCM 当 body 传。
 // 不用 JSON + base64，省掉 1/3 的内存膨胀。
+// provider=2 时这一步仍然执行：国产 LLM 不做语音转文字，先由百度把声音变成字。
 // ---------------------------------------------------------------------------
 bool fetchToken() {
     if (sApiKey.isEmpty() || sSecretKey.isEmpty()) {
@@ -245,7 +145,83 @@ String recognizeOnce(const int16_t* pcm, size_t samples) {
     return cleanText(String(doc["result"][0] | ""));
 }
 
-#endif  // provider
+#if LAMP_CLOUD_ASR_PROVIDER == 2
+
+// ---------------------------------------------------------------------------
+// 国产大模型（OpenAI 兼容 /chat/completions）：把百度识别出的文字交给 LLM，
+// 让它只回一个动作标签。没有喇叭，LLM 不需要回一句完整的话，只回一个词，
+// 延迟和成本都压到最低。
+//   system 提示词约定：只允许回 on / off / up / down / max / night / study / rest / none
+// ---------------------------------------------------------------------------
+String classifyIntent(const String& text) {
+    if (text.isEmpty()) return String();
+
+    WiFiClientSecure client;
+    client.setInsecure();  // 自用台架；产品化换根证书
+    client.setTimeout(CLOUD_ASR_TIMEOUT_MS / 1000);
+    if (!client.connect(CLOUD_LLM_HOST, 443)) {
+        Serial.println("[llm] connect failed");
+        return String();
+    }
+
+    JsonDocument req;
+    req["model"] = CLOUD_LLM_MODEL;
+    JsonArray messages = req["messages"].to<JsonArray>();
+    JsonObject sys = messages.add<JsonObject>();
+    sys["role"] = "system";
+    sys["content"] =
+        "你是台灯的控制中枢。根据用户这句话，只回一个英文单词，不要解释、不要标点："
+        "开灯=on，关灯=off，调亮=up，调暗=down，调到最亮=max，夜灯=night，"
+        "学习/看书模式=study，休息/睡眠模式=rest，其他无关的话=none。";
+    JsonObject usr = messages.add<JsonObject>();
+    usr["role"] = "user";
+    usr["content"] = text;
+    req["temperature"] = 0;
+    req["max_tokens"] = 8;
+
+    String body;
+    serializeJson(req, body);
+
+    client.printf("POST %s HTTP/1.1\r\nHost: %s\r\nAuthorization: Bearer %s\r\n"
+                  "Content-Type: application/json\r\nContent-Length: %u\r\n"
+                  "Connection: close\r\n\r\n",
+                  CLOUD_LLM_PATH, CLOUD_LLM_HOST, sApiKey.c_str(),
+                  static_cast<unsigned>(body.length()));
+    client.print(body);
+
+    String reply;
+    const uint32_t deadline = millis() + CLOUD_ASR_TIMEOUT_MS;
+    while (millis() < deadline) {
+        while (client.available() > 0) {
+            reply += static_cast<char>(client.read());
+            if (reply.length() > 2048) break;
+        }
+        if (!client.connected()) break;
+        delay(1);
+    }
+    client.stop();
+
+    const int sep = reply.indexOf("\r\n\r\n");
+    if (sep < 0) {
+        Serial.println("[llm] no response body");
+        return String();
+    }
+    const String json = reply.substring(sep + 4);
+
+    JsonDocument doc;
+    if (deserializeJson(doc, json) != DeserializationError::Ok) {
+        Serial.printf("[llm] bad json (%u bytes)\n", static_cast<unsigned>(json.length()));
+        return String();
+    }
+    if (!doc["error"].isNull()) {
+        const char* message = doc["error"]["message"] | "unknown";
+        Serial.printf("[llm] error: %s\n", message);
+        return String();
+    }
+    return cleanText(String(doc["choices"][0]["message"]["content"] | ""));
+}
+
+#endif  // LAMP_CLOUD_ASR_PROVIDER == 2
 
 }  // namespace
 
@@ -264,9 +240,8 @@ bool begin() {
     }
     Serial.printf("[asr] provider=%s key=%s...\n", providerName(), sApiKey.substring(0, 4).c_str());
 
-#if LAMP_CLOUD_ASR_PROVIDER != 2
+    // 两种 provider 语音都由百度转文字，所以都要换 token。
     if (WiFi.status() == WL_CONNECTED) fetchToken();
-#endif
     return true;
 }
 
@@ -290,15 +265,12 @@ bool setKey(const char* api_key, const char* secret_key) {
     sPrefs.end();
     Serial.println("[asr] key saved to NVS");
 
-#if LAMP_CLOUD_ASR_PROVIDER == 2
-    return true;
-#else
     if (sSecretKey.isEmpty()) {
+        // 百度转文字必须要 Secret Key（provider=2 时语音仍由百度负责）。
         Serial.println("[asr] 百度还需要 Secret Key：key <API_KEY> <SECRET_KEY>");
         return false;
     }
     return (WiFi.status() == WL_CONNECTED) ? fetchToken() : false;
-#endif
 }
 
 String transcribe(const int16_t* pcm, size_t samples) {
@@ -312,24 +284,39 @@ String transcribe(const int16_t* pcm, size_t samples) {
         return String();
     }
 
-#if LAMP_CLOUD_ASR_PROVIDER == 2
-    return recognizeOnce(pcm, samples);
-#else
+    // 第一步：百度把语音转成文字（两种 provider 都一样）。
     if (sToken.isEmpty() && !fetchToken()) return String();
     String text = recognizeOnce(pcm, samples);
     if (text.isEmpty() && sToken.isEmpty()) {
         // recognizeOnce 判定 token 过期，重取一次再试
         if (fetchToken()) text = recognizeOnce(pcm, samples);
     }
+    if (text.isEmpty()) return text;
+
+#if LAMP_CLOUD_ASR_PROVIDER == 2
+    // 第二步：国产 LLM 把文字映射成动作标签，返回 on/off/up/down/... 给上层。
+    Serial.printf("[ASR] \"%s\"\n", text.c_str());
+    const String intent = classifyIntent(text);
+    Serial.printf("[LLM] \"%s\" -> %s\n", text.c_str(), intent.c_str());
+    return intent;
+#else
     return text;
 #endif
 }
 
 const char* providerName() {
 #if LAMP_CLOUD_ASR_PROVIDER == 2
-    return "openai";
+    return "baidu+llm";
 #else
     return "baidu";
+#endif
+}
+
+String classifyText(const String& text) {
+#if LAMP_CLOUD_ASR_PROVIDER == 2
+    return classifyIntent(text);
+#else
+    return text;
 #endif
 }
 
