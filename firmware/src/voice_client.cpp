@@ -122,7 +122,39 @@ void copyPreroll() {
 }
 
 #if LAMP_CLOUD_ASR
-// 关键词 → 灯光动作。云端只负责"把声音变成字"，语义在这里用 8 条短句裁决：
+#if LAMP_CLOUD_ASR_PROVIDER == 2
+// 国产 LLM（provider=2）返回的动作标签 → 灯光动作。
+void handleIntent(const String& intent) {
+    if (intent.isEmpty()) return;
+    if (intent.indexOf("on") >= 0) {
+        lighting::setBrightness(lighting::isOn() ? lighting::brightness() : 70);
+    } else if (intent.indexOf("off") >= 0) {
+        lighting::setBrightness(0);
+    } else if (intent.indexOf("max") >= 0) {
+        lighting::setBrightness(100);
+    } else if (intent.indexOf("up") >= 0) {
+        const int next = static_cast<int>(lighting::brightness()) + 20;
+        lighting::setBrightness(static_cast<uint8_t>(next > 100 ? 100 : next));
+    } else if (intent.indexOf("down") >= 0) {
+        const int next = static_cast<int>(lighting::brightness()) - 20;
+        lighting::setBrightness(static_cast<uint8_t>(next < 5 ? 5 : next));
+    } else if (intent.indexOf("night") >= 0) {
+        lighting::setPreset(lighting::Preset::Night);
+    } else if (intent.indexOf("study") >= 0) {
+        lighting::setPreset(lighting::Preset::Study);
+    } else if (intent.indexOf("rest") >= 0) {
+        lighting::setPreset(lighting::Preset::Rest);
+    } else {
+        Serial.printf("[voice] 未识别的动作标签: %s\n", intent.c_str());
+        return;
+    }
+    Serial.printf("[cmd] intent=\"%s\" -> on=%d pct=%u\n", intent.c_str(),
+                  lighting::isOn() ? 1 : 0, lighting::brightness());
+}
+#endif  // LAMP_CLOUD_ASR_PROVIDER == 2
+
+#if LAMP_CLOUD_ASR_PROVIDER != 2
+// 关键词 → 灯光动作。provider=1（纯百度）时用 8 条短句裁决：
 // 没有喇叭，大模型回什么都听不到，所以不接 LLM，延迟和成本都省下来。
 void handleAsrText(const String& text) {
     if (text.isEmpty()) return;
@@ -151,6 +183,7 @@ void handleAsrText(const String& text) {
     Serial.printf("[cmd] \"%s\" -> on=%d pct=%u\n", text.c_str(), lighting::isOn() ? 1 : 0,
                   lighting::brightness());
 }
+#endif  // LAMP_CLOUD_ASR_PROVIDER != 2
 #endif  // LAMP_CLOUD_ASR
 
 // 录满一段后发出去：云端模式是一次同步 HTTPS（0.5~2 s），局域网模式还是分块 WebSocket。
@@ -170,8 +203,13 @@ void sendUtterance(uint32_t now) {
     if (text.isEmpty()) {
         Serial.println("[asr] empty result");
     } else {
+#if LAMP_CLOUD_ASR_PROVIDER == 2
+        // LLM 已把文字映射成动作标签，直接按标签点灯。
+        handleIntent(text);
+#else
         Serial.printf("[ASR] %s\n", text.c_str());
         handleAsrText(text);
+#endif
     }
     uttSamples = 0;
     state = State::Idle;
@@ -466,7 +504,11 @@ void sendText(const char* text) {
 #if LAMP_CLOUD_ASR
     // 云端模式没有服务端可发，直接当"已识别的文本"本地执行，用于串口自测。
     Serial.printf("[voice] local text: %s\n", text);
+#if LAMP_CLOUD_ASR_PROVIDER == 2
+    handleIntent(cloudasr::classifyText(String(text)));
+#else
     handleAsrText(String(text));
+#endif
     return;
 #else
     if (!wsUp) {
