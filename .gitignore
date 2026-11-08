@@ -30,6 +30,9 @@ firmware/idf/**/build/
 firmware/idf/**/sdkconfig
 firmware/idf/**/sdkconfig.old
 
+# ESP-IDF 组件管理器下载的第三方依赖（体积大，可重新拉取）
+firmware/idf/lamp_sr/managed_components/
+
 # 整片 flash 备份（16 MB，含 MicroPython 原厂固件）
 firmware/backup/
 
