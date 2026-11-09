@@ -300,13 +300,37 @@ async def send_json(ws, payload: dict) -> None:
     await ws.send(json.dumps(payload, ensure_ascii=False))
 
 
-async def answer_and_send(ws, brain: Brain, prompt: str, asr_text: str) -> None:
+async def answer_and_send(ws, brain: Brain, prompt: str, asr_text: str,
+                          no_llm: bool = False) -> None:
     if not prompt:
         await send_json(
             ws,
             {"type": "reply", "text": "我没听清，再说一遍好吗？", "asr": "", "elapsed_ms": 0},
         )
         return
+
+    # --no-llm：完全跳过模型，只走本地关键词。顺序上先发 cmd 再发 reply，
+    # 且这条分支不碰 brain，任何 Ollama/DeepSeek 故障都不会影响点灯。
+    if no_llm:
+        started = time.perf_counter()
+        fallback = fallback_command(prompt)
+        cmds = [fallback] if fallback else []
+        for cmd in cmds:
+            LOG.info("cmd -> %s", cmd)
+            await send_json(ws, {"type": "cmd", **cmd})
+        elapsed_ms = int((time.perf_counter() - started) * 1000)
+        await send_json(
+            ws,
+            {
+                "type": "reply",
+                "text": "好的。" if cmds else "这句我还不会，试试「开灯」或「关灯」。",
+                "asr": asr_text,
+                "elapsed_ms": elapsed_ms,
+                "commands": cmds,
+            },
+        )
+        return
+
     try:
         answer, elapsed_ms = await asyncio.to_thread(brain.ask, prompt)
     except Exception as exc:  # noqa: BLE001
@@ -340,18 +364,21 @@ async def answer_and_send(ws, brain: Brain, prompt: str, asr_text: str) -> None:
     )
 
 
-async def handle_connection(ws, asr, brain: Brain, max_audio_bytes: int) -> None:
+async def handle_connection(ws, asr, brain: Brain, max_audio_bytes: int,
+                            no_llm: bool = False) -> None:
     peer = f"{ws.remote_address[0]}:{ws.remote_address[1]}" if ws.remote_address else "?"
     LOG.info("[%s] connected (asr=%s)", peer, asr.available)
     recognizer = asr.new_recognizer()
     audio_bytes = 0
     recording = False
     pcm = bytearray()
+    # --no-llm 时不要报模型名，否则日志里出现 qwen3:14b 会让人以为模型真的在跑。
+    model_label = "keyword-only" if no_llm else brain.model
 
     try:
         await send_json(
             ws,
-            {"type": "ready", "model": brain.model, "asr": asr.available,
+            {"type": "ready", "model": model_label, "asr": asr.available,
              "asr_error": asr.error},
         )
 
@@ -395,16 +422,16 @@ async def handle_connection(ws, asr, brain: Brain, max_audio_bytes: int) -> None
                 LOG.info("[%s] audio_end: %d bytes peak=%d rms=%d -> %r  %s", peer, audio_bytes, peak, rms,
                          text, saved)
                 await send_json(ws, {"type": "asr", "text": text})
-                await answer_and_send(ws, brain, text, text)
+                await answer_and_send(ws, brain, text, text, no_llm)
             elif kind == "text":
                 text = str(data.get("content", "")).strip()
                 LOG.info("[%s] text: %r", peer, text)
                 await send_json(ws, {"type": "asr", "text": text})
-                await answer_and_send(ws, brain, text, text)
+                await answer_and_send(ws, brain, text, text, no_llm)
             elif kind == "hello":
                 await send_json(
                     ws,
-                    {"type": "ready", "model": brain.model, "asr": asr.available,
+                    {"type": "ready", "model": model_label, "asr": asr.available,
                      "asr_error": asr.error},
                 )
             else:
@@ -426,6 +453,8 @@ def parse_args(argv=None):
     parser.add_argument("--max-seconds", type=int, default=15, help="reject longer utterances")
     parser.add_argument("--timeout", type=int, default=120, help="LLM timeout in seconds")
     parser.add_argument("--no-asr", action="store_true", help="text-only mode (skip Vosk)")
+    parser.add_argument("--no-llm", action="store_true",
+                        help="keyword-only mode: skip Ollama/DeepSeek, act on local keywords")
     parser.add_argument("--check", action="store_true", help="verify ASR + Ollama, then exit")
     return parser.parse_args(argv)
 
@@ -444,11 +473,14 @@ def main(argv=None) -> int:
         print(f"Vosk   : {'ok' if asr.available else 'FAILED'}  {getattr(asr, 'error', '') or 'loaded'}")
         return 0 if (brain_ok and asr.available) else 1
 
-    brain.health()
+    if args.no_llm:
+        LOG.info("--no-llm: keyword-only mode, Ollama is never called")
+    else:
+        brain.health()
 
     async def runner() -> None:
         async with websockets.serve(
-            lambda ws: handle_connection(ws, asr, brain, max_audio_bytes),
+            lambda ws: handle_connection(ws, asr, brain, max_audio_bytes, args.no_llm),
             args.host,
             args.port,
             max_size=2 * 1024 * 1024,
