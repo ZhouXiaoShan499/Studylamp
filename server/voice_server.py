@@ -17,7 +17,7 @@ Protocol (all control frames are JSON text, audio frames are raw binary):
     -> {"type":"text","content":"你好"}      (skip ASR, test the brain)
     <- {"type":"ready","model":"...","asr":true}
 
-Run:  python voice_server.py --model qwen3:14b
+Run:  python voice_server.py --model qwen3.5:4b
 Check: python voice_server.py --check
 """
 
@@ -55,7 +55,31 @@ SYSTEM_PROMPT = (
     "<<BRI:50>> 只调亮度；<<CCT:4000>> 调色温；<<PRESET:night>> 切场景"
     "（可选 study/office/rest/night）。\n"
     "纯聊天时不要输出任何指令。"
+    "只有用户明确说出开关灯、调亮度/色温、切场景时才输出指令，"
+    "不要主动替用户做这些操作，也不要顺手附赠指令。"
+    "如果用户只是在询问意见、征求意见（比如「适合复习吗」「要不要学习」「休息一下吧」），"
+    "只回答建议，绝不输出指令。"
+    "判断标准：用户是否用了明确的祈使/命令句式，例如「开灯」「关灯」「把灯打开」"
+    "「调到一半」「切换成夜间模式」。"
+    "带疑问、商量、征求意见的语气（「要不要」「吧」「吗」「可以吗」）都不算命令，"
+    "不输出任何指令。"
 )
+
+WEEKDAYS = ("星期一", "星期二", "星期三", "星期四", "星期五", "星期六", "星期日")
+
+
+def build_system_prompt(now: Optional[time.struct_time] = None) -> str:
+    """把当前日期/星期/时间拼进 system prompt，让模型能如实回答时间类问题。
+
+    Ollama 的 system 字段用一次就定死，无法靠模型自己「知道」时间；这里在每次
+    提问时注入本地时钟，既真实又不额外发请求。
+    """
+    now = now or time.localtime()
+    stamp = "今天是 %d 年 %d 月 %d 日，%s，现在是 %02d:%02d。" % (
+        now.tm_year, now.tm_mon, now.tm_mday,
+        WEEKDAYS[now.tm_wday], now.tm_hour, now.tm_min,
+    )
+    return stamp + " " + SYSTEM_PROMPT
 
 CMD_RE = re.compile(r"<<\s*([A-Za-z]+)\s*:\s*([^>]*)>>")
 
@@ -125,12 +149,41 @@ def fallback_command(text: str) -> Optional[dict]:
     return None
 
 
+# 明确命令式触发词：只有用户原话里出现这些词，才允许模型吐出的指令真正执行。
+# 9B 模型对「疑问 vs 命令」的区分不稳定——文字层答得对，指令层却会偷偷附赠，
+# 所以这里用确定性规则兜底，把最终拍板权从模型手里收回来。
+_COMMAND_HINTS = (
+    "开灯", "打开灯", "把灯开", "关灯", "关掉灯", "把灯关", "灯关掉",
+    "亮度", "调亮", "调暗", "色温", "调色温",
+    "场景", "切换", "模式", "夜间", "专注", "办公", "学习模式", "休息模式",
+)
+
+
+def wants_control(text: str) -> bool:
+    """用户原话是否在明确下指令（而非征求意见/纯聊天）。"""
+    compact = re.sub(r"\s+", "", text or "")
+    if not compact:
+        return False
+    # 疑问/商量语气直接判为不下指令
+    if any(w in compact for w in ("吗", "吧", "要不要", "可以吗", "好不好", "呢")):
+        return False
+    return any(hint in compact for hint in _COMMAND_HINTS)
+
+
 def strip_thinking(text: str) -> str:
     """DeepSeek-R1 may wrap its chain of thought in <think> tags."""
     cleaned = re.sub(r"<think(?:ing)?>.*?</think(?:ing)?>", "", text, flags=re.S | re.I)
     # Truncated reply: drop an unterminated block instead of speaking it aloud.
     cleaned = re.sub(r"<think(?:ing)?>.*$", "", cleaned, flags=re.S | re.I)
     return cleaned.strip()
+
+
+# 模型偶尔把「(无控制指令)」这类备注直接写进正文，会被台灯屏幕显示出来，洗掉。
+_NOISE = re.compile(r"[（(]\s*无控制指令\s*[)）]", re.I)
+
+
+def strip_noise(text: str) -> str:
+    return _NOISE.sub("", text or "").strip()
 
 
 class Asr:
@@ -203,7 +256,7 @@ class Brain:
             json={
                 "model": self.model,
                 "prompt": prompt,
-                "system": SYSTEM_PROMPT,
+                "system": build_system_prompt(),
                 "stream": False,
                 "think": False,
                 "options": {
@@ -217,7 +270,7 @@ class Brain:
         )
         response.raise_for_status()
         payload = response.json()
-        answer = strip_thinking(str(payload.get("response", "")))
+        answer = strip_noise(strip_thinking(str(payload.get("response", ""))))
         if not answer:
             LOG.warning(
                 "empty answer after stripping (done_reason=%s, eval_count=%s)",
@@ -263,6 +316,10 @@ async def answer_and_send(ws, brain: Brain, prompt: str, asr_text: str) -> None:
     LOG.info("reply in %d ms: %s", elapsed_ms, answer)
 
     text, cmds = parse_directives(answer)
+    # 硬门：只有用户原话明确在下命令时才放行指令，拦截模型的「顺手附赠」。
+    if cmds and not wants_control(prompt):
+        LOG.info("suppressed %d cmd(s), user was not giving an order: %r", len(cmds), prompt)
+        cmds = []
     if not cmds:
         fallback = fallback_command(prompt)
         if fallback:
@@ -363,7 +420,7 @@ def parse_args(argv=None):
     parser = argparse.ArgumentParser(description="LAMP-1 LAN voice bridge (Vosk + Ollama)")
     parser.add_argument("--host", default="0.0.0.0", help="bind address (default: all interfaces)")
     parser.add_argument("--port", type=int, default=8765)
-    parser.add_argument("--model", default="qwen3:14b", help="Ollama model name")
+    parser.add_argument("--model", default="qwen3.5:4b", help="Ollama model name")
     parser.add_argument("--ollama", default="http://127.0.0.1:11434", help="Ollama base URL")
     parser.add_argument("--vosk-model", default=str(DEFAULT_VOSK_MODEL), help="Vosk model folder")
     parser.add_argument("--max-seconds", type=int, default=15, help="reject longer utterances")
