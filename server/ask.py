@@ -3,10 +3,10 @@
 
     python ask.py "今天适合复习吗"
     python ask.py --stream            # interactive, streams tokens
-    python ask.py --model qwen3:14b "..."
+    python ask.py --model qwen3.5:4b "..."
 
 Requires Ollama running on http://127.0.0.1:11434 with the model pulled:
-    ollama pull qwen3:14b          # default: better answers, about 8 s
+    ollama pull qwen3.5:4b         # default: 4B, warm reply under 1 s
     ollama pull deepseek-r1:1.5b   # fast fallback: under 1 s, weaker answers
 """
 
@@ -125,7 +125,7 @@ def ask(host: str, model: str, prompt: str, stream: bool, timeout: int) -> str:
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description="Ask local DeepSeek through Ollama")
     parser.add_argument("prompt", nargs="*", help="question; omit for interactive mode")
-    parser.add_argument("--model", default="qwen3:14b")
+    parser.add_argument("--model", default="qwen3.5:4b")
     parser.add_argument("--host", default="http://127.0.0.1:11434")
     parser.add_argument("--timeout", type=int, default=120)
     parser.add_argument("--stream", action="store_true", help="stream tokens as they are generated")

@@ -11,7 +11,7 @@
 
 用法：
     python server/lamp_server.py
-    python server/lamp_server.py --model deepseek-r1:1.5b --http-port 8080 --tcp-port 8766
+    python server/lamp_server.py --model qwen3.5:4b --http-port 8080 --tcp-port 8766
 
 ESP32 侧的协议（文本行 + 二进制块，便于抓包排查）：
     PCM <字节数>\\n  + <原始 PCM 字节>      # 可以连发很多块
@@ -339,7 +339,7 @@ async def main_async(args):
 
 def parse_args():
     p = argparse.ArgumentParser()
-    p.add_argument("--model", default=os.environ.get("LAMP_MODEL", "deepseek-r1:1.5b"))
+    p.add_argument("--model", default=os.environ.get("LAMP_MODEL", "qwen3.5:4b"))
     p.add_argument("--ollama", default=os.environ.get("OLLAMA_URL", "http://127.0.0.1:11434/api/chat"))
     p.add_argument("--asr-dir", default=os.environ.get("LAMP_ASR_DIR", DEFAULT_ASR_DIR))
     p.add_argument("--http-port", type=int, default=8080)
