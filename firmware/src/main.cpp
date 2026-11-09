@@ -16,6 +16,7 @@
 #include "timer_task.h"
 #include "ui.h"
 #include "voice_client.h"
+#include "voice_uart.h"
 
 #if defined(LAMP_WIFI_SSID) && defined(LAMP_WIFI_PASS)
 #include <WiFi.h>
@@ -43,10 +44,24 @@ Button btnMode{PIN_BTN_MODE, false, false, false, 0, 0};
 Button btnLight{PIN_BTN_LIGHT, false, false, false, 0, 0};
 Button btnLearn{PIN_BTN_LEARN, false, false, false, 0, 0};
 
+// 按键有效电平：HW-483 这类模块有上拉和下拉两种版本，接反了就是"永远按住"或"完全没反应"。
+// 由 config.h 的 LAMP_BTN_ACTIVE_LOW 决定，不用改接线以外的任何逻辑。
+inline bool buttonLevelPressed(int level) {
+#if LAMP_BTN_ACTIVE_LOW
+    return level == LOW;
+#else
+    return level == HIGH;
+#endif
+}
+
 void buttonInit(Button& button, uint8_t pin) {
     button.pin = pin;
+#if LAMP_BTN_ACTIVE_LOW
     pinMode(pin, INPUT_PULLUP);
-    button.stable = (digitalRead(pin) == LOW);
+#else
+    pinMode(pin, INPUT);  // 模块自带下拉，开内部上拉会把电平拉死
+#endif
+    button.stable = buttonLevelPressed(digitalRead(pin));
     button.lastRead = button.stable;
     button.longFired = false;
     button.lastChange = millis();
@@ -54,7 +69,7 @@ void buttonInit(Button& button, uint8_t pin) {
 }
 
 BtnEvent buttonPoll(Button& button, uint32_t now, uint16_t longMs) {
-    const bool raw = (digitalRead(button.pin) == LOW);  // active low
+    const bool raw = buttonLevelPressed(digitalRead(button.pin));
     if (raw != button.lastRead) {
         button.lastRead = raw;
         button.lastChange = now;
@@ -236,6 +251,64 @@ void onLightButton(BtnEvent event) {
     }
 }
 
+// ------------------------------------------------------------------- voice ---
+// 状态灯（HW-479 的 B 通道，GPIO14）短亮一下，作为"听到了"的确认。
+// 没有蜂鸣器时这是唯一的非视觉外的反馈手段，成本为零。
+uint32_t statusPulseUntil = 0;
+
+#if LAMP_VOICE_UART
+void statusPulse(uint16_t ms) { statusPulseUntil = millis() + ms; }
+
+uint8_t voiceLastOnPct = 70;  // 「开灯」要能回到关灯前的亮度
+
+void onVoiceCommand(uint8_t command) {
+    // 夜间（22:00-07:00）只放行"关灯"：电视里一句"开灯"不该把灯点着。
+    if (VOICE_NIGHT_GUARD && command != voiceuart::kLightOff && isNightNow()) {
+        Serial.printf("[voice] cmd=%u ignored (night)\n", static_cast<unsigned>(command));
+        return;
+    }
+
+    switch (command) {
+        case voiceuart::kLightOn:
+            lighting::setBrightness(voiceLastOnPct == 0 ? 70 : voiceLastOnPct);
+            break;
+        case voiceuart::kLightOff:
+            if (lighting::isOn()) voiceLastOnPct = lighting::brightness();
+            lighting::setBrightness(0);
+            break;
+        case voiceuart::kBrighter: {
+            const uint16_t next = static_cast<uint16_t>(lighting::brightness()) + 20;
+            lighting::setBrightness(static_cast<uint8_t>(next > 100 ? 100 : next));
+            break;
+        }
+        case voiceuart::kDimmer: {
+            const int next = static_cast<int>(lighting::brightness()) - 20;
+            lighting::setBrightness(static_cast<uint8_t>(next < 5 ? 5 : next));
+            break;
+        }
+        case voiceuart::kMax:
+            lighting::setBrightness(100);
+            break;
+        case voiceuart::kNight:
+            lighting::setPreset(lighting::Preset::Night);
+            break;
+        case voiceuart::kStudy:
+            lighting::setPreset(lighting::Preset::Study);
+            break;
+        case voiceuart::kRest:
+            lighting::setPreset(lighting::Preset::Rest);
+            break;
+        default:
+            Serial.printf("[voice] unknown cmd=%u\n", static_cast<unsigned>(command));
+            return;
+    }
+
+    statusPulse(150);
+    ui::logf("{\"ev\":\"voice_cmd\",\"id\":%u,\"on\":%d,\"pct\":%u}", static_cast<unsigned>(command),
+             lighting::isOn() ? 1 : 0, lighting::brightness());
+}
+#endif
+
 void onModeButton(BtnEvent event) {
     if (event == BtnEvent::Short) {
         sendIrSlot(0);  // slot 0 is the primary key, normally the AC power toggle
@@ -287,6 +360,15 @@ void statusTick(uint32_t now) {
             lastBlink = now;
             ledOn = !ledOn;
             digitalWrite(PIN_STATUS_LED, ledOn ? HIGH : LOW);
+        }
+    } else if (statusPulseUntil != 0) {
+        // 语音确认：短亮 150 ms。放在 learn 之后、常灭之前，避免和学码闪烁打架。
+        if (static_cast<int32_t>(statusPulseUntil - now) > 0) {
+            digitalWrite(PIN_STATUS_LED, HIGH);
+        } else {
+            digitalWrite(PIN_STATUS_LED, LOW);
+            statusPulseUntil = 0;
+            ledOn = false;
         }
     } else if (ledOn) {
         ledOn = false;
@@ -659,6 +741,9 @@ void setup() {
 #if LAMP_HAS_VOICE
     voice::begin();
 #endif
+#if LAMP_VOICE_UART
+    voiceuart::begin(VOICE_UART_BAUD, onVoiceCommand);
+#endif
 
     ui::logf("{\"ev\":\"boot\",\"fw\":\"%s\",\"heap\":%lu}", FW_VERSION,
              static_cast<unsigned long>(ESP.getFreeHeap()));
@@ -682,6 +767,9 @@ void loop() {
 #endif
 #if LAMP_HAS_VOICE
     voice::tick(now);
+#endif
+#if LAMP_VOICE_UART
+    voiceuart::poll();
 #endif
 
     if (micMonitorUntil != 0 && static_cast<int32_t>(now - micMonitorUntil) >= 0) {
