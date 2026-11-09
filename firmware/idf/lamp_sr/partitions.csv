@@ -1,0 +1,9 @@
+﻿# 16 MB flash。esp-sr 要求存在一个**标签为 model** 的分区，
+# 编译期由 partition_table_get_partition_info("--partition-name model") 查找，
+# 找不到会直接报 "Failed to find model in partition table file"。
+# 代价：放弃 OTA 双槽（factory 3M 单槽 + model 6M，共 9 MB）。
+# Name,   Type, SubType, Offset,   Size, Flags
+nvs,      data, nvs,     0x9000,   0x6000,
+phy_init, data, phy,     0xf000,   0x1000,
+factory,  app,  factory, 0x10000,  3M,
+model,    data, spiffs,  ,         6M,
