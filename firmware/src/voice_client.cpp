@@ -122,8 +122,8 @@ void copyPreroll() {
 }
 
 #if LAMP_CLOUD_ASR
-#if LAMP_CLOUD_ASR_PROVIDER == 2
-// 国产 LLM（provider=2）返回的动作标签 → 灯光动作。
+#if LAMP_CLOUD_ASR_PROVIDER >= 2
+// 国产 LLM / 百炼（provider 2、3）返回的动作标签 → 灯光动作。
 void handleIntent(const String& intent) {
     if (intent.isEmpty()) return;
     if (intent.indexOf("on") >= 0) {
@@ -151,9 +151,9 @@ void handleIntent(const String& intent) {
     Serial.printf("[cmd] intent=\"%s\" -> on=%d pct=%u\n", intent.c_str(),
                   lighting::isOn() ? 1 : 0, lighting::brightness());
 }
-#endif  // LAMP_CLOUD_ASR_PROVIDER == 2
+#endif  // LAMP_CLOUD_ASR_PROVIDER >= 2
 
-#if LAMP_CLOUD_ASR_PROVIDER != 2
+#if LAMP_CLOUD_ASR_PROVIDER == 1
 // 关键词 → 灯光动作。provider=1（纯百度）时用 8 条短句裁决：
 // 没有喇叭，大模型回什么都听不到，所以不接 LLM，延迟和成本都省下来。
 void handleAsrText(const String& text) {
@@ -183,7 +183,7 @@ void handleAsrText(const String& text) {
     Serial.printf("[cmd] \"%s\" -> on=%d pct=%u\n", text.c_str(), lighting::isOn() ? 1 : 0,
                   lighting::brightness());
 }
-#endif  // LAMP_CLOUD_ASR_PROVIDER != 2
+#endif  // LAMP_CLOUD_ASR_PROVIDER == 1
 #endif  // LAMP_CLOUD_ASR
 
 // 录满一段后发出去：云端模式是一次同步 HTTPS（0.5~2 s），局域网模式还是分块 WebSocket。
@@ -203,7 +203,7 @@ void sendUtterance(uint32_t now) {
     if (text.isEmpty()) {
         Serial.println("[asr] empty result");
     } else {
-#if LAMP_CLOUD_ASR_PROVIDER == 2
+#if LAMP_CLOUD_ASR_PROVIDER >= 2
         // LLM 已把文字映射成动作标签，直接按标签点灯。
         handleIntent(text);
 #else
@@ -437,12 +437,27 @@ void tick(uint32_t now) {
             forceListen = false;
 #if LAMP_CLOUD_ASR
             if (!cloudasr::ready()) {
-                Serial.println("[voice] speech detected but cloud ASR is not ready, dropped");
+                // 没网/没 key 时每 32 ms 就命中一次，限流到 2 s 一条，别把后面的日志刷没。
+                static uint32_t lastWarn = 0;
+                static uint32_t dropped = 0;
+                ++dropped;
+                if ((now - lastWarn) >= 2000) {
+                    lastWarn = now;
+                    Serial.printf("[voice] cloud ASR not ready (wifi down or no key), %lu dropped\n",
+                                  static_cast<unsigned long>(dropped));
+                }
                 break;
             }
 #else
             if (!wsUp) {
-                Serial.println("[voice] speech detected but WebSocket is down, dropped");
+                static uint32_t lastWarn = 0;
+                static uint32_t dropped = 0;
+                ++dropped;
+                if ((now - lastWarn) >= 2000) {
+                    lastWarn = now;
+                    Serial.printf("[voice] WebSocket down, %lu dropped\n",
+                                  static_cast<unsigned long>(dropped));
+                }
                 break;
             }
 #endif
@@ -504,7 +519,8 @@ void sendText(const char* text) {
 #if LAMP_CLOUD_ASR
     // 云端模式没有服务端可发，直接当"已识别的文本"本地执行，用于串口自测。
     Serial.printf("[voice] local text: %s\n", text);
-#if LAMP_CLOUD_ASR_PROVIDER == 2
+#if LAMP_CLOUD_ASR_PROVIDER >= 2
+    // 有 LLM（provider 2/3）时，串口自测也走同一套语义判断，测的才是真链路。
     handleIntent(cloudasr::classifyText(String(text)));
 #else
     handleAsrText(String(text));

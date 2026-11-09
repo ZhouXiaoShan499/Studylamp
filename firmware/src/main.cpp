@@ -379,14 +379,53 @@ void statusTick(uint32_t now) {
 }
 
 #if LAMP_WIFI_ENABLED
+// 连不上时把真实原因打出来。只看到 wifi=down 分不清是"热点不在 2.4 GHz"
+// 还是"密码错"——这两种的处理方式完全不同。
+const char* wifiStatusName(wl_status_t s) {
+    switch (s) {
+        case WL_NO_SSID_AVAIL:   return "no-ssid: 扫不到这个 SSID（热点多半在 5 GHz 或太远）";
+        case WL_CONNECT_FAILED:  return "auth-failed: 密码或加密方式不对";
+        case WL_CONNECTION_LOST: return "conn-lost: 连上又断了";
+        case WL_DISCONNECTED:    return "disconnected: 重连中";
+        case WL_IDLE_STATUS:     return "idle";
+        default:                 return "other";
+    }
+}
+
 void wifiTick(uint32_t now) {
     static uint32_t lastAttempt = 0;
     static uint32_t lastSync = 0;
     static bool started = false;
+    static bool scanned = false;
+    static bool announced = false;
 
     if (WiFi.status() != WL_CONNECTED) {
+        announced = false;
         if (now - lastAttempt >= 10000) {
             lastAttempt = now;
+
+            if (started) {
+                const wl_status_t st = WiFi.status();
+                Serial.printf("[wifi] status=%d %s\n", static_cast<int>(st), wifiStatusName(st));
+            }
+
+            // 第一次重试时扫一遍空口，把能看到的 AP 列出来（含是否命中目标 SSID）。
+            // 关键：必须先把 WiFi 彻底断开、停掉后台连接，否则 scanNetworks() 会跟
+            // begin() 抢射频，直接返回 -2 (SCAN_FAILED)，一个 AP 都列不出来。
+            if (started && !scanned) {
+                scanned = true;
+                WiFi.disconnect(true);   // 关闭射频，释放出来给扫描用
+                delay(80);               // 等射频真正复位
+                const int n = WiFi.scanNetworks();
+                Serial.printf("[wifi] scan: %d AP(s) visible\n", n);
+                for (int i = 0; i < n && i < 10; ++i) {
+                    Serial.printf("[wifi]   %d dBm ch%-2d %s%s\n", static_cast<int>(WiFi.RSSI(i)),
+                                  WiFi.channel(i), WiFi.SSID(i).c_str(),
+                                  WiFi.SSID(i) == LAMP_WIFI_SSID ? "  <== match" : "");
+                }
+                WiFi.scanDelete();
+            }
+
             WiFi.begin(LAMP_WIFI_SSID, LAMP_WIFI_PASS);  // non-blocking
             if (!started) {
                 started = true;
@@ -394,6 +433,13 @@ void wifiTick(uint32_t now) {
             }
         }
         return;
+    }
+    // 连上的那一刻打一条，否则日志里只有 wifi_begin 没有结果，看不出到底通没通。
+    if (!announced) {
+        announced = true;
+        Serial.printf("[wifi] connected ssid=\"%s\" ip=%s rssi=%d\n", WiFi.SSID().c_str(),
+                      WiFi.localIP().toString().c_str(), static_cast<int>(WiFi.RSSI()));
+        ui::logf("{\"ev\":\"wifi_ok\",\"ip\":\"%s\"}", WiFi.localIP().toString().c_str());
     }
     if (now - lastSync >= 5000) {
         lastSync = now;
@@ -693,7 +739,11 @@ void onCommand(int argc, char** argv) {
     }
     if (strcmp(cmd, "key") == 0) {
         if (argc < 2) {
+#if LAMP_CLOUD_ASR_PROVIDER == 3
+            Serial.println("usage: key <DASHSCOPE_API_KEY>   // 百炼一个 key 就够");
+#else
             Serial.println("usage: key <API_KEY> [SECRET_KEY]");
+#endif
             return;
         }
         cloudasr::setKey(argv[1], argc >= 3 ? argv[2] : nullptr);

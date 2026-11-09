@@ -154,11 +154,13 @@ constexpr bool VOICE_NIGHT_GUARD = true;  // 22:00-07:00 只放行"关灯"
 #ifndef LAMP_CLOUD_ASR
 #define LAMP_CLOUD_ASR 1
 #endif
-// 语音语义后端，编译期二选一（LAMP_CLOUD_ASR_PROVIDER）：
+// 语音语义后端，编译期三选一（LAMP_CLOUD_ASR_PROVIDER）：
 //   1 = 百度短语音（默认）：语音 → 文字，本地 8 条关键词匹配点灯
-//   2 = 国产大模型（OpenAI 兼容协议，DeepSeek/通义/智谱/豆包等）：
-//       语音仍走百度转文字，再把文字交给 LLM 判断动作，支持自然说法
-// 两家都是国内可直连、无需翻墙。
+//   2 = 百度转文字 + 国产大模型（OpenAI 兼容协议，DeepSeek/通义/智谱/豆包）：
+//       支持自然说法，但要两家凭据（百度 AK/SK + LLM Key）
+//   3 = 阿里云百炼一家：qwen3-asr-flash 转文字 + deepseek-v4.1-flash 判动作，
+//       一个 API Key 走完两跳，不需要百度账号
+// 三家都是国内可直连、无需翻墙。
 #ifndef LAMP_CLOUD_ASR_PROVIDER
 #define LAMP_CLOUD_ASR_PROVIDER 1
 #endif
@@ -175,6 +177,33 @@ constexpr const char* CLOUD_ASR_CUID = "lamp01";
 constexpr const char* CLOUD_LLM_HOST = "api.deepseek.com";
 constexpr const char* CLOUD_LLM_PATH = "/v1/chat/completions";
 constexpr const char* CLOUD_LLM_MODEL = "deepseek-chat";
+
+// 阿里云百炼（provider=3）：两跳走同一个域名、同一个 Key，串口只写一个 sk-xxx。
+//   第一跳 ASR：qwen3-asr-flash。OpenAI 兼容模式下把 44 字节 WAV 头 + 16k PCM
+//               整段 base64 塞进 messages[0].content[0].input_audio.data，
+//               stream=false 一次性返回 choices[0].message.content。
+//   第二跳 LLM：同一个 /chat/completions，模型换成 deepseek-v4.1-flash。
+// 域名：老控制台是 dashscope.aliyuncs.com；新控制台若返回 404/403，换成
+//       https://<WorkspaceId>.cn-beijing.maas.aliyuncs.com，Key 不变。
+constexpr const char* CLOUD_BAILIAN_HOST = "dashscope.aliyuncs.com";
+constexpr const char* CLOUD_BAILIAN_PATH = "/compatible-mode/v1/chat/completions";
+constexpr const char* CLOUD_BAILIAN_ASR_MODEL = "qwen3-asr-flash";
+// 百炼的 LLM 模型名：deepseek-v3 / deepseek-r1 等已于 2026-10-10 下架。
+// 当前账号实际可用的是 deepseek-v4.1-flash（注意 .1，不是 deepseek-v4-flash）。
+// 官方也推荐 qwen3.7-plus / qwen3.6-flash。报 "Model not exist." 就换备选。
+constexpr const char* CLOUD_BAILIAN_LLM_MODEL = "deepseek-v4.1-flash";
+// 2 s 音频 base64 后约 86 KB，上传 + 推理比百度的裸 PCM 慢，单独放宽窗口。
+constexpr uint16_t CLOUD_BAILIAN_TIMEOUT_MS = 15000;
+
+// 云端 Key 的两个来源，优先级：NVS（串口 key 命令） > 编译期常量（secrets.h）。
+// 把下面两个宏写进 include/secrets.h（git-ignored，和 WiFi 密码放在一起），
+// 就能一次烧板、不用再连串口敲命令；留空则只认串口写入的 NVS。
+#ifndef LAMP_CLOUD_API_KEY
+#define LAMP_CLOUD_API_KEY ""
+#endif
+#ifndef LAMP_CLOUD_SECRET_KEY
+#define LAMP_CLOUD_SECRET_KEY ""
+#endif
 
 // ---- misc ----------------------------------------------------------------
 constexpr const char* FW_VERSION = "0.1.0-mvp";
