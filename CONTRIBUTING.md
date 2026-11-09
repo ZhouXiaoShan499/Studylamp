@@ -81,15 +81,26 @@ git branch -d feat/my-change
 ```
 
 - PR 描述里写清合并顺序，reviewer 只看「本 PR 相对上一个分支」的 diff；
-- 前一个 PR 合并后，把后一个 PR 的 base 改回 `main`：
+- 上一个 PR 合并前，先记下它分支的末端提交（后面 rebase 要用）：
+
+  ```bash
+  git rev-parse feat/stage0-bench-firmware     # 例如 ea947ab
+  ```
+
+- 上一个 PR 合并后，把本 PR 的 base 改回 `main`，再把本分支的提交整体搬到 `main` 上：
 
   ```bash
   git switch feat/cloud-asr
-  git rebase main                 # 已进 main 的提交会被自动跳过
+  git rebase --onto main ea947ab               # 只重放本分支自己的提交
   git push --force-with-lease
   ```
 
-- 合并方式仍然全部 Squash，`main` 保持线性；合并后删掉头分支。
+  > 注意：上游是 **squash** 合并的，`main` 上的提交对象是新建的，`git rebase main`
+  > 无法判定「这些提交已合并」，会去重放旧提交并在同文件上冲突。
+  > 用 `--onto` 明确指定「旧 base 的末端」最稳；忘了 SHA 可以查
+  > `git reflog show feat/stage0-bench-firmware` 或合并前 PR 页面的 commit 列表。
+
+- 合并方式仍然全部 Squash，`main` 保持线性；合并后删掉头分支（仓库已开启自动删除）。
 
 ## 5. 不能入库的东西
 
@@ -106,23 +117,28 @@ git branch -d feat/my-change
 文本文件入库统一用 LF（见 `.gitattributes`），Windows 检出时由 git 按类型转换。
 注意：直接用 GitHub API 上传 blob 会绕过 `text=auto` 的归一化，尽量用 `git add` + `git push` 提交。
 
-## 6. 分支保护建议
+## 6. 分支保护（已启用）
 
-在 GitHub 仓库设置里给 `main` 打开：
+`main` 的保护规则自 2026-11-09 起生效（仓库设置，不在代码里）：
 
-- Require a pull request before merging（禁止直推）；
-- Require status checks to pass（选择 `CI` 的 job）；
-- Require branches to be up to date before merging；
-- Automatically delete head branches。
+| 规则 | 取值 |
+|------|------|
+| Require a pull request before merging | 开（禁止直推 `main`） |
+| Require status checks to pass | 开：`仓库卫生检查`、`Python 语法检查`、`PlatformIO 全环境编译` |
+| Require branches to be up to date | 开（落后 `main` 需先 rebase） |
+| Require linear history | 开（只允许 squash / rebase 合并） |
+| Allow force pushes / deletions | 关 |
+| Automatically delete head branches | 开 |
+| `enforce_admins` | 关：仓库管理员仍可在紧急情况下绕过 |
 
-合并后自动删分支也可以先用 `gh` 打开（需要仓库管理员权限）：
+规则只在 PR 里生效，所以本地照旧：`git pull --ff-only` → 短分支 → 提交 → 推送 → 开 PR。
+重建仓库或换 fork 时，按上表重设一遍；用 `gh` 检查当前状态：
 
 ```bash
-gh api --method PATCH repos/ZhouXiaoShan499/Studylamp \
-  -f delete_branch_on_merge=true
+gh api repos/ZhouXiaoShan499/Studylamp/branches/main/protection --jq '{strict: .required_status_checks.strict, checks: .required_status_checks.contexts}'
 ```
 
-> 分支保护规则属于仓库设置，不在代码里；换机器或重建仓库时记得重设。
+> 必检项的名字就是 `ci.yml` 里各 job 的 `name:`，改 job 名后要同步改保护规则，否则 PR 会一直等一个不会出现的检查。
 
 ## 7. 发布
 
