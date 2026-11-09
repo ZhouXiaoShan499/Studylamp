@@ -340,6 +340,17 @@ python test_client.py --text "今天适合复习吗"
 
 更完整的接线、串口输出和排障见 `docs/06-语音AI链路实施手册.md`。
 
+## 协作流程（GitHub Flow）
+
+`main` 始终保持可编译、可部署，所有改动都走短分支 + Pull Request：
+
+1. 从 `main` 拉分支：`git switch -c feat/xxx main`（前缀用 `feat/` `fix/` `docs/` `chore/`）；
+2. 小步提交并推送：`git push -u origin feat/xxx`；
+3. PR 的 CI（密钥检查 / Python 语法 / PlatformIO 全环境编译）通过后 **Squash and merge**；
+4. 合并后删除分支，`main` 的网页改动自动发布到 GitHub Pages。
+
+分支命名、提交信息、PR 自查清单和分支保护建议见 [CONTRIBUTING.md](CONTRIBUTING.md)。
+
 ## 文档导航
 
 | 文档 | 作用 |
