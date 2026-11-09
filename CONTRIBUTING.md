@@ -63,11 +63,33 @@ git branch -d feat/my-change
 
 ## 4. PR 与合并
 
-- 目标分支只能是 `main`；
+- 目标分支默认是 `main`；改动确实依赖另一个未合并的分支时用栈式 PR（见下）；
 - 合并方式固定 **Squash and merge**，保持 `main` 线性历史；
 - PR 标题用 `<type>(<scope>): ...`，它会成为 squash 后的提交标题；
 - CI 必须全绿：仓库卫生检查、Python 语法检查、PlatformIO 全环境编译；
 - 涉及行为变化时，PR 里写清楚验证方式（串口日志、截图、命令输出）。
+
+### 栈式 PR（改动依赖另一个未合并分支）
+
+一条链路拆成多个 PR 时，后一个 PR 的 base 指向前一个特性分支，而不是 `main`：
+
+```text
+#19 feat/stage0-bench-firmware → main
+#20 feat/cloud-asr            → feat/stage0-bench-firmware
+#21 feat/bailian-provider     → feat/cloud-asr
+#22 feat/idf-lamp-sr          → feat/bailian-provider
+```
+
+- PR 描述里写清合并顺序，reviewer 只看「本 PR 相对上一个分支」的 diff；
+- 前一个 PR 合并后，把后一个 PR 的 base 改回 `main`：
+
+  ```bash
+  git switch feat/cloud-asr
+  git rebase main                 # 已进 main 的提交会被自动跳过
+  git push --force-with-lease
+  ```
+
+- 合并方式仍然全部 Squash，`main` 保持线性；合并后删掉头分支。
 
 ## 5. 不能入库的东西
 
@@ -80,6 +102,9 @@ git branch -d feat/my-change
 | `docs/design/` | 设计稿与渲染中间稿 | 网页实际引用的图放 `web/assets/` |
 
 云端 Key 只走两条路：串口 `key` 命令写入 NVS，或本地 `secrets.h` 里的编译期常量。
+
+文本文件入库统一用 LF（见 `.gitattributes`），Windows 检出时由 git 按类型转换。
+注意：直接用 GitHub API 上传 blob 会绕过 `text=auto` 的归一化，尽量用 `git add` + `git push` 提交。
 
 ## 6. 分支保护建议
 
