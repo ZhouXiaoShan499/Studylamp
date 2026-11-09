@@ -89,9 +89,13 @@ jobs:
       - name: 逐个编译 platformio.ini 里的所有环境
         working-directory: firmware
         run: |
-          set -uo pipefail
-          # 新增 [env:xxx] 后无需改 CI，这里会自动带上（含 lamp_s3_bailian / lamp_s3_lan）
+          set -euo pipefail
+          # 新增 [env:xxx] 后无需改 CI，这里会自动带上（例如特性分支里的 lamp_s3_bailian）
           envs=$(grep -oP '(?<=^\[env:)[^]]+' platformio.ini)
+          if [ -z "$envs" ]; then
+            echo "::error::platformio.ini 里没有找到 [env:...] 配置"
+            exit 1
+          fi
           echo "待编译环境: $envs"
           for env in $envs; do
             echo "::group::pio run -e $env"
