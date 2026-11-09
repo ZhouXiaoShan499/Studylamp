@@ -183,8 +183,10 @@ void printHelp() {
         "  mute | unmute              disable / enable motion\n"
         "  log                        dump the tail of the event log\n"
         "  mic on|off|test [seconds]  PDM mic level meter (voice task 1)\n"
-        "  voice status|listen        LAN link status / record one utterance\n"
-        "  voice say <text>           ask the local LLM by text (voice task 2/3)\n");
+        "  key <API_KEY> [SECRET]     store cloud ASR key in NVS\n"
+        "  asr                        cloud ASR status (provider / key / token)\n"
+        "  voice status|listen        link status / record one utterance\n"
+        "  voice say <text>           run one text through the command matcher\n");
 }
 
 }  // namespace ui

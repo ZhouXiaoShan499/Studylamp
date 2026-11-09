@@ -6,6 +6,7 @@
 #include <Esp.h>
 #include <LittleFS.h>
 
+#include "cloud_asr.h"
 #include "config.h"
 #include "ir_engine.h"
 #include "ir_store.h"
@@ -688,6 +689,18 @@ void onCommand(int argc, char** argv) {
         } else {
             Serial.println("usage: mic on|off|test [seconds]");
         }
+        return;
+    }
+    if (strcmp(cmd, "key") == 0) {
+        if (argc < 2) {
+            Serial.println("usage: key <API_KEY> [SECRET_KEY]");
+            return;
+        }
+        cloudasr::setKey(argv[1], argc >= 3 ? argv[2] : nullptr);
+        return;
+    }
+    if (strcmp(cmd, "asr") == 0) {
+        cloudasr::printStatus();
         return;
     }
     if (strcmp(cmd, "voice") == 0) {

@@ -1,5 +1,6 @@
 #include "voice_client.h"
 
+#include "cloud_asr.h"
 #include "lighting.h"
 #include "pdm_mic.h"
 
@@ -36,16 +37,20 @@ void printStatus() { Serial.println("[voice] disabled: LAMP_WIFI_SSID/LAMP_WIFI_
 #else
 
 #include <ArduinoJson.h>
+#if !LAMP_CLOUD_ASR
 #include <WebSocketsClient.h>
+#endif
 #include <WiFi.h>
 
 namespace voice {
 namespace {
 
+#if !LAMP_CLOUD_ASR
 WebSocketsClient ws;
 
 bool wsStarted = false;
 bool wsUp = false;
+#endif
 bool monitorOn = false;
 bool forceListen = false;
 
@@ -62,8 +67,6 @@ State state = State::Idle;
 uint32_t captureStart = 0;
 uint32_t lastVoiceAt = 0;
 uint32_t waitStart = 0;
-uint32_t audioFrames = 0;
-uint32_t audioSamples = 0;
 
 int16_t frame[MIC_FRAME_SAMPLES];
 int16_t preroll[MIC_PREROLL_FRAMES][MIC_FRAME_SAMPLES];
@@ -118,9 +121,99 @@ void copyPreroll() {
     prerollCount = 0;
 }
 
-// 录满一段后一次性分块发出去。之前边录边发，WS 发送一阻塞就把主循环拖死
-// （实测 10 秒只发出 0.16 秒音频，还会触发看门狗复位）。
+#if LAMP_CLOUD_ASR
+#if LAMP_CLOUD_ASR_PROVIDER == 2
+// 国产 LLM（provider=2）返回的动作标签 → 灯光动作。
+void handleIntent(const String& intent) {
+    if (intent.isEmpty()) return;
+    if (intent.indexOf("on") >= 0) {
+        lighting::setBrightness(lighting::isOn() ? lighting::brightness() : 70);
+    } else if (intent.indexOf("off") >= 0) {
+        lighting::setBrightness(0);
+    } else if (intent.indexOf("max") >= 0) {
+        lighting::setBrightness(100);
+    } else if (intent.indexOf("up") >= 0) {
+        const int next = static_cast<int>(lighting::brightness()) + 20;
+        lighting::setBrightness(static_cast<uint8_t>(next > 100 ? 100 : next));
+    } else if (intent.indexOf("down") >= 0) {
+        const int next = static_cast<int>(lighting::brightness()) - 20;
+        lighting::setBrightness(static_cast<uint8_t>(next < 5 ? 5 : next));
+    } else if (intent.indexOf("night") >= 0) {
+        lighting::setPreset(lighting::Preset::Night);
+    } else if (intent.indexOf("study") >= 0) {
+        lighting::setPreset(lighting::Preset::Study);
+    } else if (intent.indexOf("rest") >= 0) {
+        lighting::setPreset(lighting::Preset::Rest);
+    } else {
+        Serial.printf("[voice] 未识别的动作标签: %s\n", intent.c_str());
+        return;
+    }
+    Serial.printf("[cmd] intent=\"%s\" -> on=%d pct=%u\n", intent.c_str(),
+                  lighting::isOn() ? 1 : 0, lighting::brightness());
+}
+#endif  // LAMP_CLOUD_ASR_PROVIDER == 2
+
+#if LAMP_CLOUD_ASR_PROVIDER != 2
+// 关键词 → 灯光动作。provider=1（纯百度）时用 8 条短句裁决：
+// 没有喇叭，大模型回什么都听不到，所以不接 LLM，延迟和成本都省下来。
+void handleAsrText(const String& text) {
+    if (text.isEmpty()) return;
+    if (text.indexOf("关灯") >= 0 || text.indexOf("关掉灯") >= 0 || text.indexOf("把灯关") >= 0) {
+        lighting::setBrightness(0);
+    } else if (text.indexOf("开灯") >= 0 || text.indexOf("打开灯") >= 0 || text.indexOf("把灯开") >= 0) {
+        lighting::setBrightness(lighting::isOn() ? lighting::brightness() : 70);
+    } else if (text.indexOf("亮一点") >= 0 || text.indexOf("亮一些") >= 0) {
+        const int next = static_cast<int>(lighting::brightness()) + 20;
+        lighting::setBrightness(static_cast<uint8_t>(next > 100 ? 100 : next));
+    } else if (text.indexOf("暗一点") >= 0 || text.indexOf("暗一些") >= 0) {
+        const int next = static_cast<int>(lighting::brightness()) - 20;
+        lighting::setBrightness(static_cast<uint8_t>(next < 5 ? 5 : next));
+    } else if (text.indexOf("最亮") >= 0) {
+        lighting::setBrightness(100);
+    } else if (text.indexOf("夜灯") >= 0) {
+        lighting::setPreset(lighting::Preset::Night);
+    } else if (text.indexOf("学习模式") >= 0) {
+        lighting::setPreset(lighting::Preset::Study);
+    } else if (text.indexOf("休息模式") >= 0) {
+        lighting::setPreset(lighting::Preset::Rest);
+    } else {
+        Serial.printf("[voice] 没匹配到命令: %s\n", text.c_str());
+        return;
+    }
+    Serial.printf("[cmd] \"%s\" -> on=%d pct=%u\n", text.c_str(), lighting::isOn() ? 1 : 0,
+                  lighting::brightness());
+}
+#endif  // LAMP_CLOUD_ASR_PROVIDER != 2
+#endif  // LAMP_CLOUD_ASR
+
+// 录满一段后发出去：云端模式是一次同步 HTTPS（0.5~2 s），局域网模式还是分块 WebSocket。
+// 云端会把主循环卡住 1~2 s，期间状态灯常亮当"在处理"的反馈。
 void sendUtterance(uint32_t now) {
+#if LAMP_CLOUD_ASR
+    if (!cloudasr::ready()) {
+        state = State::Idle;
+        uttSamples = 0;
+        return;
+    }
+
+    digitalWrite(PIN_STATUS_LED, HIGH);
+    const String text = cloudasr::transcribe(uttBuf, uttSamples);
+    digitalWrite(PIN_STATUS_LED, LOW);
+
+    if (text.isEmpty()) {
+        Serial.println("[asr] empty result");
+    } else {
+#if LAMP_CLOUD_ASR_PROVIDER == 2
+        // LLM 已把文字映射成动作标签，直接按标签点灯。
+        handleIntent(text);
+#else
+        Serial.printf("[ASR] %s\n", text.c_str());
+        handleAsrText(text);
+#endif
+    }
+    uttSamples = 0;
+    state = State::Idle;
+#else
     if (!wsUp) {
         state = State::Idle;
         uttSamples = 0;
@@ -147,8 +240,10 @@ void sendUtterance(uint32_t now) {
     state = State::Waiting;
     waitStart = now;
     uttSamples = 0;
+#endif  // LAMP_CLOUD_ASR
 }
 
+#if !LAMP_CLOUD_ASR
 // 服务端把"本地模型想做的动作"翻译成一条 cmd JSON，这里落地成真实的灯光操作。
 // 没有这条通道时，模型只能回一句"好的，开灯"，灯并不会亮。
 void applyCommand(JsonDocument& doc) {
@@ -261,6 +356,7 @@ void onWsEvent(WStype_t type, uint8_t* payload, size_t length) {
             break;
     }
 }
+#endif  // !LAMP_CLOUD_ASR
 
 void startUtterance(uint32_t now, float level) {
     uttSamples = 0;
@@ -274,8 +370,13 @@ void startUtterance(uint32_t now, float level) {
 }  // namespace
 
 void begin() {
+#if LAMP_CLOUD_ASR
+    Serial.printf("[voice] cloud ASR mode (%s), 16 kHz mono s16le\n", cloudasr::providerName());
+    cloudasr::begin();
+#else
     Serial.printf("[voice] target ws://%s:%d/ (16 kHz mono s16le)\n", LAMP_VOICE_SERVER_HOST,
                   LAMP_VOICE_SERVER_PORT);
+#endif
     if (!pdmmic::begin()) {
         Serial.println("[mic] open failed, retrying every 5 s");
         micRetryAt = millis();
@@ -283,6 +384,7 @@ void begin() {
 }
 
 void tick(uint32_t now) {
+#if !LAMP_CLOUD_ASR
     if (WiFi.status() == WL_CONNECTED) {
         if (!wsStarted) {
             // Register the handler *before* begin(): begin() may connect at once.
@@ -301,6 +403,7 @@ void tick(uint32_t now) {
         wsStarted = false;
         wsUp = false;
     }
+#endif
 
     if (!pdmmic::ready()) {
         if ((now - micRetryAt) >= MIC_RETRY_MS) {
@@ -332,10 +435,17 @@ void tick(uint32_t now) {
             const bool trigger = forceListen || level >= lastThreshold;
             if (!trigger) break;
             forceListen = false;
+#if LAMP_CLOUD_ASR
+            if (!cloudasr::ready()) {
+                Serial.println("[voice] speech detected but cloud ASR is not ready, dropped");
+                break;
+            }
+#else
             if (!wsUp) {
                 Serial.println("[voice] speech detected but WebSocket is down, dropped");
                 break;
             }
+#endif
             Serial.printf("[voice] trigger rms=%.0f floor=%.0f thr=%.0f\n", level, noiseFloor, lastThreshold);
             startUtterance(now, level);
             break;
@@ -364,7 +474,13 @@ void tick(uint32_t now) {
     }
 }
 
-bool connected() { return wsUp; }
+bool connected() {
+#if LAMP_CLOUD_ASR
+    return cloudasr::ready();
+#else
+    return wsUp;
+#endif
+}
 bool listening() { return state == State::Recording; }
 bool monitor() { return monitorOn; }
 
@@ -385,6 +501,16 @@ void requestListen() {
 
 void sendText(const char* text) {
     if (text == nullptr || text[0] == '\0') return;
+#if LAMP_CLOUD_ASR
+    // 云端模式没有服务端可发，直接当"已识别的文本"本地执行，用于串口自测。
+    Serial.printf("[voice] local text: %s\n", text);
+#if LAMP_CLOUD_ASR_PROVIDER == 2
+    handleIntent(cloudasr::classifyText(String(text)));
+#else
+    handleAsrText(String(text));
+#endif
+    return;
+#else
     if (!wsUp) {
         Serial.println("[voice] not connected yet, wait for 'WebSocket connected'");
         return;
@@ -396,10 +522,19 @@ void sendText(const char* text) {
     serializeJson(doc, out);
     ws.sendTXT(out);
     Serial.printf("[voice] -> %s\n", text);
+#endif
 }
 
 void printStatus() {
     const bool wifiUp = WiFi.status() == WL_CONNECTED;
+#if LAMP_CLOUD_ASR
+    Serial.printf("[voice] cloud=%s wifi=%s mic=%s state=%s monitor=%d\n",
+                  cloudasr::providerName(), wifiUp ? "up" : "down",
+                  pdmmic::ready() ? "ready" : "missing", stateName(), monitorOn ? 1 : 0);
+    Serial.printf("[voice] threshold=%.0f silence=%lums\n", MIC_VAD_RMS,
+                  static_cast<unsigned long>(MIC_SILENCE_MS));
+    cloudasr::printStatus();
+#else
     Serial.printf("[voice] wifi=%s ip=%s ws=%s mic=%s state=%s monitor=%d\n",
                   wifiUp ? "up" : "down",
                   wifiUp ? WiFi.localIP().toString().c_str() : "-",
@@ -408,6 +543,7 @@ void printStatus() {
     Serial.printf("[voice] target=ws://%s:%d threshold=%.0f silence=%lums\n",
                   LAMP_VOICE_SERVER_HOST, LAMP_VOICE_SERVER_PORT, MIC_VAD_RMS,
                   static_cast<unsigned long>(MIC_SILENCE_MS));
+#endif
 }
 
 }  // namespace voice

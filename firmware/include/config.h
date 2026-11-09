@@ -147,6 +147,35 @@ constexpr uint16_t CMD_DEDUP_MS = 1500;   // 同一命令去重窗口，防模�
 constexpr uint16_t VOICE_FRAME_GAP_MS = 20;  // 半截帧的超时，超时即复位状态机
 constexpr bool VOICE_NIGHT_GUARD = true;  // 22:00-07:00 只放行"关灯"
 
+// ---- 云端 ASR（阶段 0 语音闭环，见 docs/12）--------------------------------
+// 打开后 voice_client 不再连 PC 的 WebSocket：sendUtterance() 把整段 PCM 交给
+// cloud_asr，一次 HTTPS 换回文本，再走本地关键词匹配点灯。
+// 关掉则回到原来的"局域网 Vosk"路径，两条路互斥。
+#ifndef LAMP_CLOUD_ASR
+#define LAMP_CLOUD_ASR 1
+#endif
+// 语音语义后端，编译期二选一（LAMP_CLOUD_ASR_PROVIDER）：
+//   1 = 百度短语音（默认）：语音 → 文字，本地 8 条关键词匹配点灯
+//   2 = 国产大模型（OpenAI 兼容协议，DeepSeek/通义/智谱/豆包等）：
+//       语音仍走百度转文字，再把文字交给 LLM 判断动作，支持自然说法
+// 两家都是国内可直连、无需翻墙。
+#ifndef LAMP_CLOUD_ASR_PROVIDER
+#define LAMP_CLOUD_ASR_PROVIDER 1
+#endif
+constexpr uint16_t CLOUD_ASR_TIMEOUT_MS = 8000;
+constexpr uint16_t CLOUD_ASR_DEV_PID = 1537;  // 1537 = 普通话纯中文；方言/极速版改这里
+constexpr const char* CLOUD_ASR_CUID = "lamp01";
+
+// 国产大模型（provider=2）参数。base 只要 host（不带 https:// 和 /v1），
+// 各家填各自的：
+//   DeepSeek: api.deepseek.com                 model: deepseek-chat
+//   通义千问: dashscope.aliyuncs.com/compatible-mode/v1   model: qwen-plus
+//   智谱:     open.bigmodel.cn/api/paas/v4     model: glm-4-flash
+//   豆包:     ark.cn-beijing.volces.com/api/v3  model: <你的 endpoint id>
+constexpr const char* CLOUD_LLM_HOST = "api.deepseek.com";
+constexpr const char* CLOUD_LLM_PATH = "/v1/chat/completions";
+constexpr const char* CLOUD_LLM_MODEL = "deepseek-chat";
+
 // ---- misc ----------------------------------------------------------------
 constexpr const char* FW_VERSION = "0.1.0-mvp";
 constexpr const char* NVS_NAMESPACE = "lamp1";
