@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#080907">
-<title>技术 · LAMP—1 AI 学习机器人工程笔记</title>
+<title>技术 · LAMP—1 桌面 AI 机器人工程笔记</title>
 <meta name="description" content="LAMP—1 的系统架构、语音链路、总线舵机、屏幕与灯环、摄像头在场检测，以及当前工程验证边界。">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="assets/site.css">
@@ -30,7 +30,7 @@
         </svg>
       </span>
       <span class="site-brand__name">LAMP—1</span>
-      <span class="site-brand__tag">AI 学习机器人</span>
+      <span class="site-brand__tag">桌面 AI 机器人</span>
     </a>
 
     <nav class="site-nav" aria-label="主导航">
@@ -82,7 +82,7 @@
         <div class="tech-hero__indices">
           <div><span>MCU</span><strong>ESP32-S3</strong></div>
           <div><span>VOICE</span><strong>1<small>m 近场</small></strong></div>
-          <div><span>SERVO</span><strong>1—2<small>总线</small></strong></div>
+          <div><span>SERVO</span><strong>2<small>总线</small></strong></div>
           <div><span>VISION</span><strong>GC0308<small>阶段二</small></strong></div>
         </div>
         <div class="tech-hero__links">
@@ -97,7 +97,7 @@
 
       <figure class="tech-hero__media" data-reveal>
         <div class="tech-photo">
-          <img src="assets/detail-head.webp" width="1400" height="1000" loading="lazy" alt="LAMP—1 早期样机头部结构特写（台灯阶段渲染）">
+          <img src="assets/head-revc.webp" width="1024" height="1280" loading="lazy" alt="LAMP—1 REV C 头部与两段平板臂：白色圆盘头、宽导光环与黑色凸面视窗" style="object-position:50% 30%">
           <span class="tech-corner tech-corner--tl" aria-hidden="true"></span>
           <span class="tech-corner tech-corner--tr" aria-hidden="true"></span>
           <span class="tech-corner tech-corner--bl" aria-hidden="true"></span>
@@ -106,7 +106,7 @@
           <span class="tech-photo__label tech-photo__label--b">TFT / STATUS FACE</span>
           <span class="tech-photo__axis" aria-hidden="true">FIG. 01</span>
         </div>
-        <figcaption>早期样机头部结构 / 台灯阶段渲染</figcaption>
+        <figcaption>REV C 头部结构 / 概念渲染</figcaption>
       </figure>
     </div>
   </section>
@@ -262,7 +262,7 @@
           <h3>每一步，<br>都有边界。</h3>
           <p>软件限位叠在机械挡块之前。总线舵机带回位置反馈，动作到位后松开，避免持续堵转与嗡鸣。</p>
           <div class="tech-choice-card__data">
-            <span>UART BUS</span><span>1—2 AXIS</span><span>SOFT LIMIT</span>
+            <span>UART BUS</span><span>2 AXIS</span><span>SOFT LIMIT</span>
           </div>
         </article>
         <article class="tech-choice-card" id="voice" data-reveal style="--reveal-delay:.12s">
@@ -313,7 +313,7 @@
           <div class="spec-group__head"><span>02</span><h3 id="specMotion">运动 / MOTION</h3></div>
           <dl class="spec-list">
             <div><dt>动作</dt><dd>转头 / 点头</dd></div>
-            <div><dt>舵机</dt><dd>总线舵机 · UART · 1—2 个</dd></div>
+            <div><dt>舵机</dt><dd>总线舵机 · UART · 2 个</dd></div>
             <div><dt>位置反馈</dt><dd>总线协议读取</dd></div>
             <div><dt>动作曲线</dt><dd>S 曲线缓动 <em>设计目标</em></dd></div>
             <div><dt>限位</dt><dd>软件限位 + 机械挡块</dd></div>
@@ -466,7 +466,7 @@
           <span class="site-brand__name">LAMP—1</span>
         </a>
         <div class="footer-brand-copy">
-          <p>一个放在桌面上的 AI 学习机器人。语音、动作、屏幕与灯环，让 AI 回到桌面。</p>
+          <p>一个放在桌面上的 AI 机器人。语音、动作、屏幕与灯环，让 AI 回到桌面。</p>
           <div class="footer-brand-links">
             <a class="site-text-link" href="simulator.html">打开数字样机
               <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8h9M8.5 3.5 13 8l-4.5 4.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>

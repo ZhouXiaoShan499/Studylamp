@@ -4,11 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#0a0b09">
-<title>数字样机（第一阶段台架） · LAMP—1</title>
-<meta name="description" content="LAMP—1 第一阶段台架数字样机：保留照明通道用于硬件联调；可拖动头部、设置计时，或进入语音仿真查看回答与动作。照明不是产品功能。">
+<title>数字样机（REV C 硬件形态） · LAMP—1</title>
+<meta name="description" content="LAMP—1 REV C 硬件形态的交互数字样机：白色桌面机器人、双舵机转头点头、1.09″ TFT 表情与状态灯环，以及单目在场检测仿真。">
 <meta property="og:type" content="website">
-<meta property="og:title" content="数字样机（第一阶段台架） · LAMP—1">
-<meta property="og:description" content="第一阶段台架样机：照明仅用于调试，产品方向是桌面 AI 学习机器人。">
+<meta property="og:title" content="数字样机（REV C 硬件形态） · LAMP—1">
+<meta property="og:description" content="最终硬件形态的数字样机：双舵机、屏幕表情、状态灯环与摄像头在场检测。">
 <meta property="og:image" content="assets/og.jpg">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="assets/site.css">
@@ -31,7 +31,8 @@
   --accent:#e5b776;
   --accent-soft:rgba(229,183,118,.12);
   --green:#b6cba8;
-  --lamp-rgb:255,207,158;
+  --ring-rgb:212,236,255;
+  --screen-rgb:255,214,170;
   --ambient-opacity:.64;
   --radius:28px;
   --sans:"Segoe UI","SF Pro Display","PingFang SC","Hiragino Sans GB","Microsoft YaHei UI","Microsoft YaHei",sans-serif;
@@ -195,7 +196,7 @@ button:focus-visible,a:focus-visible,input:focus-visible{
   scroll-margin-top:calc(var(--site-header-h,68px) + 12px);
   overflow:hidden;
   background:
-    radial-gradient(66% 50% at 63% 33%,rgba(var(--lamp-rgb),calc(var(--ambient-opacity) * .19)),transparent 72%),
+    radial-gradient(66% 50% at 63% 33%,rgba(var(--ring-rgb),calc(var(--ambient-opacity) * .19)),transparent 72%),
     linear-gradient(180deg,#151710 0%,#0e100c 58%,#0a0b08 100%);
   isolation:isolate;
 }
@@ -231,9 +232,9 @@ button:focus-visible,a:focus-visible,input:focus-visible{
   mix-blend-mode:screen;
   opacity:var(--ambient-opacity);
   background:
-    radial-gradient(28% 31% at 64% 38%,rgba(var(--lamp-rgb),.22) 0%,transparent 72%),
-    radial-gradient(46% 22% at 66% 79%,rgba(var(--lamp-rgb),.15) 0%,transparent 76%),
-    radial-gradient(34% 14% at 66% 92%,rgba(var(--lamp-rgb),.24) 0%,transparent 78%);
+    radial-gradient(28% 31% at 64% 38%,rgba(var(--ring-rgb),.22) 0%,transparent 72%),
+    radial-gradient(46% 22% at 66% 79%,rgba(var(--ring-rgb),.15) 0%,transparent 76%),
+    radial-gradient(34% 14% at 66% 92%,rgba(var(--ring-rgb),.24) 0%,transparent 78%);
   transition:opacity 1s var(--ease);
   animation:ambientBreath 9s ease-in-out infinite alternate;
 }
@@ -280,9 +281,9 @@ button:focus-visible,a:focus-visible,input:focus-visible{
 .scene .engraving{font-family:var(--mono);font-size:6px;letter-spacing:.12em;fill:#8d7b66;opacity:.62}
 .scene .head-engraving{font-family:var(--mono);font-size:5.5px;letter-spacing:.14em;fill:#76614b;opacity:.8}
 .scene text{font-family:var(--mono)}
-.lamp-stop{stop-color:rgb(var(--lamp-rgb))}
-.lamp-color{fill:rgb(var(--lamp-rgb))}
-.lamp-color-stroke{stroke:rgb(var(--lamp-rgb))}
+.lamp-stop{stop-color:rgb(var(--ring-rgb))}
+.lamp-color{fill:rgb(var(--ring-rgb))}
+.lamp-color-stroke{stroke:rgb(var(--ring-rgb))}
 .lens-light{opacity:.96;transition:opacity .4s var(--ease)}
 .spill-layer{opacity:0;transition:opacity .5s var(--ease)}
 /* stage overlays */
@@ -423,8 +424,8 @@ button:focus-visible,a:focus-visible,input:focus-visible{
 }
 .metric-label .mini-led{
   width:5px;height:5px;border-radius:50%;
-  background:rgb(var(--lamp-rgb));
-  box-shadow:0 0 8px rgba(var(--lamp-rgb),.55);
+  background:rgb(var(--ring-rgb));
+  box-shadow:0 0 8px rgba(var(--ring-rgb),.55);
   transition:background .4s,box-shadow .4s;
 }
 .app[data-power="off"] .metric-label .mini-led{background:#555a50;box-shadow:none}
@@ -1017,16 +1018,24 @@ button:focus-visible,a:focus-visible,input:focus-visible{
   .stage-metrics{padding-bottom:0}
 }
 /* short desktop/laptop viewports: keep every control above the fold */
-@media (min-width:1181px) and (max-height:820px){
-  .console-head{padding:16px 20px 13px}
-  .console-body{padding:13px 20px 12px}
+@media (min-width:1181px) and (max-height:980px){
+  .console-head{padding:14px 20px 11px}
+  .console-body{padding:9px 20px 9px}
   .console-foot{padding:10px 20px 12px}
-  .group + .group{margin-top:11px;padding-top:11px}
-  .scene-btn{height:47px}
+  .group + .group{margin-top:8px;padding-top:8px}
+  .scene-btn{height:44px}
+  .expr-btn{height:40px}
   .range-meta{display:none}
   .scene-note{display:none}
-  .move-row{margin-top:10px}
-  .timer-progress{margin-top:7px}
+  .presence-card{padding:7px;grid-template-columns:86px minmax(0,1fr);gap:9px}
+  .cam-view{width:86px;height:57px}
+  .presence-state span{font-size:15px}
+  .presence-actions{margin-top:4px}
+  .mini-btn{height:26px}
+  .axis-grid{gap:14px}
+  .move-row{margin-top:8px}
+  .move-btn{height:29px}
+  .timer-progress{margin-top:6px}
   .sim-note{margin-top:6px}
 }
 @media (max-width:760px){
@@ -1147,6 +1156,103 @@ button:focus-visible,a:focus-visible,input:focus-visible{
 @media (prefers-reduced-motion:reduce){
   .hero,.console{animation:none}
 }
+/* ---------------------------------------------------- robot / vision layer */
+.presence-card{
+  display:grid;grid-template-columns:96px minmax(0,1fr);gap:11px;align-items:center;
+  margin-top:9px;padding:9px;
+  border:1px solid var(--line);border-radius:12px;
+  background:linear-gradient(135deg,rgba(143,216,255,.045),rgba(255,255,255,.012));
+  transition:border-color .35s var(--ease),background .35s var(--ease),box-shadow .35s var(--ease);
+}
+.presence-card.is-present{
+  border-color:rgba(143,216,255,.26);
+  background:linear-gradient(135deg,rgba(143,216,255,.095),rgba(255,255,255,.014));
+  box-shadow:inset 0 1px 0 rgba(210,240,255,.05);
+}
+.cam-view{
+  width:96px;height:64px;
+  border:1px solid rgba(143,216,255,.16);
+  border-radius:8px;
+  background:#0a0f0d;
+  overflow:hidden;
+}
+.cam-person,.cam-frame{transition:opacity .35s var(--ease)}
+.cam-scan{animation:camScan 2.8s linear infinite}
+@keyframes camScan{0%{transform:translateY(0)}100%{transform:translateY(63px)}}
+.detect-scan{animation:detectScan 3.4s linear infinite}
+@keyframes detectScan{0%{transform:translateY(0)}100%{transform:translateY(166px)}}
+.presence-card:not(.is-present) .cam-person,
+.presence-card:not(.is-present) .cam-frame{opacity:0}
+.presence-info{min-width:0}
+.presence-kicker{
+  margin:0 0 4px;
+  color:#7f9aa2;
+  font-family:var(--mono);
+  font-size:7.5px;
+  letter-spacing:.06em;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.presence-state{display:flex;align-items:baseline;gap:7px;margin:0}
+.presence-state span{color:#eef2ee;font-size:16px;letter-spacing:-.02em}
+.presence-state em{color:#8fd8ff;font-family:var(--mono);font-size:8px;font-style:normal;letter-spacing:.08em}
+.presence-meta{margin:4px 0 0;color:#8b958e;font-family:var(--mono);font-size:8px;white-space:nowrap}
+.presence-meta i{color:#5b6862;font-style:normal;margin:0 3px}
+.presence-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:8px}
+.mini-btn{
+  height:27px;
+  border:1px solid var(--line);
+  border-radius:7px;
+  background:rgba(255,255,255,.016);
+  color:#9da6a0;
+  font-size:9px;
+  transition:color .22s var(--ease),border-color .22s var(--ease),background .22s var(--ease);
+}
+.mini-btn:hover{color:#dce6e0;border-color:rgba(143,216,255,.25);background:rgba(143,216,255,.05)}
+.mini-btn[aria-pressed="true"]{color:#bfe9ff;border-color:rgba(143,216,255,.3);background:rgba(143,216,255,.08)}
+.expr-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:9px}
+.expr-btn{height:46px}
+.expr-btn .scene-name{font-size:11px}
+.expr-btn .scene-cct{font-size:8px}
+.expr-btn[aria-pressed="true"] .scene-cct{color:#a8c9d4}
+/* screen expressions */
+#screenFace .expr{opacity:0;transition:opacity .26s var(--ease)}
+#screenFace[data-expr="idle"] .expr-idle,
+#screenFace[data-expr="aware"] .expr-aware,
+#screenFace[data-expr="listen"] .expr-listen,
+#screenFace[data-expr="think"] .expr-think,
+#screenFace[data-expr="speak"] .expr-speak,
+#screenFace[data-expr="timer"] .expr-timer{opacity:1}
+.expr-think circle{animation:screenDot 1.5s ease-in-out infinite}
+.expr-think .dot-2{animation-delay:.22s}
+.expr-think .dot-3{animation-delay:.44s}
+@keyframes screenDot{0%,100%{opacity:.25}50%{opacity:1}}
+.expr-speak rect{transform-box:fill-box;transform-origin:center;animation:screenBar 1.05s ease-in-out infinite}
+.expr-speak rect:nth-child(2){animation-delay:.09s}
+.expr-speak rect:nth-child(3){animation-delay:.18s}
+.expr-speak rect:nth-child(4){animation-delay:.27s}
+.expr-speak rect:nth-child(5){animation-delay:.36s}
+@keyframes screenBar{0%,100%{transform:scaleY(.55)}50%{transform:scaleY(1)}}
+/* vision overlay */
+.vision-layer{pointer-events:none;mix-blend-mode:screen}
+#visionCone,#detectFrame,#camTag,#personGroup{transition:opacity .45s var(--ease)}
+#servoHud{transition:opacity .35s var(--ease)}
+.scene .hud-label{
+  font-family:var(--mono);
+  font-size:6.2px;
+  letter-spacing:.12em;
+  fill:#bfe9ff;
+}
+.scene .hud-dim{fill:#7fb6cc;opacity:.8}
+.scene .servo-text{
+  font-family:var(--mono);
+  font-size:6.0px;
+  letter-spacing:.09em;
+  fill:#d8c4a6;
+  opacity:.75;
+}
+#servoHud.is-live .servo-text{fill:#f0d6af;opacity:1}
 </style>
 <script src="assets/site.js" defer></script>
 </head>
@@ -1164,7 +1270,7 @@ button:focus-visible,a:focus-visible,input:focus-visible{
         </svg>
       </span>
       <span class="site-brand__name">LAMP—1</span>
-      <span class="site-brand__tag">AI 学习机器人</span>
+      <span class="site-brand__tag">桌面 AI 机器人</span>
     </a>
 
     <nav class="site-nav" aria-label="主导航">
@@ -1209,13 +1315,13 @@ button:focus-visible,a:focus-visible,input:focus-visible{
 
 <div class="app" id="app" data-power="on">
   <main class="workspace" id="main" tabindex="-1">
-    <section class="stage" id="stage" aria-label="LAMP-1 交互光场">
+    <section class="stage" id="stage" aria-label="LAMP-1 机器人交互场景">
       <div class="stage-canvas" id="stageCanvas">
         <div class="stage-ambient" aria-hidden="true"></div>
 
         <svg class="scene" id="sceneSvg" viewBox="0 0 1000 820" preserveAspectRatio="xMidYMid slice" role="img" aria-labelledby="sceneTitle sceneDesc">
-          <title id="sceneTitle">LAMP-1 数字样机：一盏双轴可动台灯</title>
-          <desc id="sceneDesc">暖色光环灯头悬在深色桌面之上，光束落在书本与马克杯旁。可拖动灯头，或点击灯座切换电源。</desc>
+          <title id="sceneTitle">LAMP—1 数字样机：桌面 AI 机器人</title>
+          <desc id="sceneDesc">白色桌面机器人停在深色书桌上。头部由双舵机驱动，正面是状态灯环与深色视窗，顶部小镜头正在做在场检测；画面右侧是被识别到的人。</desc>
           <defs>
             <linearGradient id="wallGrad" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0" stop-color="#181a15"/>
@@ -1223,8 +1329,8 @@ button:focus-visible,a:focus-visible,input:focus-visible{
               <stop offset="1" stop-color="#0a0c09"/>
             </linearGradient>
             <radialGradient id="wallHaze" cx=".5" cy=".5" r=".5">
-              <stop offset="0" class="lamp-stop" stop-color="#f4c98e" stop-opacity=".2"/>
-              <stop offset=".46" stop-color="#d9b585" stop-opacity=".07"/>
+              <stop offset="0" stop-color="#e8dcc6" stop-opacity=".13"/>
+              <stop offset=".46" stop-color="#c9b99f" stop-opacity=".05"/>
               <stop offset="1" stop-color="#0a0c09" stop-opacity="0"/>
             </radialGradient>
             <linearGradient id="deskGrad" x1="0" y1="0" x2="0" y2="1">
@@ -1238,95 +1344,65 @@ button:focus-visible,a:focus-visible,input:focus-visible{
               <stop offset=".46" stop-color="#dcb381" stop-opacity=".3"/>
               <stop offset="1" stop-color="#a67f55" stop-opacity=".035"/>
             </linearGradient>
-            <linearGradient id="beamGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" class="lamp-stop" stop-color="#ffd49b" stop-opacity=".7"/>
-              <stop offset=".34" class="lamp-stop" stop-color="#ffd49b" stop-opacity=".31"/>
-              <stop offset=".76" class="lamp-stop" stop-color="#ffd49b" stop-opacity=".09"/>
-              <stop offset="1" class="lamp-stop" stop-color="#ffd49b" stop-opacity="0"/>
+            <linearGradient id="shellFront" x1=".12" y1=".02" x2=".86" y2="1">
+              <stop offset="0" stop-color="#fffdf8"/>
+              <stop offset=".2" stop-color="#f7f1e6"/>
+              <stop offset=".44" stop-color="#e7dfd1"/>
+              <stop offset=".68" stop-color="#cec4b3"/>
+              <stop offset=".86" stop-color="#a89d8c"/>
+              <stop offset="1" stop-color="#877d6f"/>
             </linearGradient>
-            <linearGradient id="beamCore" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" class="lamp-stop" stop-color="#fff1d8" stop-opacity=".5"/>
-              <stop offset=".5" class="lamp-stop" stop-color="#ffe0b4" stop-opacity=".17"/>
-              <stop offset="1" class="lamp-stop" stop-color="#ffe0b4" stop-opacity="0"/>
+            <linearGradient id="shellBack" x1=".1" y1="0" x2=".9" y2="1">
+              <stop offset="0" stop-color="#d9d0c1"/>
+              <stop offset=".55" stop-color="#b3a897"/>
+              <stop offset="1" stop-color="#6e6659"/>
             </linearGradient>
-            <radialGradient id="poolGrad" cx=".5" cy=".5" r=".5">
-              <stop offset="0" class="lamp-stop" stop-color="#ffe4ba" stop-opacity=".88"/>
-              <stop offset=".35" class="lamp-stop" stop-color="#f6c989" stop-opacity=".52"/>
-              <stop offset=".74" class="lamp-stop" stop-color="#dba86d" stop-opacity=".15"/>
-              <stop offset="1" stop-color="#b88754" stop-opacity="0"/>
+            <radialGradient id="shellInner" cx=".44" cy=".38" r=".72">
+              <stop offset="0" stop-color="#fdfaf3"/>
+              <stop offset=".62" stop-color="#f0e9dc"/>
+              <stop offset="1" stop-color="#d8cfbf"/>
             </radialGradient>
-            <radialGradient id="poolCore" cx=".5" cy=".5" r=".5">
-              <stop offset="0" class="lamp-stop" stop-color="#fff6e7" stop-opacity=".76"/>
-              <stop offset=".55" class="lamp-stop" stop-color="#ffe6c2" stop-opacity=".3"/>
-              <stop offset="1" class="lamp-stop" stop-color="#ffdfb5" stop-opacity="0"/>
+            <radialGradient id="baseTop" cx=".38" cy=".24" r=".82">
+              <stop offset="0" stop-color="#fffdf8"/>
+              <stop offset=".3" stop-color="#f4eee2"/>
+              <stop offset=".62" stop-color="#e0d7c7"/>
+              <stop offset=".86" stop-color="#bcb1a0"/>
+              <stop offset="1" stop-color="#948a7b"/>
             </radialGradient>
-            <linearGradient id="armGrad" x1="488" y1="730" x2="548" y2="356" gradientUnits="userSpaceOnUse">
-              <stop offset="0" stop-color="#6a5139"/>
-              <stop offset=".23" stop-color="#b79366"/>
-              <stop offset=".48" stop-color="#e3c293"/>
-              <stop offset=".72" stop-color="#9d7952"/>
-              <stop offset="1" stop-color="#d2ac7d"/>
+            <linearGradient id="baseSide" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#f2ece1"/>
+              <stop offset=".28" stop-color="#ddd4c4"/>
+              <stop offset=".66" stop-color="#b3a897"/>
+              <stop offset="1" stop-color="#7d7467"/>
             </linearGradient>
-            <linearGradient id="armShadow" x1="0" y1="0" x2="1" y2="0">
-              <stop offset="0" stop-color="#2a2118"/>
-              <stop offset=".48" stop-color="#7d6044"/>
-              <stop offset="1" stop-color="#382b1e"/>
+            <linearGradient id="columnGrad" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0" stop-color="#6e6659"/>
+              <stop offset=".16" stop-color="#bdb2a1"/>
+              <stop offset=".38" stop-color="#f7f2e7"/>
+              <stop offset=".58" stop-color="#e2dacb"/>
+              <stop offset=".8" stop-color="#b1a695"/>
+              <stop offset="1" stop-color="#6d6559"/>
             </linearGradient>
-            <radialGradient id="headShell" cx=".34" cy=".22" r=".85">
-              <stop offset="0" stop-color="#f0dfc8"/>
-              <stop offset=".28" stop-color="#d7c0a4"/>
-              <stop offset=".68" stop-color="#a48462"/>
-              <stop offset=".91" stop-color="#735a42"/>
-              <stop offset="1" stop-color="#5b4734"/>
+            <linearGradient id="knobGrad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#43463f"/>
+              <stop offset=".42" stop-color="#262923"/>
+              <stop offset="1" stop-color="#151713"/>
+            </linearGradient>
+            <radialGradient id="glassGrad" cx=".38" cy=".28" r=".82">
+              <stop offset="0" stop-color="#66727b"/>
+              <stop offset=".26" stop-color="#333c43"/>
+              <stop offset=".58" stop-color="#141a1e"/>
+              <stop offset="1" stop-color="#06090b"/>
             </radialGradient>
-            <linearGradient id="headSide" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" stop-color="#8c6b4d"/>
-              <stop offset="1" stop-color="#3c2c20"/>
-            </linearGradient>
-            <radialGradient id="headWell" cx=".48" cy=".4" r=".7">
-              <stop offset="0" stop-color="#40352a"/>
-              <stop offset=".7" stop-color="#211b15"/>
-              <stop offset="1" stop-color="#130f0c"/>
+            <radialGradient id="personGrad" cx=".42" cy=".2" r=".9">
+              <stop offset="0" stop-color="#3b4238"/>
+              <stop offset=".55" stop-color="#252b23"/>
+              <stop offset="1" stop-color="#141812"/>
             </radialGradient>
-            <radialGradient id="lensGlow" cx=".5" cy=".44" r=".64">
-              <stop offset="0" stop-color="#fff7e9"/>
-              <stop offset=".25" stop-color="#ffead0"/>
-              <stop offset=".64" class="lamp-stop" stop-color="#ffcf98" stop-opacity=".9"/>
-              <stop offset=".92" class="lamp-stop" stop-color="#e8a465" stop-opacity=".45"/>
-              <stop offset="1" stop-color="#795238" stop-opacity=".15"/>
-            </radialGradient>
-            <linearGradient id="baseTopGrad" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0" stop-color="#ddc8ad"/>
-              <stop offset=".35" stop-color="#c7ad8d"/>
-              <stop offset=".72" stop-color="#8e7154"/>
-              <stop offset="1" stop-color="#5c4633"/>
-            </linearGradient>
-            <linearGradient id="baseSideGrad" x1="0" y1="0" x2="1" y2="0">
-              <stop offset="0" stop-color="#55402c"/>
-              <stop offset=".3" stop-color="#9c7955"/>
-              <stop offset=".62" stop-color="#6b5138"/>
-              <stop offset="1" stop-color="#3b2b1e"/>
-            </linearGradient>
-            <linearGradient id="brassGrad" x1="0" y1="0" x2="1" y2="0">
-              <stop offset="0" stop-color="#594329"/>
-              <stop offset=".3" stop-color="#c5a16e"/>
-              <stop offset=".55" stop-color="#eed4a9"/>
-              <stop offset="1" stop-color="#74563a"/>
-            </linearGradient>
-            <linearGradient id="mugGrad" x1="0" y1="0" x2="1" y2="0">
-              <stop offset="0" stop-color="#c8b99f"/>
-              <stop offset=".45" stop-color="#a99a83"/>
-              <stop offset=".74" stop-color="#796d5b"/>
-              <stop offset="1" stop-color="#554b3e"/>
-            </linearGradient>
-            <linearGradient id="bookGrad" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0" stop-color="#4c5948"/>
-              <stop offset=".55" stop-color="#394536"/>
-              <stop offset="1" stop-color="#232b22"/>
-            </linearGradient>
-            <linearGradient id="pageGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" stop-color="#d6cab6"/>
-              <stop offset="1" stop-color="#9f927e"/>
+            <linearGradient id="visionGrad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#8fd8ff" stop-opacity=".16"/>
+              <stop offset=".55" stop-color="#8fd8ff" stop-opacity=".06"/>
+              <stop offset="1" stop-color="#8fd8ff" stop-opacity=".02"/>
             </linearGradient>
             <filter id="blur40" x="-60%" y="-60%" width="220%" height="220%">
               <feGaussianBlur stdDeviation="40"/>
@@ -1344,13 +1420,16 @@ button:focus-visible,a:focus-visible,input:focus-visible{
               <feGaussianBlur stdDeviation="3"/>
             </filter>
             <filter id="shadowSoft" x="-30%" y="-50%" width="170%" height="210%">
-              <feDropShadow dx="0" dy="14" stdDeviation="15" flood-color="#000" flood-opacity=".32"/>
+              <feDropShadow dx="0" dy="12" stdDeviation="14" flood-color="#000" flood-opacity=".3"/>
             </filter>
+            <clipPath id="screenClip">
+              <ellipse cx="630" cy="318" rx="34" ry="32"/>
+            </clipPath>
           </defs>
 
           <!-- room -->
           <rect x="-1400" y="-240" width="3800" height="1160" fill="url(#wallGrad)"/>
-          <ellipse cx="650" cy="370" rx="650" ry="500" fill="url(#wallHaze)" opacity=".9" class="wall-haze"/>
+          <ellipse cx="620" cy="360" rx="660" ry="500" fill="url(#wallHaze)" opacity=".9" class="wall-haze"/>
           <g class="field-marks" fill="none" stroke="#d8c4a6" opacity=".14">
             <path d="M770 82h94M817 35v94" stroke-width=".6"/>
             <circle cx="817" cy="82" r="3" stroke-width=".7"/>
@@ -1358,13 +1437,13 @@ button:focus-visible,a:focus-visible,input:focus-visible{
             <path d="M-80 700C210 688 820 686 1080 700" stroke-width=".55" opacity=".32"/>
           </g>
           <g opacity=".2" fill="none" stroke="#cbb190" stroke-width=".7">
-            <circle cx="628" cy="345" r="286" stroke-dasharray="1 10"/>
-            <path d="M342 345h572M628 59v572" stroke-dasharray="1 15" opacity=".42"/>
-            <circle cx="628" cy="345" r="215" opacity=".18"/>
+            <circle cx="630" cy="340" r="286" stroke-dasharray="1 10"/>
+            <path d="M344 340h572M630 54v572" stroke-dasharray="1 15" opacity=".42"/>
+            <circle cx="630" cy="340" r="215" opacity=".18"/>
           </g>
           <g fill="#b9a78e" opacity=".18" font-family="var(--mono)" font-size="7.5" letter-spacing="2.2">
-            <text x="755" y="56">BENCH TWIN / 01</text>
-            <text x="918" y="772" text-anchor="end">DESK SCENE · 24°C</text>
+            <text x="755" y="56">BENCH TWIN / REV C</text>
+            <text x="918" y="772" text-anchor="end">VISION + MOTION · 24°C</text>
           </g>
 
           <!-- desk -->
@@ -1378,18 +1457,24 @@ button:focus-visible,a:focus-visible,input:focus-visible{
           </g>
           <path d="M-80 716C260 703 840 702 1190 716" fill="none" stroke="#050605" stroke-width="18" opacity=".22" filter="url(#blur12)"/>
 
-          <!-- light volume on wall + desk -->
-          <g class="beam-layer" aria-hidden="true">
-            <path id="beamOuter" d="M545 365C542 486 470 654 390 758H930C822 621 728 468 705 365Z" fill="url(#beamGrad)" filter="url(#blur7)"/>
-            <path id="beamInner" d="M596 372C594 484 555 643 516 752H800C761 617 700 481 676 372Z" fill="url(#beamCore)" filter="url(#blur3)"/>
-            <ellipse id="lightPool" cx="660" cy="758" rx="235" ry="45" fill="url(#poolGrad)"/>
-            <ellipse id="lightPoolCore" cx="660" cy="756" rx="112" ry="20" fill="url(#poolCore)"/>
+          <!-- person being detected (behind props) -->
+          <g id="personGroup" opacity="0" aria-hidden="true">
+            <ellipse cx="858" cy="708" rx="70" ry="14" fill="#050604" opacity=".42" filter="url(#blur12)"/>
+            <path d="M812 706C812 664 824 628 842 614C850 608 866 608 874 614C892 628 904 664 904 706Z" fill="url(#personGrad)"/>
+            <path d="M846 572h24v34h-24z" fill="#2a3028"/>
+            <circle cx="858" cy="540" r="35" fill="#2f352c"/>
+            <path d="M824 534C830 510 858 498 884 510C892 516 898 524 900 534C888 520 868 514 850 518C838 521 830 527 824 534Z" fill="#3a4137"/>
+            <path d="M824 539C819 543 819 548 824 552" fill="none" stroke="#333a30" stroke-width="3" stroke-linecap="round"/>
+            <path d="M838 604C848 596 868 596 878 604" fill="none" stroke="#4a5145" stroke-width="1.2" opacity=".8"/>
+            <path d="M820 700C820 662 830 628 844 614" fill="none" stroke="#8fd8ff" stroke-width="1.2" opacity=".3"/>
+            <path d="M839 520C849 508 867 504 879 510" fill="none" stroke="#b7a68c" stroke-width=".9" opacity=".2"/>
+            <path d="M874 616C884 630 894 660 896 700" fill="none" stroke="#596052" stroke-width=".8" opacity=".18"/>
           </g>
 
           <!-- props -->
           <g aria-hidden="true">
             <!-- mug -->
-            <g transform="translate(835 686)">
+            <g transform="translate(292 686)">
               <ellipse cx="3" cy="77" rx="47" ry="13" fill="#050604" opacity=".52" filter="url(#blur12)"/>
               <path d="M23 13c24 2 31 14 29 25-3 14-17 18-33 14" fill="none" stroke="#756855" stroke-width="7" opacity=".85"/>
               <path d="M-26 3C-24 38-18 65 1 66 21 66 28 38 28 3Z" fill="url(#mugGrad)"/>
@@ -1402,7 +1487,7 @@ button:focus-visible,a:focus-visible,input:focus-visible{
               <path class="steam second" d="M10-8c7-9-4-16 2-29" fill="none" stroke="#d9d2c4" stroke-width=".9" opacity=".16" stroke-linecap="round"/>
             </g>
             <!-- notebook and pencil -->
-            <g transform="translate(672 744) rotate(-4.2)">
+            <g transform="translate(652 744) rotate(-4.2)">
               <ellipse cx="80" cy="39" rx="99" ry="15" fill="#050604" opacity=".5" filter="url(#blur7)"/>
               <rect x="0" y="9" width="177" height="32" rx="4" fill="#998e7d"/>
               <rect x="0" y="5" width="177" height="33" rx="4" fill="url(#pageGrad)"/>
@@ -1413,7 +1498,7 @@ button:focus-visible,a:focus-visible,input:focus-visible{
               <rect x="143" y="0" width="2" height="31" rx="1" fill="#a38f72" opacity=".55"/>
               <text x="27" y="19" class="engraving" fill="#c2b59e" opacity=".5" font-size="5">LAMP—1</text>
             </g>
-            <g transform="translate(744 791) rotate(-7)" aria-hidden="true">
+            <g transform="translate(724 791) rotate(-7)" aria-hidden="true">
               <ellipse cx="49" cy="7" rx="79" ry="5" fill="#050604" opacity=".38" filter="url(#blur3)"/>
               <path d="M2 4h91l13-3v5H15Z" fill="#8e714b"/>
               <path d="M2 4h91" stroke="#e3c79d" stroke-width="1" opacity=".45"/>
@@ -1422,133 +1507,188 @@ button:focus-visible,a:focus-visible,input:focus-visible{
             </g>
           </g>
 
-          <!-- warm light spilling over the prop side of the desk -->
-          <ellipse id="spillOverlay" class="spill-layer" cx="760" cy="745" rx="330" ry="92" fill="url(#poolGrad)" aria-hidden="true"/>
-          <ellipse id="spillCore" class="spill-layer" cx="760" cy="748" rx="185" ry="48" fill="url(#poolCore)" aria-hidden="true"/>
+          <!-- ring light spill on the desk (status only) -->
+          <ellipse id="spillOverlay" cx="630" cy="748" rx="196" ry="40" fill="rgb(var(--ring-rgb))" opacity="0" filter="url(#blur22)" aria-hidden="true"/>
+          <ellipse id="spillCore" cx="630" cy="748" rx="104" ry="20" fill="rgb(var(--ring-rgb))" opacity="0" filter="url(#blur12)" aria-hidden="true"/>
 
-          <!-- dust in the beam -->
-          <g class="dust-layer" id="dustGroup" aria-hidden="true" fill="rgb(var(--lamp-rgb))">
-            <circle class="mote" cx="554" cy="462" r="1.3" style="--dur:8.5s;--delay:-1s"/>
-            <circle class="mote" cx="704" cy="510" r="1" style="--dur:11s;--delay:-5s"/>
-            <circle class="mote" cx="612" cy="596" r="1.6" style="--dur:9.4s;--delay:-2.6s"/>
-            <circle class="mote" cx="758" cy="638" r="1.1" style="--dur:10.2s;--delay:-7s"/>
-            <circle class="mote" cx="660" cy="688" r="1.4" style="--dur:8s;--delay:-4.2s"/>
-            <circle class="mote" cx="500" cy="650" r=".9" style="--dur:12s;--delay:-3s"/>
-            <circle class="mote" cx="716" cy="706" r="1" style="--dur:9.8s;--delay:-8s"/>
+          <!-- camera vision cone + detection -->
+          <g class="vision-layer" aria-hidden="true">
+            <polygon id="visionCone" points="630,247 800,484 926,484 926,650 800,650" fill="url(#visionGrad)" opacity="0"/>
+            <path id="visionEdgeL" d="M630 247 L800 484" fill="none" stroke="#8fd8ff" stroke-opacity=".28" stroke-width=".9" stroke-dasharray="3 7" opacity="0"/>
+            <path id="visionEdgeR" d="M630 247 L926 624" fill="none" stroke="#8fd8ff" stroke-opacity=".28" stroke-width=".9" stroke-dasharray="3 7" opacity="0"/>
+            <g id="scanLines" opacity="0" stroke="#8fd8ff" stroke-width=".7" stroke-opacity=".26">
+              <path d="M812 520h104M812 552h104M812 584h104"/>
+            </g>
+            <g id="camTag" opacity="0">
+              <rect x="792" y="446" width="104" height="20" rx="4" fill="#0a1417" fill-opacity=".72" stroke="#8fd8ff" stroke-opacity=".24"/>
+              <circle cx="802" cy="456" r="2" fill="#8fd8ff"/>
+              <text x="810" y="459" class="hud-label">CAM 01 · GC0308</text>
+            </g>
+            <g id="detectFrame" opacity="0">
+              <rect x="800" y="484" width="126" height="166" fill="none" stroke="#8fd8ff" stroke-opacity=".38" stroke-dasharray="3 5"/>
+              <rect class="detect-scan" x="800" y="484" width="126" height="1" fill="#8fd8ff" opacity=".3"/>
+              <path d="M800 500v-16h16M910 484h16v16M926 634v16h-16M816 650h-16v-16" fill="none" stroke="#c4ecff" stroke-width="1.4"/>
+              <text x="800" y="476" class="hud-label">PERSON 01</text>
+              <text id="detectMeta" x="926" y="666" text-anchor="end" class="hud-label hud-dim">0.00 · 0.00 m</text>
+            </g>
           </g>
 
-          <!-- lamp -->
-          <g id="lampRoot">
-            <ellipse cx="528" cy="773" rx="180" ry="36" fill="#040503" opacity=".52" filter="url(#blur22)"/>
-            <ellipse cx="548" cy="764" rx="139" ry="27" fill="#050604" opacity=".45" filter="url(#blur12)"/>
-
-            <!-- arm -->
-            <g id="armGroup">
-              <path d="M499 725C455 638 458 520 505 448C531 407 554 386 548 356" fill="none" stroke="#33281d" stroke-width="21" stroke-linecap="round" opacity=".82"/>
-              <path d="M497 724C454 637 458 521 504 449C530 408 551 385 548 356" fill="none" stroke="url(#armGrad)" stroke-width="13.2" stroke-linecap="round"/>
-              <path d="M496 716C456 630 464 526 508 457C529 424 547 397 547 370" fill="none" stroke="#f7e4c9" stroke-width="1.6" stroke-linecap="round" opacity=".23"/>
-              <path d="M505 715C470 635 474 532 514 468C533 439 548 412 548 389" fill="none" stroke="#4c3827" stroke-width="1.2" stroke-linecap="round" opacity=".4"/>
-              <ellipse cx="499" cy="724" rx="24" ry="8.6" fill="#3b2c20"/>
-              <ellipse cx="499" cy="721" rx="20" ry="6.4" fill="url(#brassGrad)" opacity=".92"/>
-              <path d="M492 705c-2 24-2 42 0 59" fill="none" stroke="#f3ddbd" stroke-width="1.1" opacity=".17"/>
-            </g>
+          <!-- robot -->
+          <g id="robotRoot">
+            <ellipse cx="470" cy="782" rx="180" ry="26" fill="#040503" opacity=".55" filter="url(#blur22)"/>
 
             <!-- base -->
-            <g id="lampBase">
-              <ellipse cx="505" cy="752" rx="130" ry="32" fill="#3d2d20"/>
-              <rect x="375" y="724" width="260" height="28" fill="url(#baseSideGrad)"/>
-              <path d="M377 739C420 755 590 755 633 739" fill="none" stroke="#2d2117" stroke-width="8" opacity=".36" filter="url(#blur3)"/>
-              <ellipse cx="505" cy="724" rx="130" ry="32" fill="url(#baseTopGrad)" stroke="#ead7ba" stroke-opacity=".2" stroke-width="1"/>
-              <ellipse cx="505" cy="724" rx="113" ry="26" fill="none" stroke="#5a442e" stroke-opacity=".65"/>
-              <ellipse cx="505" cy="724" rx="108" ry="23.5" fill="#302419" opacity=".2"/>
-              <path d="M390 724C417 710 466 703 510 703C550 703 597 709 620 724" fill="none" stroke="#fff2dc" stroke-width="1.4" opacity=".17"/>
-              <!-- small top display, kept abstract so it reads as hardware rather than UI -->
-              <g transform="translate(477 719)">
-                <rect x="-48" y="-10.5" width="96" height="21" rx="9" fill="#090b08" stroke="#5b4a37" stroke-width=".8"/>
-                <circle cx="-35" cy="0" r="2.3" fill="rgb(var(--lamp-rgb))" opacity=".8"/>
-                <text id="oledState" x="-27" y="2.8" class="oled-text">READY</text>
-                <text id="oledValue" x="42" y="2.8" text-anchor="end" class="oled-text oled-dim">4300K</text>
+            <g id="robotBase">
+              <path d="M324 726V752C324 768 390 780 470 780C550 780 616 768 616 752V726Z" fill="url(#baseSide)"/>
+              <path d="M330 758C364 772 576 772 610 758" fill="none" stroke="#15170f" stroke-width="9" opacity=".55"/>
+              <ellipse cx="470" cy="726" rx="146" ry="40" fill="url(#baseTop)" stroke="#fffaf0" stroke-opacity=".28"/>
+              <ellipse cx="470" cy="726" rx="128" ry="32" fill="none" stroke="#8b8172" stroke-opacity=".35"/>
+              <ellipse cx="470" cy="724" rx="116" ry="27" fill="#efe7d9" opacity=".18"/>
+              <path d="M336 726C366 710 420 702 470 702C520 702 574 710 604 726" fill="none" stroke="#fffaf0" stroke-width="1.6" opacity=".38"/>
+              <ellipse cx="470" cy="726" rx="112" ry="30" fill="none" stroke="#6e675b" stroke-opacity=".4" stroke-dasharray="1 7"/>
+              <circle id="yawTick" cx="470" cy="696" r="2.6" fill="rgb(var(--ring-rgb))"/>
+              <g id="baseKeyVisual">
+                <ellipse cx="548" cy="716" rx="20" ry="9" fill="#b8ad9c" opacity=".45"/>
+                <ellipse cx="548" cy="713" rx="19" ry="8.5" fill="#f6f1e6" stroke="#fffaf0" stroke-opacity=".5"/>
+                <ellipse cx="548" cy="713" rx="13" ry="5.5" fill="none" stroke="#b7ac9c" stroke-opacity=".7"/>
               </g>
-              <!-- power key -->
-              <g id="baseKeyVisual" transform="translate(596 716)">
-                <ellipse cx="0" cy="3" rx="14" ry="7.5" fill="#241b13" opacity=".75"/>
-                <ellipse cx="0" cy="0" rx="13" ry="6.8" fill="#3e2f22" stroke="#b0916a" stroke-opacity=".6" stroke-width=".8"/>
-                <path d="M0-3.2v3.8M-3-1.5A4.2 4.2 0 1 0 3-1.5" fill="none" class="lamp-color-stroke" stroke-width="1.05" stroke-linecap="round"/>
-              </g>
-              <!-- tiny status LEDs -->
-              <g transform="translate(411 739)" fill="#8a704f" opacity=".55">
-                <circle cx="0" cy="0" r="1.3"/>
-                <circle cx="7" cy="0" r="1.3"/>
-                <circle cx="14" cy="0" r="1.3"/>
-              </g>
-              <text x="505" y="765" text-anchor="middle" class="engraving">LAMP—1 / DESK OBJECT</text>
-              <path d="M381 751C430 764 580 764 629 751" fill="none" stroke="#e8cfac" stroke-width=".9" opacity=".12"/>
+              <circle id="baseLed" cx="402" cy="730" r="2" fill="rgb(var(--ring-rgb))" opacity=".8"/>
+              <text x="470" y="764" text-anchor="middle" class="engraving">LAMP—1 / REV C</text>
+              <path d="M330 752C380 766 560 766 610 752" fill="none" stroke="#fffaf0" stroke-width=".9" opacity=".14"/>
             </g>
 
-            <!-- head mount -->
-            <g id="headMount">
-              <path d="M548 356C558 375 579 384 597 374" fill="none" stroke="#35291d" stroke-width="16" stroke-linecap="round"/>
-              <path d="M548 356C558 375 579 384 597 374" fill="none" stroke="url(#brassGrad)" stroke-width="10.5" stroke-linecap="round"/>
-              <circle cx="548" cy="356" r="19.5" fill="#302419"/>
-              <circle cx="548" cy="356" r="16.5" fill="url(#brassGrad)"/>
-              <circle cx="548" cy="356" r="7" fill="#2b2118"/>
-              <circle cx="546" cy="353" r="2.2" fill="#f5e1bf" opacity=".55"/>
-              <path d="M571 371C581 378 588 374 594 367" fill="none" stroke="#f5ddba" stroke-width="1.1" opacity=".22"/>
+            <!-- column -->
+            <g id="columnGroup">
+              <path d="M456 722C464 646 490 552 521 470L549 478C520 560 494 650 486 722Z" fill="url(#columnGrad)"/>
+              <path d="M462 718C470 646 494 558 523 480" fill="none" stroke="#fffaf0" stroke-width="2" opacity=".5"/>
+              <path d="M472 712C480 648 500 580 528 512" fill="none" stroke="#6b6357" stroke-width="6" opacity=".24" stroke-linecap="round"/>
+              <path d="M482 720C490 650 508 578 540 498" fill="none" stroke="#5b5448" stroke-width="1" opacity=".22"/>
+              <ellipse cx="503" cy="592" rx="21" ry="19" fill="#1c1e1b"/>
+              <ellipse cx="503" cy="590" rx="17" ry="15.5" fill="url(#knobGrad)" stroke="#4b4e46" stroke-opacity=".6"/>
+              <ellipse cx="503" cy="590" rx="15" ry="13.5" fill="none" stroke="#6a6d62" stroke-opacity=".45" stroke-dasharray="1.5 3"/>
+              <circle cx="503" cy="590" r="5" fill="#9a9487"/>
+              <circle cx="503" cy="589" r="2.6" fill="#5d5a51"/>
+              <ellipse cx="545" cy="458" rx="23" ry="9.5" fill="#f4efe4" stroke="#fffaf0" stroke-opacity=".4"/>
+              <ellipse cx="545" cy="455" rx="23" ry="9.5" fill="#e8e1d3"/>
+              <ellipse cx="545" cy="455" rx="15" ry="6" fill="none" stroke="#8f8678" stroke-opacity=".5"/>
             </g>
 
-            <!-- lamp head -->
-            <g id="headPose">
-              <ellipse id="headBloom" cx="630" cy="311" rx="196" ry="119" fill="rgb(var(--lamp-rgb))" opacity=".16" filter="url(#blur40)"/>
-              <ellipse cx="628" cy="317" rx="143" ry="81" transform="rotate(-11 628 317)" fill="url(#headSide)" opacity=".95"/>
-              <ellipse cx="625" cy="303" rx="143" ry="81" transform="rotate(-11 625 303)" fill="url(#headShell)" filter="url(#shadowSoft)" stroke="#ead8c0" stroke-opacity=".12" stroke-width="1"/>
-              <ellipse cx="625" cy="306" rx="122" ry="65" transform="rotate(-11 625 306)" fill="url(#headWell)"/>
-              <ellipse cx="625" cy="307" rx="117" ry="60.5" transform="rotate(-11 625 307)" fill="none" stroke="#d0af85" stroke-opacity=".35" stroke-width="1"/>
-              <ellipse cx="625" cy="309" rx="108" ry="54" transform="rotate(-11 625 309)" fill="#201912"/>
-              <ellipse id="lensHalo" cx="625" cy="309" rx="103" ry="50" transform="rotate(-11 625 309)" fill="rgb(var(--lamp-rgb))" opacity=".23" filter="url(#blur12)"/>
-              <ellipse id="lensLight" class="lens-light" cx="625" cy="309" rx="99" ry="47" transform="rotate(-11 625 309)" fill="url(#lensGlow)"/>
-              <ellipse cx="625" cy="309" rx="99" ry="47" transform="rotate(-11 625 309)" fill="none" stroke="#ffe9c8" stroke-opacity=".3" stroke-width=".8"/>
-              <ellipse cx="625" cy="309" rx="89" ry="41" transform="rotate(-11 625 309)" fill="none" stroke="#c29660" stroke-opacity=".2" stroke-width=".8"/>
-              <ellipse cx="625" cy="309" rx="43" ry="20" transform="rotate(-11 625 309)" fill="none" stroke="#b58d5c" stroke-opacity=".12" stroke-width=".7"/>
-              <ellipse cx="625" cy="309" rx="10" ry="5" transform="rotate(-11 625 309)" fill="#3b2b1e" opacity=".75" stroke="#d9b47f" stroke-opacity=".38" stroke-width=".7"/>
-              <circle cx="625" cy="307" r="1.2" fill="rgb(var(--lamp-rgb))" opacity=".9"/>
-              <circle cx="625" cy="307" r=".45" fill="#fff8ea" opacity=".85"/>
-              <path d="M519 273C547 236 606 218 665 224C707 228 739 246 757 270C706 246 618 240 571 257C545 266 529 274 519 273Z" fill="#fff3df" opacity=".12"/>
-              <path d="M513 331C543 371 612 390 688 378" fill="none" stroke="rgb(var(--lamp-rgb))" stroke-width="1.3" opacity=".2" filter="url(#blur3)"/>
-              <text x="676" y="359" text-anchor="middle" class="head-engraving" transform="rotate(-11 676 359)">L·1</text>
+            <!-- neck (path follows the head servo in JS) -->
+            <g id="neckGroup">
+              <path id="neckArm" d="M545 456C552 430 590 410 630 405" fill="none" stroke="url(#columnGrad)" stroke-width="18" stroke-linecap="round"/>
+              <path id="neckArmHi" d="M545 456C552 430 590 410 630 405" fill="none" stroke="#fffaf0" stroke-width="1.2" stroke-linecap="round" opacity=".42"/>
             </g>
+
+            <!-- head -->
+            <g id="headYaw">
+              <g id="headPitch">
+                <ellipse cx="638" cy="328" rx="88" ry="84" fill="url(#shellBack)"/>
+                <ellipse cx="630" cy="318" rx="88" ry="85" fill="url(#shellFront)" stroke="#fffdf8" stroke-opacity=".35" filter="url(#shadowSoft)"/>
+                <ellipse cx="630" cy="318" rx="84" ry="81" fill="none" stroke="#fffdf8" stroke-opacity=".18"/>
+                <ellipse cx="630" cy="318" rx="70" ry="67" fill="url(#shellInner)"/>
+                <ellipse cx="630" cy="318" rx="70" ry="67" fill="none" stroke="#79705f" stroke-opacity=".45"/>
+                <ellipse id="headBloom" cx="630" cy="318" rx="140" ry="118" fill="rgb(var(--ring-rgb))" opacity=".12" filter="url(#blur40)"/>
+                <ellipse id="ringGlow" cx="630" cy="318" rx="70" ry="67" fill="rgb(var(--ring-rgb))" opacity=".18" filter="url(#blur22)"/>
+                <ellipse id="ringLight" cx="630" cy="318" rx="52" ry="50" fill="none" stroke="rgb(var(--ring-rgb))" stroke-width="30" opacity=".5"/>
+                <ellipse cx="630" cy="318" rx="67.5" ry="64.5" fill="none" stroke="#fff6e6" stroke-opacity=".4" stroke-width="1"/>
+                <ellipse cx="630" cy="318" rx="37.2" ry="35.8" fill="none" stroke="#fff6e6" stroke-opacity=".22" stroke-width=".8"/>
+                <ellipse cx="630" cy="318" rx="37" ry="35.5" fill="#151a1c" stroke="#0a0d0e" stroke-width="1"/>
+                <ellipse cx="630" cy="318" rx="35" ry="33.5" fill="url(#glassGrad)"/>
+                <g id="screenFace" clip-path="url(#screenClip)" data-expr="idle" style="color:rgb(212,236,255)">
+                  <g class="expr expr-idle">
+                    <path d="M612 318q6 6 12 0M636 318q6 6 12 0" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" opacity=".9"/>
+                    <circle cx="630" cy="332" r="1.4" fill="currentColor" opacity=".38"/>
+                  </g>
+                  <g class="expr expr-aware">
+                    <circle cx="618" cy="312" r="3" fill="currentColor"/>
+                    <circle cx="642" cy="312" r="3" fill="currentColor"/>
+                    <path d="M619 326Q630 336 641 326" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity=".8"/>
+                  </g>
+                  <g class="expr expr-listen">
+                    <rect x="617" y="303" width="4" height="26" rx="2" fill="currentColor" opacity=".9"/>
+                    <rect x="639" y="303" width="4" height="26" rx="2" fill="currentColor" opacity=".9"/>
+                    <circle cx="630" cy="335" r="1.4" fill="currentColor" opacity=".45"/>
+                  </g>
+                  <g class="expr expr-think">
+                    <circle cx="616" cy="318" r="2.8" fill="currentColor"/>
+                    <circle cx="630" cy="318" r="2.8" fill="currentColor" class="dot-2"/>
+                    <circle cx="644" cy="318" r="2.8" fill="currentColor" class="dot-3"/>
+                  </g>
+                  <g class="expr expr-speak">
+                    <rect x="610" y="316" width="3" height="9" rx="1.5" fill="currentColor"/>
+                    <rect x="618" y="310" width="3" height="21" rx="1.5" fill="currentColor"/>
+                    <rect x="626" y="304" width="3" height="33" rx="1.5" fill="currentColor"/>
+                    <rect x="634" y="312" width="3" height="17" rx="1.5" fill="currentColor"/>
+                    <rect x="642" y="318" width="3" height="7" rx="1.5" fill="currentColor"/>
+                  </g>
+                  <g class="expr expr-timer">
+                    <text id="screenTimerText" x="630" y="323" text-anchor="middle" font-size="11" letter-spacing=".02em" fill="currentColor">25:00</text>
+                  </g>
+                  <ellipse cx="617" cy="303" rx="14" ry="8" fill="#ffffff" opacity=".05"/>
+                </g>
+                <ellipse cx="630" cy="318" rx="35" ry="33.5" fill="none" stroke="#9fd9ee" stroke-opacity=".06"/>
+                <circle cx="630" cy="247" r="4" fill="#0b0d0e" stroke="#d8d0c2" stroke-width="1.6"/>
+                <circle cx="630" cy="247" r="1.7" fill="#3b4a52"/>
+                <circle cx="629" cy="246" r=".6" fill="#cfe9f4" opacity=".8"/>
+                <circle cx="580" cy="367" r="1.6" fill="#3b3d37"/>
+                <circle cx="680" cy="367" r="1.6" fill="#3b3d37"/>
+                <path d="M566 262C585 236 620 224 652 230C682 236 704 254 714 276C688 250 648 240 614 248C592 254 576 260 566 262Z" fill="#fffdf8" opacity=".22"/>
+                <path d="M566 374C590 398 626 408 664 400" fill="none" stroke="#fffdf8" stroke-width="1.1" opacity=".12"/>
+                <text x="690" y="368" text-anchor="middle" class="head-engraving">L·1</text>
+                <g id="headHit" class="hit" tabindex="0" role="button" aria-label="头部：拖动转向，轻点点头">
+                  <title>拖动转向 · 轻点点头</title>
+                  <ellipse id="headHitShape" cx="630" cy="318" rx="96" ry="92"/>
+                </g>
+              </g>
+            </g>
+          </g>
+
+          <!-- servo angle callouts -->
+          <g id="servoHud" aria-hidden="true" opacity="0">
+            <path d="M548 708H632" fill="none" stroke="#d8c4a6" stroke-opacity=".28" stroke-dasharray="2 4"/>
+            <text id="servoYawText" x="638" y="711" class="servo-text">S1 YAW +0°</text>
+            <path d="M706 292H768" fill="none" stroke="#d8c4a6" stroke-opacity=".28" stroke-dasharray="2 4"/>
+            <text id="servoPitchText" x="774" y="295" class="servo-text">S2 PITCH 28°</text>
           </g>
 
           <!-- target reticle, only while dragging -->
-          <g id="aimReticle" aria-hidden="true" transform="translate(660 756)" fill="none" stroke="#e5b776" stroke-width=".8">
-            <ellipse rx="96" ry="25" stroke-dasharray="2 7"/>
-            <path d="M-110 0h14M96 0h14M0-37v10M0 27v10" stroke-width="1"/>
-            <circle r="2.6" fill="#e5b776" stroke="none"/>
-            <text x="0" y="43" text-anchor="middle" fill="#d8b37f" stroke="none" font-family="var(--mono)" font-size="7" letter-spacing="1.8">AIM TARGET</text>
+          <g id="aimReticle" aria-hidden="true" transform="translate(630 752)" fill="none" stroke="#e5b776" stroke-width=".8">
+            <ellipse rx="74" ry="18" stroke-dasharray="2 7"/>
+            <path d="M-88 0h12M76 0h12M0-27v8M0 19v8" stroke-width="1"/>
+            <circle r="2.4" fill="#e5b776" stroke="none"/>
+            <text x="0" y="33" text-anchor="middle" fill="#d8b37f" stroke="none" font-family="var(--mono)" font-size="6.4" letter-spacing="1.6">GAZE</text>
+          </g>
+
+          <!-- dust in the scene -->
+          <g class="dust-layer" id="dustGroup" aria-hidden="true" fill="rgb(var(--ring-rgb))">
+            <circle class="mote" cx="560" cy="452" r="1.2" style="--dur:8.5s;--delay:-1s"/>
+            <circle class="mote" cx="704" cy="470" r=".9" style="--dur:11s;--delay:-5s"/>
+            <circle class="mote" cx="612" cy="586" r="1.4" style="--dur:9.4s;--delay:-2.6s"/>
+            <circle class="mote" cx="758" cy="618" r="1" style="--dur:10.2s;--delay:-7s"/>
+            <circle class="mote" cx="660" cy="668" r="1.3" style="--dur:8s;--delay:-4.2s"/>
+            <circle class="mote" cx="500" cy="630" r=".8" style="--dur:12s;--delay:-3s"/>
+            <circle class="mote" cx="716" cy="696" r=".9" style="--dur:9.8s;--delay:-8s"/>
           </g>
 
           <!-- pointer targets -->
-          <g id="baseHit" class="hit" tabindex="0" role="button" aria-label="灯座：点按切换灯光电源">
-            <title>点按切换灯光电源</title>
-            <ellipse cx="505" cy="744" rx="139" ry="52"/>
-          </g>
-          <g id="headHit" class="hit" tabindex="0" role="button" aria-label="灯头：拖动调节朝向，轻点让它点头">
-            <title>拖动调节朝向 · 轻点让它点头</title>
-            <ellipse id="headHitShape" cx="625" cy="305" rx="157" ry="95" transform="rotate(-11 625 305)"/>
+          <g id="baseHit" class="hit" tabindex="0" role="button" aria-label="底座：点按切换运行状态">
+            <title>点按切换运行状态</title>
+            <ellipse cx="470" cy="744" rx="158" ry="54"/>
           </g>
         </svg>
 
         <div class="hero">
-          <p class="eyebrow">LAMP—1 / Interactive model 001 · BENCH</p>
+          <p class="eyebrow">LAMP—1 / Interactive model 001 · REV C</p>
           <h1>它听见你，<span class="accent">也回应你。</span></h1>
-          <p class="hero-desc">这是第一阶段的台架数字样机：照明通道仅用于硬件联调，不再是产品功能。拖动头部、设置计时，或进入语音台，看一句话如何变成回答与动作。</p>
+          <p class="hero-desc">这是最终硬件形态的数字样机：单柱双舵机、会转头点头的头部、顶部摄像头与状态灯环。让它发现你，或手动转动它的头。</p>
           <div class="hero-meta">
-            <span>STAGE 0</span><i></i><span>台架样机</span><i></i><span>照明 = 调试</span><i></i><span>VOICE + MOTION</span>
+            <span>REV C</span><i></i><span>双舵机</span><i></i><span>在场检测</span><i></i><span>VOICE + VISION</span>
           </div>
         </div>
 
         <div class="stage-badge" aria-hidden="true">
           <span class="badge-dot"></span>
-          <strong id="stageMode">阅读场景</strong>
+          <strong id="stageMode">待机</strong>
           <span class="badge-rule"></span>
           <span class="badge-kicker">LIVE SIM</span>
         </div>
@@ -1557,48 +1697,48 @@ button:focus-visible,a:focus-visible,input:focus-visible{
           <svg viewBox="0 0 16 16" fill="none">
             <path d="M5 2.7v6.1M5 8.8c0-1 .3-1.8.9-2.4.4-.5 1.1-.4 1.3.2l.4 1.2V4.4c0-.8.5-1.2 1.1-1.2.6 0 1 .4 1 1.2v2.2c0-.7.5-1.1 1.1-1.1.6 0 1 .4 1 1.1v3.2c0 2.2-1.3 3.7-3.4 3.7-1.5 0-2.4-.6-3.1-1.9L3 9.9c-.4-.8 0-1.5.7-1.5.3 0 .6.2.8.5l.5.8" stroke="currentColor" stroke-width="1.05" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
-          <span>拖动灯头调向</span>
+          <span>拖动头部转向</span>
           <b>·</b>
-          <span>点按灯座开关</span>
+          <span>点按底座休眠 / 唤醒</span>
         </div>
       </div>
 
-      <div class="stage-metrics" aria-label="当前灯光状态">
+      <div class="stage-metrics" aria-label="机器人与在场状态">
         <div class="metric">
-          <div class="metric-label"><span class="mini-led" aria-hidden="true"></span>色温 / CCT</div>
-          <div class="metric-value"><span id="metricCct">4300</span><span class="unit">K</span></div>
+          <div class="metric-label"><span class="mini-led" aria-hidden="true"></span>在场 / PRESENCE</div>
+          <div class="metric-value"><span id="metricPresence">无人</span><span class="metric-sub" id="metricPresenceSub">--</span></div>
         </div>
         <div class="metric">
-          <div class="metric-label">照度 / ILLUMINANCE</div>
-          <div class="metric-value"><span class="metric-sub">≈</span><span id="metricLux">500</span><span class="unit">lx @ 40cm</span></div>
+          <div class="metric-label">表情 / EXPRESSION</div>
+          <div class="metric-value"><span id="metricExpression">待机</span><span class="unit" id="metricExpressionEn">IDLE</span></div>
         </div>
         <div class="metric">
           <div class="metric-label">姿态 / AIM</div>
-          <div class="metric-value"><span id="metricYaw">0°</span><span class="sep">/</span><span id="metricTilt">30°</span></div>
+          <div class="metric-value"><span id="metricYaw">0°</span><span class="sep">/</span><span id="metricTilt">28°</span></div>
         </div>
         <div class="metric">
-          <div class="metric-label">定时 / TIMER</div>
+          <div class="metric-label">计时 / TIMER</div>
           <div class="metric-value" id="metricTimerWrap"><span id="metricTimer">--:--</span></div>
         </div>
       </div>
     </section>
 
-    <aside class="console" id="console" aria-label="灯光控制台">
+    <aside class="console" id="console" aria-label="机器人控制台">
       <header class="console-head">
         <div>
           <p class="panel-kicker">INTERACTION DECK / 02</p>
-          <h2 class="console-title" id="consoleTitle">光控台<em>LIGHT</em></h2>
+          <h2 class="console-title" id="consoleTitle">本体台<em>BODY</em></h2>
         </div>
         <div class="power-control">
-          <span class="power-label" id="powerLabel">已开启</span>
-          <button class="switch" id="powerBtn" type="button" role="switch" aria-checked="true" aria-label="灯光电源">
+          <span class="power-label" id="powerLabel">运行中</span>
+          <button class="switch" id="powerBtn" type="button" role="switch" aria-checked="true" aria-label="机器人运行状态">
             <span class="thumb"></span>
           </button>
         </div>
       </header>
 
       <div class="console-tabs" role="group" aria-label="控制台模式">
-        <button class="console-tab is-active" type="button" data-console-tab="light" aria-pressed="true" aria-controls="consoleBody">光控 / LIGHT</button>
+        <button class="console-tab is-active" type="button" data-console-tab="body" aria-pressed="true" aria-controls="consoleBody">本体 / BODY</button>
         <button class="console-tab" type="button" data-console-tab="voice" aria-pressed="false" aria-controls="consoleBody">语音 / VOICE <span class="tab-dot" aria-hidden="true"></span></button>
       </div>
 
@@ -1627,14 +1767,14 @@ button:focus-visible,a:focus-visible,input:focus-visible{
 
           <div class="voice-transcript" id="voiceTranscript" role="log" aria-live="polite" aria-label="语音对话记录">
             <div class="voice-empty" id="voiceEmpty">
-              <span>试试说：把灯调暖一点</span>
+              <span>试试说：看看我在不在</span>
               <span>或者：帮我计时 25 分钟</span>
             </div>
           </div>
 
           <div class="voice-suggestions" role="group" aria-label="示例语音指令">
-            <button type="button" data-voice-prompt="把灯调暖一点">调暖一点</button>
-            <button type="button" data-voice-prompt="太亮了，暗一点">暗一点</button>
+            <button type="button" data-voice-prompt="看看我在不在">看看我</button>
+            <button type="button" data-voice-prompt="转过来看看我">转过来</button>
             <button type="button" data-voice-prompt="帮我计时 25 分钟">计时 25 分钟</button>
             <button type="button" data-voice-prompt="点点头">点点头</button>
             <button type="button" data-voice-prompt="讲个笑话">讲个笑话</button>
@@ -1642,7 +1782,7 @@ button:focus-visible,a:focus-visible,input:focus-visible{
           </div>
 
           <form class="voice-form" id="voiceForm">
-            <label class="sr-only" for="voiceInput">输入一句对台灯说的话</label>
+            <label class="sr-only" for="voiceInput">输入一句对机器人说的话</label>
             <input id="voiceInput" type="text" autocomplete="off" maxlength="60" placeholder="也可以直接输入一句话…">
             <button type="submit">发送</button>
           </form>
@@ -1650,104 +1790,139 @@ button:focus-visible,a:focus-visible,input:focus-visible{
           <p class="voice-disclaimer">仿真模式：不打开麦克风、不上传语音、不调用真实大模型。</p>
         </div>
 
-        <section class="group" aria-labelledby="sceneHeading">
+        <section class="group" aria-labelledby="presenceHeading">
           <div class="group-head">
-            <h3 id="sceneHeading">光场景</h3>
-            <span class="tag" id="sceneTag">阅读 / STUDY</span>
+            <h3 id="presenceHeading">在场检测</h3>
+            <span class="tag" id="presenceTag">自动 / AUTO</span>
           </div>
-          <div class="scene-row" role="group" aria-label="选择光场景">
-            <button class="scene-btn" type="button" data-scene="study" aria-pressed="true" aria-label="阅读场景，4300K，100% 亮度">
-              <span class="scene-name">
-                <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M3.5 4.4c1.8-.6 3.8-.2 5.2 1v10c-1.4-1.2-3.4-1.6-5.2-1V4.4Z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><path d="M16.5 4.4c-1.8-.6-3.8-.2-5.2 1v10c1.4-1.2 3.4-1.6 5.2-1V4.4Z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><path d="M8.7 5.4v10" stroke="currentColor" stroke-width="1.2"/></svg>
-                阅读
-              </span>
-              <span class="scene-cct">4300K · 100%</span>
-            </button>
-            <button class="scene-btn" type="button" data-scene="office" aria-pressed="false" aria-label="办公场景，5200K，80% 亮度">
-              <span class="scene-name">
-                <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><rect x="3" y="3.5" width="14" height="10" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M7 17h6M10 13.5V17" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
-                办公
-              </span>
-              <span class="scene-cct">5200K · 80%</span>
-            </button>
-            <button class="scene-btn" type="button" data-scene="rest" aria-pressed="false" aria-label="休息场景，2700K，35% 亮度">
-              <span class="scene-name">
-                <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4 7h9.5v6.2A2.8 2.8 0 0 1 10.7 16H6.8A2.8 2.8 0 0 1 4 13.2V7Z" stroke="currentColor" stroke-width="1.2"/><path d="M13.5 8.2h1.2a2 2 0 0 1 0 4h-1.2M7 4.2V3M10 4.2V3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
-                休息
-              </span>
-              <span class="scene-cct">2700K · 35%</span>
-            </button>
-            <button class="scene-btn" type="button" data-scene="night" aria-pressed="false" aria-label="夜灯场景，2700K，1% 亮度">
-              <span class="scene-name">
-                <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M15.7 12.2A6.2 6.2 0 0 1 7.8 4.3a6.3 6.3 0 1 0 7.9 7.9Z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>
-                夜灯
-              </span>
-              <span class="scene-cct">2700K · 1%</span>
-            </button>
+          <div class="presence-card" id="presenceCard">
+            <svg class="cam-view" viewBox="0 0 96 64" role="img" aria-label="摄像头仿真画面：示意在场检测框">
+              <defs>
+                <linearGradient id="camBgGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0" stop-color="#16211f"/>
+                  <stop offset="1" stop-color="#080d0b"/>
+                </linearGradient>
+              </defs>
+              <rect width="96" height="64" fill="url(#camBgGrad)"/>
+              <g opacity=".16" stroke="#8fd8ff" stroke-width=".4">
+                <path d="M0 16h96M0 32h96M0 48h96M24 0v64M48 0v64M72 0v64"/>
+              </g>
+              <g class="cam-person">
+                <circle cx="56" cy="27" r="10" fill="#2b332c"/>
+                <path d="M36 64C36 46 44 38 56 38C68 38 76 46 76 64Z" fill="#222922"/>
+              </g>
+              <rect class="cam-scan" x="0" y="0" width="96" height="1" fill="#8fd8ff" opacity=".35"/>
+              <g class="cam-frame" fill="none" stroke="#8fd8ff" stroke-width=".9">
+                <rect x="40" y="17" width="32" height="29" stroke-opacity=".3" stroke-dasharray="2 3"/>
+                <path d="M40 22v-5h5M67 17h5v5M40 41v5h5M72 41v5h-5"/>
+              </g>
+              <text x="5" y="9" fill="#8fd8ff" fill-opacity=".65" font-family="var(--mono)" font-size="4.6" letter-spacing=".1em">CAM 01</text>
+              <text x="91" y="60" text-anchor="end" fill="#8fd8ff" fill-opacity=".4" font-family="var(--mono)" font-size="4.4">SIM</text>
+            </svg>
+            <div class="presence-info">
+              <p class="presence-kicker">GC0308 · 本地处理 · 不上传</p>
+              <p class="presence-state" aria-live="polite"><span id="presenceState">无人</span><em id="presenceEn">NO PERSON</em></p>
+              <p class="presence-meta"><span id="presenceConf">--</span> 置信度 <i>·</i> <span id="presenceDist">--</span> 距离</p>
+            </div>
+          </div>
+          <div class="presence-actions" role="group" aria-label="在场检测操作">
+            <button class="mini-btn" id="presenceOn" type="button">有人坐下</button>
+            <button class="mini-btn" id="presenceOff" type="button">离开</button>
+            <button class="mini-btn" id="presenceAuto" type="button" aria-pressed="true">自动</button>
           </div>
         </section>
 
-        <section class="group" aria-labelledby="brightnessLabel">
+        <section class="group" aria-labelledby="expressionHeading">
           <div class="group-head">
-            <label id="brightnessLabel" for="brightness">亮度</label>
-            <output class="field-value" id="brightnessOut" for="brightness">100<small>%</small></output>
+            <h3 id="expressionHeading">屏幕表情</h3>
+            <span class="tag" id="expressionTag">待机 / IDLE</span>
           </div>
-          <div class="range-wrap">
-            <input class="range" id="brightness" type="range" min="1" max="100" step="1" value="100" aria-label="亮度，百分比">
+          <div class="expr-grid" role="group" aria-label="选择屏幕表情">
+            <button class="scene-btn expr-btn" type="button" data-expression="idle" aria-pressed="true">
+              <span class="scene-name">
+                <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="4.4" stroke="currentColor" stroke-width="1.2"/><path d="M8 5.8v2.6l1.7 1" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+                待机
+              </span>
+              <span class="scene-cct">IDLE</span>
+            </button>
+            <button class="scene-btn expr-btn" type="button" data-expression="aware" aria-pressed="false">
+              <span class="scene-name">
+                <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M1.8 8S4.4 3.9 8 3.9 14.2 8 14.2 8 11.6 12.1 8 12.1 1.8 8 1.8 8Z" stroke="currentColor" stroke-width="1.2"/><circle cx="8" cy="8" r="2" stroke="currentColor" stroke-width="1.1"/></svg>
+                在场
+              </span>
+              <span class="scene-cct">AWARE</span>
+            </button>
+            <button class="scene-btn expr-btn" type="button" data-expression="listen" aria-pressed="false">
+              <span class="scene-name">
+                <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 2.4a3.2 3.2 0 0 1 3.2 3.2v2.2a3.2 3.2 0 0 1-6.4 0V5.6A3.2 3.2 0 0 1 8 2.4Z" stroke="currentColor" stroke-width="1.2"/><path d="M4.4 8.4v.6a3.6 3.6 0 0 0 7.2 0v-.6M8 12.6v1.2" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" opacity=".7"/></svg>
+                聆听
+              </span>
+              <span class="scene-cct">LISTEN</span>
+            </button>
+            <button class="scene-btn expr-btn" type="button" data-expression="think" aria-pressed="false">
+              <span class="scene-name">
+                <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="4" cy="8" r="1.2" fill="currentColor"/><circle cx="8" cy="8" r="1.2" fill="currentColor" opacity=".7"/><circle cx="12" cy="8" r="1.2" fill="currentColor" opacity=".45"/></svg>
+                思考
+              </span>
+              <span class="scene-cct">THINK</span>
+            </button>
+            <button class="scene-btn expr-btn" type="button" data-expression="speak" aria-pressed="false">
+              <span class="scene-name">
+                <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 6.5v3M6 4.6v6.8M9 3v10M12 5.4v5.2M14.4 7v2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+                回答
+              </span>
+              <span class="scene-cct">SPEAK</span>
+            </button>
+            <button class="scene-btn expr-btn" type="button" data-expression="timer" aria-pressed="false">
+              <span class="scene-name">
+                <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8.4" r="4.8" stroke="currentColor" stroke-width="1.2"/><path d="M8 5.8v2.8l1.8 1.1M6.4 2.6h3.2" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/></svg>
+                计时
+              </span>
+              <span class="scene-cct">TIMER</span>
+            </button>
           </div>
-          <div class="range-meta"><span>1% NIGHT GLOW</span><span>100% FULL OUTPUT</span></div>
-        </section>
-
-        <section class="group" aria-labelledby="cctLabel">
-          <div class="group-head">
-            <label id="cctLabel" for="cct">色温</label>
-            <output class="field-value" id="cctOut" for="cct">4300<small>K</small></output>
-          </div>
-          <div class="range-wrap">
-            <input class="range" id="cct" type="range" min="2700" max="6500" step="100" value="4300" aria-label="色温，开尔文">
-          </div>
-          <div class="range-meta"><span>2700K · WARM</span><span>6500K · COOL</span></div>
         </section>
 
         <section class="group" aria-labelledby="postureHeading">
           <div class="group-head">
-            <h3 id="postureHeading">灯头姿态</h3>
-            <span class="tag" id="motionTag">云台已释放</span>
+            <h3 id="postureHeading">伺服姿态</h3>
+            <span class="tag" id="motionTag">双舵机保持</span>
           </div>
           <div class="axis-grid">
             <div class="axis">
               <div class="axis-head">
-                <label for="yaw">转向</label>
+                <label for="yaw">S1 转向</label>
                 <span class="axis-value"><span id="yawOut">0</span><span class="deg">°</span></span>
               </div>
               <div class="range-wrap">
-                <input class="range" id="yaw" type="range" min="-60" max="60" step="1" value="0" aria-label="灯头转向，负数为左，正数为右">
+                <input class="range" id="yaw" type="range" min="-60" max="60" step="1" value="0" aria-label="S1 转向，负数为左，正数为右">
               </div>
             </div>
             <div class="axis">
               <div class="axis-head">
-                <label for="tilt">俯仰</label>
-                <span class="axis-value"><span id="tiltOut">30</span><span class="deg">°</span></span>
+                <label for="tilt">S2 俯仰</label>
+                <span class="axis-value"><span id="tiltOut">28</span><span class="deg">°</span></span>
               </div>
               <div class="range-wrap">
-                <input class="range" id="tilt" type="range" min="10" max="55" step="1" value="30" aria-label="灯头俯仰，范围 10 到 55 度">
+                <input class="range" id="tilt" type="range" min="5" max="55" step="1" value="28" aria-label="S2 俯仰，范围 5 到 55 度">
               </div>
             </div>
           </div>
-          <div class="move-row" role="group" aria-label="云台动作">
-            <button class="move-btn" type="button" data-move="nod" title="让灯头点头">
+          <div class="range-meta"><span>S1 · −60° / +60°</span><span>S2 · 5° / 55°</span></div>
+          <div class="move-row" role="group" aria-label="舵机动作">
+            <button class="move-btn" type="button" data-move="nod" title="让机器人点头">
               <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 5.5c2.7 0 4.7 1 6 3.1M3 10V5.5M3 10h4.2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M10.5 3.5H13M10.5 6.5H13" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" opacity=".55"/></svg>
               点头
             </button>
-            <button class="move-btn" type="button" data-move="left" title="灯头向左看">
+            <button class="move-btn" type="button" data-move="left" title="头部向左转">
               <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M12.5 8h-9M7 3.5 3 8l4 4.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              左转
+              左看
             </button>
-            <button class="move-btn" type="button" data-move="right" title="灯头向右看">
+            <button class="move-btn" type="button" data-move="right" title="头部向右转">
               <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 8h9M9 3.5 13 8l-4 4.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              右转
+              右看
             </button>
-            <button class="move-btn" type="button" data-move="home" title="云台回到初始姿态">
+            <button class="move-btn" type="button" data-move="home" title="双舵机回到初始姿态">
               <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="4.2" stroke="currentColor" stroke-width="1.2"/><circle cx="8" cy="8" r="1" fill="currentColor"/><path d="M8 1.5v2M8 12.5v2M1.5 8h2M12.5 8h2" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" opacity=".65"/></svg>
               归位
             </button>
@@ -1756,13 +1931,13 @@ button:focus-visible,a:focus-visible,input:focus-visible{
 
         <section class="group" aria-labelledby="timerHeading">
           <div class="group-head">
-            <h3 id="timerHeading">定时关闭</h3>
+            <h3 id="timerHeading">专注计时</h3>
             <span class="tag" id="timerTag">未启动</span>
           </div>
           <div class="timer-row">
-            <div class="timer-chips" role="group" aria-label="定时时长，分钟">
+            <div class="timer-chips" role="group" aria-label="专注时长，分钟">
               <button class="timer-chip" type="button" data-minutes="15" aria-pressed="false">15</button>
-              <button class="timer-chip" type="button" data-minutes="30" aria-pressed="true">30</button>
+              <button class="timer-chip" type="button" data-minutes="25" aria-pressed="true">25</button>
               <button class="timer-chip" type="button" data-minutes="45" aria-pressed="false">45</button>
               <button class="timer-chip" type="button" data-minutes="60" aria-pressed="false">60</button>
             </div>
@@ -1773,11 +1948,11 @@ button:focus-visible,a:focus-visible,input:focus-visible{
 
         <div class="scene-note">
           <div class="scene-note-kicker">
-            <span>此刻的光 / THE MOMENT</span>
-            <span id="noteReadout">4300K · 100%</span>
+            <span>此刻 / THE MOMENT</span>
+            <span id="noteReadout">NO PERSON · IDLE</span>
           </div>
-          <p id="sceneNote">4300K 的暖白光落在纸面上，让字迹清晰，也让夜晚保持安静。</p>
-          <div class="note-sign">双通道混光 · 双轴缓动 · 运动降载</div>
+          <p id="sceneNote">摄像头没有看到人，灯环保持低亮暖白。它停在桌面上，等你坐下。</p>
+          <div class="note-sign">双舵机 · 单目在场检测 · 本地处理</div>
         </div>
       </div>
 
@@ -1785,18 +1960,18 @@ button:focus-visible,a:focus-visible,input:focus-visible{
         <div class="telemetry" aria-label="实时仿真读数">
           <div class="telemetry-item">
             <span class="telemetry-label">功率 / POWER</span>
-            <span class="telemetry-value" id="telemetryPower">4.9 <span class="unit">W</span></span>
+            <span class="telemetry-value" id="telemetryPower">1.1 <span class="unit">W</span></span>
           </div>
           <div class="telemetry-item">
-            <span class="telemetry-label">灯板 / LED TEMP</span>
-            <span class="telemetry-value" id="telemetryTemp">46.0 <span class="unit">°C</span></span>
+            <span class="telemetry-label"><span class="tiny-dot" id="servoDot"></span>舵机 / SERVO</span>
+            <span class="telemetry-value" id="telemetryServo">保持</span>
           </div>
           <div class="telemetry-item">
-            <span class="telemetry-label"><span class="tiny-dot" id="servoDot"></span>云台 / SERVO</span>
-            <span class="telemetry-value" id="telemetryServo">待机</span>
+            <span class="telemetry-label">视觉 / VISION</span>
+            <span class="telemetry-value" id="telemetryVision">待机</span>
           </div>
         </div>
-        <p class="sim-note">前端物理模型估算 · 依据 LAMP-1 固件参数 · 非实测数据</p>
+        <p class="sim-note">前端行为仿真 · 舵机角度与检测结果为脚本生成 · 非实测数据</p>
       </footer>
     </aside>
   </main>
@@ -1816,7 +1991,7 @@ button:focus-visible,a:focus-visible,input:focus-visible{
           <span class="site-brand__name">LAMP—1</span>
         </a>
         <div class="footer-brand-copy">
-          <p>一个放在桌面上的 AI 学习机器人。语音、动作、屏幕与灯环，让 AI 回到桌面。</p>
+          <p>一个放在桌面上的 AI 机器人。语音、动作、屏幕与灯环，让 AI 回到桌面。</p>
           <div class="footer-brand-links">
             <a class="site-text-link" href="product.html">认识 LAMP—1
               <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8h9M8.5 3.5 13 8l-4.5 4.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -1837,7 +2012,7 @@ button:focus-visible,a:focus-visible,input:focus-visible{
       <div class="footer-note">
         <h3>项目状态 / Status</h3>
         <span class="footer-prototype"><i aria-hidden="true"></i>概念样机 · 非量产</span>
-        <p>LAMP—1 处于概念设计与 MVP 验证阶段。本页是第一阶段台架样机，RIG-Arm 套件与灯环尚未到位，照明仅用于调试。</p>
+        <p>本页是 REV C 硬件形态的交互数字样机：头部屏幕、状态灯环、双舵机与单目在场检测。硬件仍在验证中。</p>
       </div>
     </div>
 
@@ -1864,56 +2039,56 @@ button:focus-visible,a:focus-visible,input:focus-visible{
   'use strict';
 
   /* ------------------------------------------------------------------ model */
-  const SCENES = {
-    study:  { label: '阅读', en: 'STUDY',  cct: 4300, brightness: 100 },
-    office: { label: '办公', en: 'OFFICE', cct: 5200, brightness: 80 },
-    rest:   { label: '休息', en: 'REST',   cct: 2700, brightness: 35 },
-    night:  { label: '夜灯', en: 'NIGHT',  cct: 2700, brightness: 1 }
+  const EXPRESSIONS = {
+    idle:   { label: '待机', en: 'IDLE',   ring: [212, 236, 255], alpha: .55,
+              note: '灯环保持低亮冷白，屏幕闭着眼。它停在桌面上，等下一次开口。' },
+    aware:  { label: '在场', en: 'AWARE',  ring: [150, 220, 255], alpha: .82,
+              note: '摄像头确认有人在场。头转向你的方向，灯环变成亮冷白——它知道你坐下了。' },
+    listen: { label: '聆听', en: 'LISTEN', ring: [255, 225, 195], alpha: .88,
+              note: '正在听。灯环常亮暖白，屏幕收起表情，只留一条呼吸线。' },
+    think:  { label: '思考', en: 'THINK',  ring: [255, 225, 195], alpha: .76,
+              note: '正在想。灯环以 1.2 Hz 缓慢呼吸，屏幕变成三个点。' },
+    speak:  { label: '回答', en: 'SPEAK',  ring: [255, 250, 244], alpha: .96,
+              note: '正在回答。灯环转白，随音节起伏；屏幕显示声波。' },
+    timer:  { label: '计时', en: 'TIMER',  ring: [150, 230, 200], alpha: .7,
+              note: '专注计时进行中。屏幕显示剩余时间，灯环绕成低亮青绿。' }
   };
-  const SCENE_NOTES = {
-    study: '4300K 的暖白光落在纸面上，让字迹清晰，也让夜晚保持安静。',
-    office: '5200K 的中性白贴近日光，在屏幕与纸笔之间留下一段清醒的边界。',
-    rest: '2700K 把桌面收成一团柔光，留给一杯茶，和一段慢下来的时间。',
-    night: '1% 的暖光只够照亮脚下，不惊动睡意，也不打断这间房间的呼吸。',
-    standby: '灯光已经熄灭，灯还停在原处，等下一次被唤醒。',
-    manual: '自定义光配方，亮度和色温都由你决定。灯会记住这一刻。'
-  };
-  const LIMITS = {
-    brightness: [1, 100],
-    cct: [2700, 6500],
-    yaw: [-60, 60],
-    tilt: [10, 55],
-    homeYaw: 0,
-    homeTilt: 30
-  };
-  const THERMAL = { ambient: 24, fullLoad: 29, heatTau: 19, coolTau: 48 };
-  const HEAD = { pivotX: 548, pivotY: 356, cx: 625, cy: 305 };
+  const LIMITS = { yaw: [-60, 60], tilt: [5, 55], homeYaw: 0, homeTilt: 28 };
+  const HEAD = { pivotX: 630, pivotY: 400, cx: 630, cy: 318, lensX: 630, lensY: 247 };
+  const PERSON = { yaw: 26, tilt: 36, headX: 858, headY: 540 };
+  const FRAME = { left: 800, top: 484, right: 926, bottom: 650 };
 
   const state = {
     power: true,
-    preset: 'study',
-    brightness: 100,
-    cct: 4300,
-    yaw: 0,
-    tilt: 30,
-    selectedMinutes: 30,
+    presence: { detected: false, confidence: 0, distance: 0, auto: true },
+    expression: 'idle',
+    expressionManual: false,
+    yaw: LIMITS.homeYaw,
+    tilt: LIMITS.homeTilt,
+    selectedMinutes: 25,
     timer: { active: false, endsAt: 0, totalMs: 0, minutes: 0 }
   };
 
   // Interpolated values used by the renderer; state remains the target.
-  const view = { intensity: 0, cct: 4300, yaw: 0, tilt: 30 };
+  const view = {
+    yaw: state.yaw,
+    tilt: state.tilt,
+    presence: 0,
+    ring: EXPRESSIONS.idle.ring.slice(),
+    ringAlpha: 0
+  };
   const sim = {
-    temp: 46,
-    watts: 4.9,
     servoBusy: false,
-    lastTempAt: performance.now(),
-    lastMovingAt: -1e9
+    lastMoveAt: -1e9,
+    lastReadoutAt: 0,
+    autoNextAt: 0,
+    manualUntil: 0,
+    watts: 1.1
   };
 
   let quickMotion = { active: false, token: 0, returnTimer: 0, kind: '' };
   let draggingHead = null;
   let lastFrame = performance.now();
-  let lastReadoutFrame = 0;
   let toastTimer = 0;
   let resetSpinTimer = 0;
   let voiceBusy = false;
@@ -1921,6 +2096,7 @@ button:focus-visible,a:focus-visible,input:focus-visible{
   let voicePttTimer = 0;
   let voiceTurnTimer = 0;
   let voiceSampleIndex = 0;
+  let timerEndToken = 0;
 
   const $ = (selector, root = document) => root.querySelector(selector);
   const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
@@ -1929,34 +2105,48 @@ button:focus-visible,a:focus-visible,input:focus-visible{
   const stage = $('#stage');
   const stageCanvas = $('#stageCanvas');
   const sceneSvg = $('#sceneSvg');
-  const beamOuter = $('#beamOuter');
-  const beamInner = $('#beamInner');
-  const lightPool = $('#lightPool');
-  const lightPoolCore = $('#lightPoolCore');
+
+  const ringLight = $('#ringLight');
+  const ringGlow = $('#ringGlow');
+  const headBloom = $('#headBloom');
+  const screenFace = $('#screenFace');
+  const screenTimerText = $('#screenTimerText');
   const spillOverlay = $('#spillOverlay');
   const spillCore = $('#spillCore');
   const dustGroup = $('#dustGroup');
-  const headBloom = $('#headBloom');
-  const lensLight = $('#lensLight');
-  const lensHalo = $('#lensHalo');
-  const headPose = $('#headPose');
+  const headYaw = $('#headYaw');
+  const headPitch = $('#headPitch');
+  const neckArm = $('#neckArm');
+  const neckArmHi = $('#neckArmHi');
+  const yawTick = $('#yawTick');
+  const baseLed = $('#baseLed');
   const aimReticle = $('#aimReticle');
   const headHit = $('#headHit');
   const baseHit = $('#baseHit');
-  const oledState = $('#oledState');
-  const oledValue = $('#oledValue');
+
+  const visionCone = $('#visionCone');
+  const visionEdgeL = $('#visionEdgeL');
+  const visionEdgeR = $('#visionEdgeR');
+  const scanLines = $('#scanLines');
+  const camTag = $('#camTag');
+  const detectFrame = $('#detectFrame');
+  const detectMeta = $('#detectMeta');
+  const personGroup = $('#personGroup');
+  const servoHud = $('#servoHud');
+  const servoYawText = $('#servoYawText');
+  const servoPitchText = $('#servoPitchText');
 
   const powerBtn = $('#powerBtn');
   const powerLabel = $('#powerLabel');
-  const sceneTag = $('#sceneTag');
   const stageMode = $('#stageMode');
-  const motionTag = $('#motionTag');
   const telemetryPower = $('#telemetryPower');
-  const telemetryTemp = $('#telemetryTemp');
   const telemetryServo = $('#telemetryServo');
+  const telemetryVision = $('#telemetryVision');
   const servoDot = $('#servoDot');
-  const metricCct = $('#metricCct');
-  const metricLux = $('#metricLux');
+  const metricPresence = $('#metricPresence');
+  const metricPresenceSub = $('#metricPresenceSub');
+  const metricExpression = $('#metricExpression');
+  const metricExpressionEn = $('#metricExpressionEn');
   const metricYaw = $('#metricYaw');
   const metricTilt = $('#metricTilt');
   const metricTimer = $('#metricTimer');
@@ -1964,18 +2154,25 @@ button:focus-visible,a:focus-visible,input:focus-visible{
   const timerTag = $('#timerTag');
   const timerBtn = $('#timerBtn');
   const timerProgress = $('#timerProgress');
-  const brightnessInput = $('#brightness');
-  const brightnessOut = $('#brightnessOut');
-  const cctInput = $('#cct');
-  const cctOut = $('#cctOut');
   const yawInput = $('#yaw');
   const yawOut = $('#yawOut');
   const tiltInput = $('#tilt');
   const tiltOut = $('#tiltOut');
+  const motionTag = $('#motionTag');
+  const presenceTag = $('#presenceTag');
+  const presenceCard = $('#presenceCard');
+  const presenceState = $('#presenceState');
+  const presenceEn = $('#presenceEn');
+  const presenceConf = $('#presenceConf');
+  const presenceDist = $('#presenceDist');
+  const presenceOn = $('#presenceOn');
+  const presenceOff = $('#presenceOff');
+  const presenceAuto = $('#presenceAuto');
+  const expressionTag = $('#expressionTag');
+  const expressionButtons = $$('.expr-btn');
   const sceneNote = $('#sceneNote');
   const noteReadout = $('#noteReadout');
   const timerChips = $$('.timer-chip');
-  const sceneButtons = $$('.scene-btn');
   const moveButtons = $$('.move-btn');
   const toastEl = $('#toast');
   const announcer = $('#announcer');
@@ -2000,6 +2197,7 @@ button:focus-visible,a:focus-visible,input:focus-visible{
     const p = 10 ** places;
     return Math.round(value * p) / p;
   };
+  const rand = (min, max) => min + Math.random() * (max - min);
   const signed = value => {
     const rounded = Math.round(value);
     return rounded > 0 ? `+${rounded}` : String(rounded);
@@ -2009,38 +2207,13 @@ button:focus-visible,a:focus-visible,input:focus-visible{
     const seconds = Math.max(0, Math.ceil(ms / 1000));
     return `${pad2(Math.floor(seconds / 60))}:${pad2(seconds % 60)}`;
   };
-  const sceneOf = key => SCENES[key] || SCENES.study;
-  const currentSceneLabel = () => {
-    if (!state.power) return '待机 / STANDBY';
-    if (state.preset === 'manual') return '自定义 / MANUAL';
-    const s = sceneOf(state.preset);
-    return `${s.label} / ${s.en}`;
+  const expressionOf = key => EXPRESSIONS[key] || EXPRESSIONS.idle;
+  const lerpColor = (from, to, t) => from.map((value, index) => Math.round(value + (to[index] - value) * t));
+  const approach = (current, target, maxDelta) => {
+    if (current < target) return Math.min(current + maxDelta, target);
+    if (current > target) return Math.max(current - maxDelta, target);
+    return current;
   };
-
-  // Tanner Helland approximation, then a little desaturation so the beam reads
-  // as light instead of saturated color.
-  function kelvinToRgb(kelvin) {
-    const t = clamp(kelvin, 1000, 40000) / 100;
-    let r, g, b;
-    if (t <= 66) {
-      r = 255;
-      g = 99.4708025861 * Math.log(t) - 161.1195681661;
-      b = t <= 19 ? 0 : 138.5177312231 * Math.log(t - 10) - 305.0447927307;
-    } else {
-      r = 329.698727446 * ((t - 60) ** -0.1332047592);
-      g = 288.1221695283 * ((t - 60) ** -0.0755148492);
-      b = 255;
-    }
-    return [r, g, b].map(value => clamp(Math.round(value), 0, 255));
-  }
-  function mixWithWhite(rgb, amount) {
-    return rgb.map(value => Math.round(value + (255 - value) * amount));
-  }
-  function lampRgbFor(cct, intensity) {
-    // Cooler CCTs get a touch of white; warm CCTs keep their amber edge.
-    const whiteMix = 0.03 + clamp((cct - 2700) / 3800, 0, 1) * 0.1 + (1 - intensity) * 0.06;
-    return mixWithWhite(kelvinToRgb(cct), whiteMix);
-  }
 
   function announce(message) {
     announcer.textContent = '';
@@ -2055,9 +2228,6 @@ button:focus-visible,a:focus-visible,input:focus-visible{
   }
 
   /* ------------------------------------------------------------- scene fit */
-  // The illustration is composed for a 1000 × 820 field. Rather than cropping
-  // the lamp on unusual viewports, we change the viewBox to keep the scene's
-  // vertical frame and extend/crop only horizontally. Portraits add headroom.
   function fitScene() {
     const w = stageCanvas.clientWidth;
     const h = stageCanvas.clientHeight;
@@ -2077,89 +2247,96 @@ button:focus-visible,a:focus-visible,input:focus-visible{
     input.style.setProperty('--fill', `${fill}%`);
   }
 
-  function geometryForTarget() {
-    const intensity = clamp(view.intensity, 0, 1);
-    const yawNorm = view.yaw / 60;
-    const tiltNorm = (view.tilt - 30) / 25;
-
-    // The head pivots around the visible brass joint, so the beam follows the
-    // same small arc that the hardware would make.
-    const rot = (view.yaw * 0.075 + (view.tilt - 30) * 0.09) * (Math.PI / 180);
-    const dx = HEAD.cx - HEAD.pivotX;
-    const dy = HEAD.cy - HEAD.pivotY;
-    const hx = HEAD.pivotX + dx * Math.cos(rot) - dy * Math.sin(rot);
-    const hy = HEAD.pivotY + dx * Math.sin(rot) + dy * Math.cos(rot);
-
-    const poolX = clamp(690 + yawNorm * 185 + (30 - view.tilt) * 1.7, 300, 950);
-    const poolY = 758;
-    const spread = 148 + Math.abs(yawNorm) * 12;
-    const topHalf = 68;
-    const topX = hx + 8 + yawNorm * 10;
-    const topY = hy + 48 + tiltNorm * 3;
-
-    const outer = `M${topX - topHalf} ${topY}C${topX - topHalf - 21} ${topY + 136} ${poolX - spread - 34} ${poolY - 108} ${poolX - spread} ${poolY}H${poolX + spread}C${poolX + spread + 34} ${poolY - 108} ${topX + topHalf + 21} ${topY + 136} ${topX + topHalf} ${topY}Z`;
-    const coreHalf = 31;
-    const coreSpread = 70 + Math.abs(yawNorm) * 8;
-    const core = `M${topX - coreHalf} ${topY + 3}C${topX - coreHalf - 10} ${topY + 122} ${poolX - coreSpread - 15} ${poolY - 100} ${poolX - coreSpread} ${poolY}H${poolX + coreSpread}C${poolX + coreSpread + 15} ${poolY - 100} ${topX + coreHalf + 10} ${topY + 122} ${topX + coreHalf} ${topY + 3}Z`;
-
-    return { hx, hy, rot: rot * 180 / Math.PI, poolX, poolY, outer, core, intensity };
+  function ringTarget() {
+    if (!state.power) return { rgb: [120, 122, 112], alpha: 0 };
+    const expression = expressionOf(state.expression);
+    return { rgb: expression.ring, alpha: expression.alpha };
   }
 
-  function render() {
-    const intensity = clamp(view.intensity, 0, 1);
-    const rgb = lampRgbFor(view.cct, intensity);
-    app.style.setProperty('--lamp-rgb', rgb.join(','));
-    app.style.setProperty('--ambient-opacity', String(0.09 + intensity * 0.91));
-
-    const g = geometryForTarget();
-    beamOuter.setAttribute('d', g.outer);
-    beamInner.setAttribute('d', g.core);
-    lightPool.setAttribute('cx', g.poolX.toFixed(1));
-    lightPool.setAttribute('cy', g.poolY.toFixed(1));
-    lightPoolCore.setAttribute('cx', g.poolX.toFixed(1));
-    lightPoolCore.setAttribute('cy', g.poolY.toFixed(1));
-    spillOverlay.setAttribute('cx', String(Math.round(g.poolX + 34)));
-    spillOverlay.setAttribute('cy', '741');
-    spillCore.setAttribute('cx', String(Math.round(g.poolX + 34)));
-    spillCore.setAttribute('cy', '744');
-    aimReticle.setAttribute('transform', `translate(${g.poolX.toFixed(1)} ${g.poolY})`);
-
-    const beamAlpha = Math.pow(intensity, 0.72);
-    beamOuter.setAttribute('opacity', (0.85 * beamAlpha).toFixed(3));
-    beamInner.setAttribute('opacity', (0.7 * beamAlpha).toFixed(3));
-    lightPool.setAttribute('opacity', beamAlpha.toFixed(3));
-    lightPoolCore.setAttribute('opacity', (0.82 * beamAlpha).toFixed(3));
-    spillOverlay.style.opacity = String(0.64 * beamAlpha);
-    spillCore.style.opacity = String(0.56 * beamAlpha);
-    dustGroup.style.opacity = String(0.22 + intensity * 0.6);
-    headBloom.setAttribute('opacity', (0.1 + intensity * 0.44).toFixed(3));
-    lensHalo.setAttribute('opacity', (0.14 + intensity * 0.32).toFixed(3));
-    lensLight.style.opacity = String(0.08 + intensity * 0.92);
-
-    headPose.setAttribute('transform', `rotate(${g.rot.toFixed(3)} ${HEAD.pivotX} ${HEAD.pivotY})`);
-    headHit.setAttribute('transform', `rotate(${g.rot.toFixed(3)} ${HEAD.pivotX} ${HEAD.pivotY})`);
-
-    updateVisualTexts(intensity);
+  function lensPoint(yawDx, pitchRad) {
+    const dx = HEAD.lensX - HEAD.pivotX;
+    const dy = HEAD.lensY - HEAD.pivotY;
+    return {
+      x: HEAD.pivotX + dx * Math.cos(pitchRad) - dy * Math.sin(pitchRad) + yawDx,
+      y: HEAD.pivotY + dx * Math.sin(pitchRad) + dy * Math.cos(pitchRad)
+    };
   }
 
-  function updateVisualTexts(intensity) {
-    if (!state.power) {
-      oledState.textContent = 'STANDBY';
-      oledValue.textContent = 'OFF';
-    } else if (state.preset !== 'manual' && SCENES[state.preset]) {
-      oledState.textContent = SCENES[state.preset].en;
-      oledValue.textContent = `${Math.round(view.cct / 10) * 10}K`;
-    } else {
-      oledState.textContent = 'MANUAL';
-      oledValue.textContent = `${Math.round(view.cct / 10) * 10}K`;
-    }
-    if (intensity < 0.02) {
-      oledState.setAttribute('fill', '#707768');
-      oledValue.setAttribute('fill', '#707768');
-    } else {
-      oledState.removeAttribute('fill');
-      oledValue.removeAttribute('fill');
-    }
+  function render(now, dt) {
+    const target = ringTarget();
+    const colorAlpha = 1 - Math.exp(-dt / 0.2);
+    const alphaAlpha = 1 - Math.exp(-dt / 0.24);
+    view.ring = lerpColor(view.ring, target.rgb, colorAlpha);
+    view.ringAlpha += (target.alpha - view.ringAlpha) * alphaAlpha;
+    if (Math.abs(view.ringAlpha - target.alpha) < 0.002) view.ringAlpha = target.alpha;
+    view.ringAlpha = clamp(view.ringAlpha, 0, 1);
+
+    let pulse = 1;
+    if (state.expression === 'think' && state.power) pulse = 0.72 + 0.28 * Math.sin(now / 380);
+    if (state.expression === 'speak' && state.power) pulse = 0.66 + 0.34 * Math.abs(Math.sin(now / 105));
+    if (state.expression === 'timer' && state.power) pulse = 0.84 + 0.16 * Math.sin(now / 900);
+
+    const ringRgb = view.ring.join(',');
+    const ringCss = `rgb(${ringRgb})`;
+    app.style.setProperty('--ring-rgb', ringRgb);
+    app.style.setProperty('--ambient-opacity', String(0.32 + view.ringAlpha * 0.68));
+
+    ringLight.style.stroke = ringCss;
+    ringGlow.style.fill = ringCss;
+    headBloom.style.fill = ringCss;
+    spillOverlay.style.fill = ringCss;
+    spillCore.style.fill = ringCss;
+    screenFace.style.color = ringCss;
+    baseLed.style.fill = ringCss;
+    yawTick.style.fill = ringCss;
+
+    const alpha = view.ringAlpha * pulse;
+    ringLight.setAttribute('opacity', alpha.toFixed(3));
+    ringGlow.setAttribute('opacity', (alpha * 0.55).toFixed(3));
+    headBloom.setAttribute('opacity', (alpha * 0.5).toFixed(3));
+    spillOverlay.setAttribute('opacity', (alpha * 0.34).toFixed(3));
+    spillCore.setAttribute('opacity', (alpha * 0.42).toFixed(3));
+    baseLed.setAttribute('opacity', (0.25 + alpha * 0.7).toFixed(3));
+    screenFace.style.opacity = state.power ? (0.35 + alpha * 0.65).toFixed(3) : '0';
+    dustGroup.style.opacity = String(0.18 + alpha * 0.42);
+
+    const yawDx = view.yaw * 0.72;
+    const pitchDeg = (view.tilt - LIMITS.homeTilt) * 0.62;
+    const pitchRad = pitchDeg * Math.PI / 180;
+    headYaw.setAttribute('transform', `translate(${yawDx.toFixed(2)} 0)`);
+    headPitch.setAttribute('transform', `rotate(${pitchDeg.toFixed(3)} ${HEAD.pivotX} ${HEAD.pivotY})`);
+
+    const neckX = 630 + yawDx;
+    const neckY = 400;
+    const neckD = `M545 456C552 430 ${(590 + yawDx * 0.3).toFixed(2)} 410 ${neckX.toFixed(2)} ${neckY}`;
+    neckArm.setAttribute('d', neckD);
+    neckArmHi.setAttribute('d', neckD);
+
+    const tickAngle = view.yaw * Math.PI / 180;
+    yawTick.setAttribute('cx', (470 + 112 * Math.sin(tickAngle)).toFixed(2));
+    yawTick.setAttribute('cy', (726 - 30 * Math.cos(tickAngle)).toFixed(2));
+
+    aimReticle.setAttribute('transform', `translate(${(630 + view.yaw * 4.2).toFixed(1)} 752)`);
+
+    // Camera frustum follows the head, while the detected person stays in world space.
+    const lens = lensPoint(yawDx, pitchRad);
+    visionCone.setAttribute('points', `${lens.x.toFixed(1)},${lens.y.toFixed(1)} ${FRAME.left},${FRAME.top} ${FRAME.right},${FRAME.top} ${FRAME.right},${FRAME.bottom} ${FRAME.left},${FRAME.bottom}`);
+    visionEdgeL.setAttribute('d', `M${lens.x.toFixed(1)} ${lens.y.toFixed(1)} L${FRAME.left} ${FRAME.top}`);
+    visionEdgeR.setAttribute('d', `M${lens.x.toFixed(1)} ${lens.y.toFixed(1)} L${FRAME.right} ${FRAME.bottom}`);
+
+    const visionAlpha = view.presence;
+    visionCone.setAttribute('opacity', (visionAlpha * 0.45).toFixed(3));
+    visionEdgeL.setAttribute('opacity', (visionAlpha * 0.62).toFixed(3));
+    visionEdgeR.setAttribute('opacity', (visionAlpha * 0.62).toFixed(3));
+    scanLines.setAttribute('opacity', (visionAlpha * 0.55).toFixed(3));
+    detectFrame.setAttribute('opacity', visionAlpha.toFixed(3));
+    camTag.setAttribute('opacity', (visionAlpha * 0.9).toFixed(3));
+    personGroup.setAttribute('opacity', visionAlpha.toFixed(3));
+    personGroup.setAttribute('transform', `translate(0 ${((1 - visionAlpha) * 8).toFixed(2)})`);
+
+    const servoAlpha = !state.power ? 0 : sim.servoBusy ? 0.92 : (state.presence.detected ? 0.5 : 0.22);
+    servoHud.setAttribute('opacity', servoAlpha.toFixed(2));
+    servoHud.classList.toggle('is-live', sim.servoBusy);
   }
 
   /* ---------------------------------------------------------------- UI sync */
@@ -2167,51 +2344,59 @@ button:focus-visible,a:focus-visible,input:focus-visible{
     const on = state.power;
     app.dataset.power = on ? 'on' : 'off';
     powerBtn.setAttribute('aria-checked', String(on));
-    powerBtn.setAttribute('aria-label', on ? '关闭灯光电源' : '开启灯光电源');
-    powerLabel.textContent = on ? '已开启' : '已关闭';
+    powerBtn.setAttribute('aria-label', on ? '关闭机器人' : '开启机器人');
+    powerLabel.textContent = on ? '运行中' : '已休眠';
     powerLabel.style.color = on ? '#d2b88e' : '#72776b';
-    syncLabels();
+    syncStageBadge();
+    syncPresenceUI();
+    syncNarrative();
   }
 
-  function syncLabels() {
-    sceneTag.textContent = currentSceneLabel();
-    sceneTag.classList.toggle('is-warm', state.power);
+  function syncStageBadge() {
     if (!state.power) {
-      stageMode.textContent = '待机 / STANDBY';
-    } else if (state.preset === 'manual') {
-      stageMode.textContent = '自定义光';
-    } else {
-      stageMode.textContent = `${sceneOf(state.preset).label}场景`;
-    }
-    sceneButtons.forEach(button => {
-      button.setAttribute('aria-pressed', String(state.power && state.preset === button.dataset.scene));
-    });
-    updateSceneNote();
-  }
-
-  function updateSceneNote() {
-    if (!state.power) {
-      sceneNote.textContent = SCENE_NOTES.standby;
-      noteReadout.textContent = 'STANDBY';
+      stageMode.textContent = '休眠 / STANDBY';
       return;
     }
-    if (state.preset === 'manual') {
-      const tone = state.cct >= 5000 ? '中性白光' : state.cct >= 3500 ? '暖白光' : '暖光';
-      sceneNote.textContent = `自定义${tone}，${state.cct}K / ${state.brightness}% 的输出。亮度和色温都由你决定，灯会记住这一刻。`;
-    } else {
-      sceneNote.textContent = SCENE_NOTES[state.preset] || SCENE_NOTES.manual;
+    if (state.timer.active) {
+      stageMode.textContent = '计时 / TIMER';
+      return;
     }
-    noteReadout.textContent = `${state.cct}K · ${state.brightness}%`;
+    if (state.presence.detected && (state.expression === 'idle' || state.expression === 'aware')) {
+      stageMode.textContent = '注视 / TRACKING';
+      return;
+    }
+    const expression = expressionOf(state.expression);
+    stageMode.textContent = `${expression.label} / ${expression.en}`;
   }
 
-  function syncLightControls() {
-    brightnessInput.value = String(state.brightness);
-    cctInput.value = String(state.cct);
-    brightnessOut.innerHTML = `${state.brightness}<small>%</small>`;
-    cctOut.innerHTML = `${state.cct}<small>K</small>`;
-    updateSliderTrack(brightnessInput, state.brightness);
-    updateSliderTrack(cctInput, ((state.cct - 2700) / (6500 - 2700)) * 100);
-    updateSceneNote();
+  function syncPresenceUI() {
+    const live = state.power;
+    const presence = state.presence;
+    presenceState.textContent = !live ? '暂停' : presence.detected ? '有人' : '无人';
+    presenceEn.textContent = !live ? 'PAUSED' : presence.detected ? 'PERSON' : 'NO PERSON';
+    presenceConf.textContent = live && presence.detected ? presence.confidence.toFixed(2) : '--';
+    presenceDist.textContent = live && presence.detected ? `${presence.distance.toFixed(2)} m` : '--';
+    presenceCard.classList.toggle('is-present', live && presence.detected);
+    presenceTag.textContent = !live ? '休眠 / PAUSED' : presence.auto ? '自动 / AUTO' : '手动 / MANUAL';
+    presenceTag.classList.toggle('is-live', live && presence.detected);
+    presenceAuto.setAttribute('aria-pressed', String(presence.auto));
+    metricPresence.textContent = !live ? '暂停' : presence.detected ? '有人' : '无人';
+    metricPresenceSub.textContent = live && presence.detected ? presence.confidence.toFixed(2) : '--';
+    syncStageBadge();
+  }
+
+  function syncExpressionUI() {
+    const expression = expressionOf(state.expression);
+    expressionTag.textContent = `${expression.label} / ${expression.en}`;
+    expressionTag.classList.toggle('is-live', state.expression !== 'idle');
+    expressionButtons.forEach(button => {
+      button.setAttribute('aria-pressed', String(button.dataset.expression === state.expression));
+    });
+    screenFace.dataset.expr = state.expression;
+    metricExpression.textContent = expression.label;
+    metricExpressionEn.textContent = expression.en;
+    syncStageBadge();
+    syncNarrative();
   }
 
   function syncPoseControls() {
@@ -2219,52 +2404,90 @@ button:focus-visible,a:focus-visible,input:focus-visible{
     tiltInput.value = String(Math.round(state.tilt));
     yawOut.textContent = signed(state.yaw);
     tiltOut.textContent = String(Math.round(state.tilt));
-    updateSliderTrack(yawInput, ((state.yaw + 60) / 120) * 100);
-    updateSliderTrack(tiltInput, ((state.tilt - 10) / 45) * 100);
-    yawInput.setAttribute('aria-valuetext', `${Math.round(state.yaw)} 度`);
-    tiltInput.setAttribute('aria-valuetext', `${Math.round(state.tilt)} 度`);
-    if (!state.power) {
-      yawInput.disabled = false;
-      tiltInput.disabled = false;
-    }
+    updateSliderTrack(yawInput, ((state.yaw - LIMITS.yaw[0]) / (LIMITS.yaw[1] - LIMITS.yaw[0])) * 100);
+    updateSliderTrack(tiltInput, ((state.tilt - LIMITS.tilt[0]) / (LIMITS.tilt[1] - LIMITS.tilt[0])) * 100);
+    yawInput.setAttribute('aria-valuetext', `转向 ${Math.round(state.yaw)} 度`);
+    tiltInput.setAttribute('aria-valuetext', `俯仰 ${Math.round(state.tilt)} 度`);
   }
 
   function syncMotionTag() {
-    if (sim.servoBusy) {
-      motionTag.textContent = '运动中 · 降亮 70%';
-      motionTag.classList.add('is-live');
-      servoDot.classList.add('is-moving');
-      telemetryServo.innerHTML = '运动';
+    const busy = sim.servoBusy;
+    motionTag.textContent = busy ? 'S1 / S2 运动中' : state.presence.detected ? '跟随保持' : '双舵机保持';
+    motionTag.classList.toggle('is-live', busy);
+    servoDot.classList.toggle('is-moving', busy);
+    telemetryServo.innerHTML = busy ? '运动' : '保持';
+    servoYawText.textContent = `S1 YAW ${signed(view.yaw)}°`;
+    servoPitchText.textContent = `S2 PITCH ${Math.round(view.tilt)}°`;
+  }
+
+  function syncTimerUI() {
+    const active = state.timer.active;
+    timerChips.forEach(chip => {
+      chip.setAttribute('aria-pressed', String(Number(chip.dataset.minutes) === state.selectedMinutes));
+      chip.disabled = active;
+    });
+
+    if (active) {
+      const remaining = Math.max(0, state.timer.endsAt - Date.now());
+      const countdown = formatCountdown(remaining);
+      timerTag.textContent = `剩余 ${countdown}`;
+      timerTag.classList.add('is-warm');
+      timerBtn.textContent = '取消';
+      timerBtn.classList.add('is-cancel');
+      metricTimer.textContent = countdown;
+      metricTimerWrap.classList.add('is-warm');
+      const progress = state.timer.totalMs > 0 ? clamp(remaining / state.timer.totalMs, 0, 1) : 0;
+      timerProgress.style.width = `${progress * 100}%`;
+      screenTimerText.textContent = countdown;
     } else {
-      motionTag.textContent = '云台已释放';
-      motionTag.classList.remove('is-live');
-      servoDot.classList.remove('is-moving');
-      telemetryServo.innerHTML = '释放';
+      timerTag.textContent = '未启动';
+      timerTag.classList.remove('is-warm');
+      timerBtn.textContent = '启动';
+      timerBtn.classList.remove('is-cancel');
+      metricTimer.textContent = '--:--';
+      metricTimerWrap.classList.remove('is-warm');
+      timerProgress.style.width = '0%';
+      screenTimerText.textContent = `${pad2(state.selectedMinutes)}:00`;
     }
   }
 
-  function syncSceneButtons() {
-    sceneButtons.forEach(button => {
-      button.setAttribute('aria-pressed', String(state.power && state.preset === button.dataset.scene));
-    });
+  function syncNarrative() {
+    const presence = state.presence;
+    if (!state.power) {
+      sceneNote.textContent = '已休眠。灯环与屏幕关闭，摄像头暂停，双舵机释放。';
+      noteReadout.textContent = 'SLEEP · STANDBY';
+      return;
+    }
+    if (state.timer.active) {
+      sceneNote.textContent = '专注计时进行中。屏幕显示剩余时间，灯环保持青绿；到点它会点头提醒你。';
+      noteReadout.textContent = 'TIMER · ACTIVE';
+      return;
+    }
+    if (presence.detected) {
+      sceneNote.textContent = `摄像头看到你了：置信度 ${presence.confidence.toFixed(2)}，距离约 ${presence.distance.toFixed(2)} 米。头转向你的方向，灯环变成冷白。`;
+      noteReadout.textContent = `PERSON · ${presence.confidence.toFixed(2)}`;
+      return;
+    }
+    if (state.expression !== 'idle' && state.expression !== 'aware') {
+      sceneNote.textContent = expressionOf(state.expression).note;
+      noteReadout.textContent = `${expressionOf(state.expression).en} · NO PERSON`;
+      return;
+    }
+    sceneNote.textContent = '摄像头没有看到人，灯环保持低亮暖白。它停在桌面上，等你坐下。';
+    noteReadout.textContent = 'NO PERSON · IDLE';
   }
 
   function syncAllControls() {
     syncPowerUI();
-    syncLightControls();
+    syncPresenceUI();
+    syncExpressionUI();
     syncPoseControls();
-    syncSceneButtons();
     syncTimerUI();
     syncMotionTag();
+    syncNarrative();
   }
 
-  /* --------------------------------------------------------------- lighting */
-  function normalizePreset() {
-    state.preset = 'manual';
-    syncLabels();
-    syncSceneButtons();
-  }
-
+  /* ---------------------------------------------------------------- power */
   function setPower(on, options = {}) {
     const next = Boolean(on);
     if (state.power === next) {
@@ -2272,43 +2495,108 @@ button:focus-visible,a:focus-visible,input:focus-visible{
       return;
     }
     state.power = next;
-    if (!next && !options.fromTimer) {
-      cancelTimer({ silent: true });
-    }
     if (!next) {
-      // Any queued gesture should not re-light the lamp.
+      timerEndToken += 1;
+      cancelTimer({ silent: true });
+      state.presence.detected = false;
+      state.presence.confidence = 0;
+      state.presence.distance = 0;
+      state.expression = 'idle';
+      state.expressionManual = false;
+      state.yaw = LIMITS.homeYaw;
+      state.tilt = LIMITS.homeTilt;
       cancelQuickMotion();
+    } else {
+      state.expression = 'idle';
+      state.expressionManual = false;
+      if (state.presence.auto) sim.autoNextAt = performance.now() + 2500;
     }
-    syncPowerUI();
-    if (!options.silent) {
-      announce(next ? '灯光已开启' : '灯光已关闭');
+    syncAllControls();
+    if (!options.silent) announce(next ? '机器人已唤醒' : '机器人已休眠');
+  }
+
+  /* --------------------------------------------------------------- presence */
+  function setPresence(detected, options = {}) {
+    const now = performance.now();
+    const presence = state.presence;
+    presence.detected = Boolean(detected);
+    if (options.auto !== undefined) presence.auto = Boolean(options.auto);
+
+    if (presence.detected) {
+      presence.confidence = options.confidence ?? round(rand(0.86, 0.97), 2);
+      presence.distance = options.distance ?? round(rand(0.45, 0.8), 2);
+      if (!state.expressionManual || state.expression === 'aware' || state.expression === 'idle') {
+        setExpression('aware', { silent: true, fromPresence: true });
+      }
+      if (now > sim.manualUntil) {
+        state.yaw = PERSON.yaw;
+        state.tilt = PERSON.tilt;
+        markMotionStarted();
+      }
+    } else {
+      presence.confidence = 0;
+      presence.distance = 0;
+      if (state.expression === 'aware') {
+        setExpression('idle', { silent: true, fromPresence: true });
+      }
+      if (now > sim.manualUntil) {
+        state.yaw = LIMITS.homeYaw;
+        state.tilt = LIMITS.homeTilt;
+        markMotionStarted();
+      }
+    }
+    syncPresenceUI();
+    syncPoseControls();
+    syncMotionTag();
+    syncNarrative();
+  }
+
+  function scheduleAutoPresence(now) {
+    sim.autoNextAt = now + (state.presence.detected ? rand(16000, 24000) : rand(12000, 20000));
+  }
+
+  function tickAutoPresence(now) {
+    if (!state.power || !state.presence.auto) return;
+    if (!sim.autoNextAt) {
+      sim.autoNextAt = now + 4500;
+      return;
+    }
+    if (now >= sim.autoNextAt) {
+      setPresence(!state.presence.detected, { auto: true });
+      scheduleAutoPresence(now);
     }
   }
 
-  function applyScene(key, options = {}) {
-    const scene = SCENES[key];
-    if (!scene) return;
-    state.power = true;
-    state.preset = key;
-    state.brightness = scene.brightness;
-    state.cct = scene.cct;
-    syncPowerUI();
-    syncLightControls();
-    syncSceneButtons();
+  /* -------------------------------------------------------------- expression */
+  function setExpression(key, options = {}) {
+    if (!EXPRESSIONS[key]) return;
+    state.expression = key;
+    if (options.fromPresence) {
+      state.expressionManual = false;
+    } else if (!options.silent) {
+      state.expressionManual = key !== 'idle' && key !== 'aware';
+    }
+    syncExpressionUI();
     if (!options.silent) {
-      showToast(`已切换至${scene.label}场景 · ${scene.cct}K / ${scene.brightness}%`);
-      announce(`${scene.label}场景，色温 ${scene.cct} 开尔文，亮度 ${scene.brightness}%`);
+      showToast(`屏幕表情：${EXPRESSIONS[key].label} / ${EXPRESSIONS[key].en}`);
+      announce(`屏幕表情，${EXPRESSIONS[key].label}`);
     }
   }
 
   /* ----------------------------------------------------------------- motion */
+  function currentReturnPose() {
+    return state.presence.detected
+      ? { yaw: PERSON.yaw, tilt: PERSON.tilt }
+      : { yaw: LIMITS.homeYaw, tilt: LIMITS.homeTilt };
+  }
+
   function scheduleReturnHome() {
     const token = ++quickMotion.token;
     quickMotion.returnTimer = window.setTimeout(() => {
       if (token !== quickMotion.token) return;
-      // Match firmware: every gesture returns to the calibrated home pose.
-      state.yaw = LIMITS.homeYaw;
-      state.tilt = LIMITS.homeTilt;
+      const pose = currentReturnPose();
+      state.yaw = pose.yaw;
+      state.tilt = pose.tilt;
       quickMotion.active = false;
       syncPoseControls();
     }, 820);
@@ -2324,27 +2612,22 @@ button:focus-visible,a:focus-visible,input:focus-visible{
       state.tilt = LIMITS.homeTilt;
       quickMotion.active = false;
       syncPoseControls();
-      announce('云台归位');
+      announce('双舵机归位');
     } else if (kind === 'nod') {
       state.tilt = LIMITS.tilt[1];
       syncPoseControls();
       scheduleReturnHome();
-      announce('灯头点头');
+      announce('机器人点头');
     } else if (kind === 'left') {
       state.yaw = -36;
       syncPoseControls();
       scheduleReturnHome();
-      announce('灯头向左转');
+      announce('头部向左转');
     } else if (kind === 'right') {
       state.yaw = 36;
       syncPoseControls();
       scheduleReturnHome();
-      announce('灯头向右转');
-    } else if (kind === 'alert') {
-      state.tilt = LIMITS.tilt[1];
-      state.yaw = 30;
-      syncPoseControls();
-      scheduleReturnHome();
+      announce('头部向右转');
     }
 
     moveButtons.forEach(button => {
@@ -2364,15 +2647,14 @@ button:focus-visible,a:focus-visible,input:focus-visible{
   }
 
   function markMotionStarted() {
-    sim.lastMovingAt = performance.now();
+    sim.lastMoveAt = performance.now();
+    sim.manualUntil = Math.max(sim.manualUntil, performance.now() + 6000);
   }
 
   function updateMotionStatus(now) {
     const moving = Math.abs(view.yaw - state.yaw) > 0.15 || Math.abs(view.tilt - state.tilt) > 0.15;
-    if (moving) sim.lastMovingAt = now;
-    // The servo is considered attached while it moves, while a queued gesture
-    // holds its pose, and for a short settle window after arrival.
-    const busy = moving || quickMotion.active || now - sim.lastMovingAt < 380;
+    if (moving) sim.lastMoveAt = now;
+    const busy = moving || quickMotion.active || now - sim.lastMoveAt < 380;
     if (busy !== sim.servoBusy) {
       sim.servoBusy = busy;
       syncMotionTag();
@@ -2384,8 +2666,10 @@ button:focus-visible,a:focus-visible,input:focus-visible{
     cancelQuickMotion();
     if (kind === 'yaw') state.yaw = clamp(Number(value), LIMITS.yaw[0], LIMITS.yaw[1]);
     if (kind === 'tilt') state.tilt = clamp(Number(value), LIMITS.tilt[0], LIMITS.tilt[1]);
+    sim.manualUntil = performance.now() + 6000;
     markMotionStarted();
     syncPoseControls();
+    syncNarrative();
   }
 
   function nudgePose(deltaYaw, deltaTilt) {
@@ -2394,40 +2678,10 @@ button:focus-visible,a:focus-visible,input:focus-visible{
     cancelQuickMotion();
     markMotionStarted();
     syncPoseControls();
-    announce(`云台姿态，转向 ${Math.round(state.yaw)} 度，俯仰 ${Math.round(state.tilt)} 度`);
+    announce(`舵机姿态，转向 ${Math.round(state.yaw)} 度，俯仰 ${Math.round(state.tilt)} 度`);
   }
 
   /* ------------------------------------------------------------------ timer */
-  function syncTimerUI() {
-    const active = state.timer.active;
-    timerChips.forEach(chip => {
-      const selected = Number(chip.dataset.minutes) === state.selectedMinutes;
-      chip.setAttribute('aria-pressed', String(selected));
-      chip.disabled = active;
-    });
-
-    if (active) {
-      const remaining = Math.max(0, state.timer.endsAt - Date.now());
-      const countdown = formatCountdown(remaining);
-      timerTag.textContent = `剩余 ${countdown}`;
-      timerTag.classList.add('is-warm');
-      timerBtn.textContent = '取消';
-      timerBtn.classList.add('is-cancel');
-      metricTimer.textContent = countdown;
-      metricTimerWrap.classList.add('is-warm');
-      const progress = state.timer.totalMs > 0 ? clamp(remaining / state.timer.totalMs, 0, 1) : 0;
-      timerProgress.style.width = `${progress * 100}%`;
-    } else {
-      timerTag.textContent = '未启动';
-      timerTag.classList.remove('is-warm');
-      timerBtn.textContent = '启动';
-      timerBtn.classList.remove('is-cancel');
-      metricTimer.textContent = '--:--';
-      metricTimerWrap.classList.remove('is-warm');
-      timerProgress.style.width = '0%';
-    }
-  }
-
   function startTimer() {
     if (state.timer.active) {
       cancelTimer();
@@ -2439,24 +2693,29 @@ button:focus-visible,a:focus-visible,input:focus-visible{
     state.timer.totalMs = minutes * 60 * 1000;
     state.timer.endsAt = Date.now() + state.timer.totalMs;
     state.timer.minutes = minutes;
+    state.expression = 'timer';
+    state.expressionManual = true;
     syncTimerUI();
-    showToast(`定时关闭已启动 · ${minutes} 分钟`);
-    announce(`${minutes} 分钟定时关闭已启动`);
+    syncExpressionUI();
+    showToast(`专注计时已开始 · ${minutes} 分钟`);
+    announce(`${minutes} 分钟专注计时已开始`);
   }
 
   function cancelTimer(options = {}) {
-    if (!state.timer.active && options.silent) {
-      syncTimerUI();
-      return;
-    }
     const wasActive = state.timer.active;
     state.timer.active = false;
     state.timer.endsAt = 0;
     state.timer.totalMs = 0;
+    state.timer.minutes = 0;
+    if (wasActive && state.expression === 'timer') {
+      state.expression = state.presence.detected ? 'aware' : 'idle';
+      state.expressionManual = false;
+      syncExpressionUI();
+    }
     syncTimerUI();
     if (wasActive && !options.silent) {
-      showToast('定时关闭已取消');
-      announce('定时关闭已取消');
+      showToast('专注计时已取消');
+      announce('专注计时已取消');
     }
   }
 
@@ -2467,11 +2726,18 @@ button:focus-visible,a:focus-visible,input:focus-visible{
     }
     const remaining = state.timer.endsAt - Date.now();
     if (remaining <= 0) {
+      const minutes = state.timer.minutes;
       state.timer.active = false;
       syncTimerUI();
-      setPower(false, { fromTimer: true });
-      showToast('定时结束 · 灯光已关闭');
-      announce('定时结束，灯光已关闭');
+      setExpression('speak', { silent: true });
+      triggerMove('nod');
+      showToast(`${minutes} 分钟到了 · 起来活动一下`);
+      announce(`${minutes} 分钟专注结束，起来活动一下`);
+      const token = ++timerEndToken;
+      window.setTimeout(() => {
+        if (token !== timerEndToken || state.timer.active) return;
+        setExpression(state.presence.detected ? 'aware' : 'idle', { silent: true, fromPresence: true });
+      }, 4200);
       return;
     }
     syncTimerUI();
@@ -2479,8 +2745,8 @@ button:focus-visible,a:focus-visible,input:focus-visible{
 
   /* --------------------------------------------------------------- voice sim */
   const VOICE_SAMPLES = [
-    '把灯调暖一点',
-    '太亮了，暗一点',
+    '看看我在不在',
+    '转过来看看我',
     '帮我计时 25 分钟',
     '点点头',
     '讲个笑话',
@@ -2495,8 +2761,8 @@ button:focus-visible,a:focus-visible,input:focus-visible{
       tab.classList.toggle('is-active', active);
       tab.setAttribute('aria-pressed', String(active));
     });
-    consoleTitle.innerHTML = isVoice ? '语音台<em>VOICE</em>' : '光控台<em>LIGHT</em>';
-    consoleEl.setAttribute('aria-label', isVoice ? '语音交互仿真' : '灯光控制台');
+    consoleTitle.innerHTML = isVoice ? '语音台<em>VOICE</em>' : '本体台<em>BODY</em>';
+    consoleEl.setAttribute('aria-label', isVoice ? '语音交互仿真' : '机器人控制台');
     consoleBody.scrollTop = 0;
   }
 
@@ -2523,82 +2789,46 @@ button:focus-visible,a:focus-visible,input:focus-visible{
     voiceTranscript.scrollTop = voiceTranscript.scrollHeight;
   }
 
-  function setVoiceLight(next = {}) {
-    if (!state.power) setPower(true, { silent: true });
-    if (typeof next.brightness === 'number') {
-      state.brightness = clamp(next.brightness, LIMITS.brightness[0], LIMITS.brightness[1]);
-    }
-    if (typeof next.cct === 'number') {
-      state.cct = clamp(next.cct, LIMITS.cct[0], LIMITS.cct[1]);
-    }
-    state.preset = 'manual';
-    syncPowerUI();
-    syncLightControls();
-    syncSceneButtons();
-  }
-
   function startVoiceTimer(minutes) {
     if (state.timer.active) cancelTimer({ silent: true });
     state.selectedMinutes = clamp(minutes, 1, 240);
     startTimer();
   }
 
+  function lookAtPerson() {
+    state.yaw = PERSON.yaw;
+    state.tilt = PERSON.tilt;
+    sim.manualUntil = 0;
+    markMotionStarted();
+    syncPoseControls();
+    syncNarrative();
+  }
+
   function answerVoice(text) {
     const t = text.replace(/\s+/g, '');
 
-    if (/(计时|倒计时|番茄|分钟)/.test(t)) {
+    if (/(看看|看见|看到|在不在|有人|检测)/.test(t)) {
+      setPresence(true, { auto: false });
+      return '看到你了。我会把头转过去，灯环也会亮一点。';
+    }
+    if (/(转过来|看我|看这边|面向我)/.test(t)) {
+      if (!state.presence.detected) setPresence(true, { auto: false });
+      lookAtPerson();
+      return '好，我转过来看你。';
+    }
+    if (/(计时|倒计时|番茄|专注|学习|分钟)/.test(t)) {
       const match = t.match(/(\d{1,3})分钟/);
       let minutes = match ? Number(match[1]) : 25;
       if (/半小时/.test(t)) minutes = 30;
       if (/(一小时|一个小时)/.test(t)) minutes = 60;
       minutes = clamp(minutes, 1, 240);
       startVoiceTimer(minutes);
-      return `好，${minutes} 分钟后关灯。到点我会把光慢慢收掉。`;
+      return `好，专注 ${minutes} 分钟。屏幕会显示倒计时，到点我点头提醒你。`;
     }
-    if (/(关灯|关掉|熄灭)/.test(t)) {
-      setPower(false);
-      return '好，灯关了。桌面留给黑暗，我还在。';
-    }
-    if (/(晚安|睡觉)/.test(t)) {
-      applyScene('night', { silent: true });
-      startVoiceTimer(30);
-      return '晚安。我把光调到 1% 的夜灯，30 分钟后自动关。';
-    }
-    if (/(开灯|打开灯|亮起来)/.test(t)) {
-      setPower(true);
-      return '灯开了。要不要再暖一点？';
-    }
-    if (/(阅读|看书|学习)/.test(t)) {
-      applyScene('study', { silent: true });
-      return '切到阅读光：4300K，100%。纸面上的字应该清楚了。';
-    }
-    if (/(办公|工作)/.test(t)) {
-      applyScene('office', { silent: true });
-      return '切到办公光：5200K，80%。屏幕和纸笔之间会清醒一点。';
-    }
-    if (/(休息|放松)/.test(t)) {
-      applyScene('rest', { silent: true });
-      return '切到休息光：2700K，35%。先慢下来。';
-    }
-    if (/(夜灯|小夜灯)/.test(t)) {
-      applyScene('night', { silent: true });
-      return '切到夜灯：2700K，1%。只留一点光。';
-    }
-    if (/(暖|黄光)/.test(t)) {
-      setVoiceLight({ cct: state.cct - 700 });
-      return `暖了一点，现在是 ${state.cct}K / ${state.brightness}%。`;
-    }
-    if (/(冷|白光|清爽)/.test(t)) {
-      setVoiceLight({ cct: state.cct + 700 });
-      return `冷了一点，现在是 ${state.cct}K / ${state.brightness}%。`;
-    }
-    if (/(太亮|刺眼|暗一点|调暗|降低亮度)/.test(t)) {
-      setVoiceLight({ brightness: state.brightness - 15 });
-      return `调暗了，现在是 ${state.cct}K / ${state.brightness}%。`;
-    }
-    if (/(太暗|亮一点|调亮|提高亮度)/.test(t)) {
-      setVoiceLight({ brightness: state.brightness + 15 });
-      return `调亮了，现在是 ${state.cct}K / ${state.brightness}%。`;
+    if (/(休息|放松|停下|暂停)/.test(t)) {
+      if (state.timer.active) cancelTimer({ silent: true });
+      setExpression('idle', { silent: true, fromPresence: true });
+      return '好，先休息。计时停了，灯环回到低亮。';
     }
     if (/(点头|点一下头)/.test(t)) {
       triggerMove('nod');
@@ -2612,9 +2842,19 @@ button:focus-visible,a:focus-visible,input:focus-visible{
       triggerMove('right');
       return '好，我往右看。';
     }
+    if (/(归位|回正|回中)/.test(t)) {
+      triggerMove('home');
+      return '双舵机回中。';
+    }
+    if (/(表情|屏幕)/.test(t)) {
+      const keys = Object.keys(EXPRESSIONS);
+      const next = keys[(keys.indexOf(state.expression) + 1) % keys.length];
+      setExpression(next);
+      return `换成「${EXPRESSIONS[next].label}」表情。`;
+    }
     if (/(笑话|逗我|有趣)/.test(t)) {
       triggerMove('nod');
-      return '为什么台灯从不加班？因为它一到点就自动关灯。';
+      return '为什么机器人不加班？因为它一检测到没人，就自动待机了。';
     }
     if (/(几点|时间)/.test(t)) {
       const now = new Date();
@@ -2623,9 +2863,14 @@ button:focus-visible,a:focus-visible,input:focus-visible{
     if (/(天气|气温)/.test(t)) {
       return '我还没接天气服务。等云端工具接上，再告诉你。';
     }
-    if (/(你好|在吗|hi|hello)/i.test(t)) {
+    if (/(关机|休眠|睡吧|再见)/.test(t)) {
+      setPower(false);
+      return '好，我先休眠。屏幕和灯环都关掉。';
+    }
+    if (/(开机|醒来|你好|在吗|hi|hello)/i.test(t)) {
+      if (!state.power) setPower(true, { silent: true });
       triggerMove('nod');
-      return '我在。你可以让我调光、计时，或者只是聊两句。';
+      return '我在。你可以让我看看你、转过来，或者开始一段专注计时。';
     }
 
     return `我听见了「${text}」。这是前端仿真，真实回答要等云端大模型接入。`;
@@ -2640,12 +2885,12 @@ button:focus-visible,a:focus-visible,input:focus-visible{
     setVoiceState('thinking', '正在听懂…', '把这句话交给仿真脚本，不连接真实服务。');
     voiceTurnTimer = window.setTimeout(() => {
       const response = answerVoice(clean);
-      setVoiceState('speaking', '正在回应…', '灯会用声音、灯光和动作回答。');
+      setVoiceState('speaking', '正在回应…', '它会用屏幕、灯环和一次动作回应。');
       addVoiceBubble('lamp', response);
       voiceBusy = false;
       voiceTurnTimer = window.setTimeout(() => {
         if (voiceBusy) return;
-        setVoiceState('', '已回应', '可以继续问，或切回光控台。');
+        setVoiceState('', '已回应', '可以继续问，或切回本体台。');
       }, 680);
     }, 620);
   }
@@ -2673,21 +2918,21 @@ button:focus-visible,a:focus-visible,input:focus-visible{
 
   /* ------------------------------------------------------------------- reset */
   function resetAll() {
+    timerEndToken += 1;
     cancelQuickMotion();
     cancelTimer({ silent: true });
     state.power = true;
-    state.preset = 'study';
-    state.brightness = SCENES.study.brightness;
-    state.cct = SCENES.study.cct;
-    state.selectedMinutes = 30;
+    state.presence = { detected: false, confidence: 0, distance: 0, auto: true };
+    state.expression = 'idle';
+    state.expressionManual = false;
+    state.selectedMinutes = 25;
     state.yaw = LIMITS.homeYaw;
     state.tilt = LIMITS.homeTilt;
-    state.timer.active = false;
-    sim.temp = 46;
-    sim.watts = 4.9;
+    sim.autoNextAt = performance.now() + 4500;
+    sim.manualUntil = 0;
+    sim.servoBusy = false;
     syncAllControls();
     resetBtn.classList.remove('is-spinning');
-    // Force a reflow so the icon can rotate again if clicked repeatedly.
     void resetBtn.offsetWidth;
     resetBtn.classList.add('is-spinning');
     window.clearTimeout(resetSpinTimer);
@@ -2698,50 +2943,50 @@ button:focus-visible,a:focus-visible,input:focus-visible{
 
   /* ----------------------------------------------------------- metrics + sim */
   function updateReadout(now) {
-    if (now - lastReadoutFrame < 90) return;
-    lastReadoutFrame = now;
-    const load = state.power ? state.brightness / 100 : 0;
-    const liveCct = Math.round(view.cct / 10) * 10;
-    const illuminance = Math.max(0, Math.round(500 * load * (sim.servoBusy ? 0.7 : 1)));
-    metricCct.textContent = String(liveCct);
-    metricLux.textContent = String(illuminance);
+    if (now - sim.lastReadoutAt < 90) return;
+    sim.lastReadoutAt = now;
+
     metricYaw.textContent = `${signed(view.yaw)}°`;
     metricTilt.textContent = `${Math.round(view.tilt)}°`;
-    if (!state.timer.active) {
-      metricTimer.textContent = '--:--';
-      metricTimerWrap.classList.remove('is-warm');
-    } else {
+    metricPresence.textContent = state.power ? (state.presence.detected ? '有人' : '无人') : '暂停';
+    metricPresenceSub.textContent = state.power && state.presence.detected
+      ? state.presence.confidence.toFixed(2)
+      : '--';
+
+    if (state.timer.active) {
       metricTimer.textContent = formatCountdown(state.timer.endsAt - Date.now());
       metricTimerWrap.classList.add('is-warm');
     }
+
     telemetryPower.innerHTML = `${sim.watts.toFixed(1)} <span class="unit">W</span>`;
-    telemetryTemp.innerHTML = `${sim.temp.toFixed(1)} <span class="unit">°C</span>`;
+    telemetryVision.textContent = !state.power
+      ? '关闭'
+      : state.presence.detected
+        ? '检测中 · 12 fps'
+        : '待机 · 1 fps';
+    syncMotionTag();
   }
 
-  function updateThermal(now) {
-    const dt = Math.min(0.25, Math.max(0, (now - sim.lastTempAt) / 1000));
-    if (dt <= 0) return;
-    sim.lastTempAt = now;
-    const load = state.power ? state.brightness / 100 : 0;
-    const target = THERMAL.ambient + THERMAL.fullLoad * load;
-    const tau = target > sim.temp ? THERMAL.heatTau : THERMAL.coolTau;
-    sim.temp += (target - sim.temp) * (1 - Math.exp(-dt / tau));
-    sim.watts = state.power ? 0.55 + 4.35 * load + (sim.servoBusy ? 0.62 : 0) : 0.32;
+  function updatePowerModel() {
+    const base = state.power ? 0.95 : 0.12;
+    const ring = state.power ? view.ringAlpha * 0.35 : 0;
+    const camera = state.power ? (state.presence.detected ? 0.28 : 0.12) : 0;
+    const servos = state.power && sim.servoBusy ? 1.75 : 0;
+    sim.watts = base + ring + camera + servos;
   }
 
   /* ------------------------------------------------------------- interaction */
   function openHeadDrag(event) {
     if (event.button !== undefined && event.button !== 0) return;
     cancelQuickMotion();
-    const now = performance.now();
+    sim.manualUntil = performance.now() + 8000;
     draggingHead = {
       pointerId: event.pointerId,
       startX: event.clientX,
       startY: event.clientY,
       startYaw: state.yaw,
       startTilt: state.tilt,
-      moved: false,
-      lastInteraction: now
+      moved: false
     };
     try { headHit.setPointerCapture(event.pointerId); } catch (error) { /* noop */ }
     stage.classList.add('is-aiming');
@@ -2754,8 +2999,9 @@ button:focus-visible,a:focus-visible,input:focus-visible{
     const dy = event.clientY - draggingHead.startY;
     if (!draggingHead.moved && Math.hypot(dx, dy) > 4) draggingHead.moved = true;
     if (!draggingHead.moved) return;
-    state.yaw = clamp(Math.round(draggingHead.startYaw + dx * 0.24), LIMITS.yaw[0], LIMITS.yaw[1]);
-    state.tilt = clamp(Math.round(draggingHead.startTilt + dy * 0.16), LIMITS.tilt[0], LIMITS.tilt[1]);
+    state.yaw = clamp(Math.round(draggingHead.startYaw + dx * 0.36), LIMITS.yaw[0], LIMITS.yaw[1]);
+    state.tilt = clamp(Math.round(draggingHead.startTilt + dy * 0.22), LIMITS.tilt[0], LIMITS.tilt[1]);
+    sim.manualUntil = performance.now() + 8000;
     markMotionStarted();
     quickMotion.active = false;
     syncPoseControls();
@@ -2770,7 +3016,7 @@ button:focus-visible,a:focus-visible,input:focus-visible{
     if (!wasMoved) {
       triggerMove('nod');
     } else {
-      announce(`云台姿态，转向 ${Math.round(state.yaw)} 度，俯仰 ${Math.round(state.tilt)} 度`);
+      announce(`舵机姿态，转向 ${Math.round(state.yaw)} 度，俯仰 ${Math.round(state.tilt)} 度`);
     }
     if (event) event.preventDefault();
   }
@@ -2782,19 +3028,13 @@ button:focus-visible,a:focus-visible,input:focus-visible{
   headHit.addEventListener('keydown', event => {
     const step = event.shiftKey ? 5 : 2;
     switch (event.key) {
-      case 'ArrowLeft':
-        event.preventDefault(); nudgePose(-step, 0); break;
-      case 'ArrowRight':
-        event.preventDefault(); nudgePose(step, 0); break;
-      case 'ArrowUp':
-        event.preventDefault(); nudgePose(0, -step); break;
-      case 'ArrowDown':
-        event.preventDefault(); nudgePose(0, step); break;
+      case 'ArrowLeft': event.preventDefault(); nudgePose(-step, 0); break;
+      case 'ArrowRight': event.preventDefault(); nudgePose(step, 0); break;
+      case 'ArrowUp': event.preventDefault(); nudgePose(0, -step); break;
+      case 'ArrowDown': event.preventDefault(); nudgePose(0, step); break;
       case 'Enter':
-      case ' ':
-        event.preventDefault(); triggerMove('nod'); break;
-      case 'Home':
-        event.preventDefault(); triggerMove('home'); break;
+      case ' ': event.preventDefault(); triggerMove('nod'); break;
+      case 'Home': event.preventDefault(); triggerMove('home'); break;
       default: break;
     }
   });
@@ -2802,38 +3042,55 @@ button:focus-visible,a:focus-visible,input:focus-visible{
   baseHit.addEventListener('click', event => {
     event.preventDefault();
     setPower(!state.power);
-    showToast(state.power ? '灯光已开启' : '灯光已关闭');
+    showToast(state.power ? '机器人已唤醒' : '机器人已休眠');
   });
   baseHit.addEventListener('keydown', event => {
     if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault();
       setPower(!state.power);
-      showToast(state.power ? '灯光已开启' : '灯光已关闭');
+      showToast(state.power ? '机器人已唤醒' : '机器人已休眠');
     }
   });
 
   powerBtn.addEventListener('click', () => {
     setPower(!state.power);
+    showToast(state.power ? '机器人已唤醒' : '机器人已休眠');
   });
 
-  sceneButtons.forEach(button => {
-    button.addEventListener('click', () => applyScene(button.dataset.scene));
+  expressionButtons.forEach(button => {
+    button.addEventListener('click', () => {
+      if (!state.power) setPower(true, { silent: true });
+      setExpression(button.dataset.expression);
+    });
   });
 
-  resetBtn.addEventListener('click', resetAll);
-
-  brightnessInput.addEventListener('input', () => {
+  presenceOn.addEventListener('click', () => {
     if (!state.power) setPower(true, { silent: true });
-    state.brightness = clamp(Number(brightnessInput.value), LIMITS.brightness[0], LIMITS.brightness[1]);
-    normalizePreset();
-    syncLightControls();
+    state.presence.auto = false;
+    setPresence(true, { auto: false });
+    syncPresenceUI();
+    showToast('已模拟：有人坐下');
+    announce('已模拟有人坐下，摄像头检测到人');
   });
 
-  cctInput.addEventListener('input', () => {
-    if (!state.power) setPower(true, { silent: true });
-    state.cct = clamp(Number(cctInput.value), LIMITS.cct[0], LIMITS.cct[1]);
-    normalizePreset();
-    syncLightControls();
+  presenceOff.addEventListener('click', () => {
+    state.presence.auto = false;
+    setPresence(false, { auto: false });
+    syncPresenceUI();
+    showToast('已模拟：人离开');
+    announce('已模拟人离开，摄像头没有目标');
+  });
+
+  presenceAuto.addEventListener('click', () => {
+    state.presence.auto = !state.presence.auto;
+    if (state.presence.auto) {
+      sim.autoNextAt = performance.now() + 2200;
+      showToast('自动检测已开启');
+    } else {
+      showToast('自动检测已关闭');
+    }
+    syncPresenceUI();
+    announce(state.presence.auto ? '自动现场检测已开启' : '自动现场检测已关闭');
   });
 
   yawInput.addEventListener('input', () => updatePoseTarget('yaw', yawInput.value));
@@ -2847,11 +3104,13 @@ button:focus-visible,a:focus-visible,input:focus-visible{
     chip.addEventListener('click', () => {
       if (state.timer.active) return;
       state.selectedMinutes = Number(chip.dataset.minutes);
-      timerChips.forEach(item => item.setAttribute('aria-pressed', String(item === chip)));
+      syncTimerUI();
+      if (state.expression === 'timer') screenTimerText.textContent = `${pad2(state.selectedMinutes)}:00`;
     });
   });
 
   timerBtn.addEventListener('click', startTimer);
+  resetBtn.addEventListener('click', resetAll);
 
   consoleTabs.forEach(tab => {
     tab.addEventListener('click', () => setConsoleMode(tab.dataset.consoleTab));
@@ -2901,45 +3160,32 @@ button:focus-visible,a:focus-visible,input:focus-visible{
   document.addEventListener('visibilitychange', () => {
     if (!document.hidden) {
       lastFrame = performance.now();
-      sim.lastTempAt = performance.now();
       fitScene();
       checkTimer();
     }
   });
 
   /* ---------------------------------------------------------------- animation */
-  function approach(current, target, maxDelta) {
-    if (current < target) return Math.min(current + maxDelta, target);
-    if (current > target) return Math.max(current - maxDelta, target);
-    return current;
-  }
-
   function tick(now) {
     const dt = Math.min(0.08, Math.max(0.001, (now - lastFrame) / 1000));
     lastFrame = now;
 
-    // Servo easing: 75 deg/s roughly matches SERVO_STEP_DEG @ 20 ms.
+    // Servo easing: 78 deg/s roughly matches the real bus servo step rate.
     const maxStep = 78 * dt;
     view.yaw = approach(view.yaw, state.yaw, maxStep);
     view.tilt = approach(view.tilt, state.tilt, maxStep);
-
-    // Light follows brightness with a short ramp; during motion the firmware
-    // dims to 70% to stay inside the 5V power budget.
-    const targetIntensity = state.power ? (state.brightness / 100) * (sim.servoBusy ? 0.7 : 1) : 0;
-    const lightAlpha = 1 - Math.exp(-dt / 0.16);
-    view.intensity += (targetIntensity - view.intensity) * lightAlpha;
-
-    const cctAlpha = 1 - Math.exp(-dt / 0.22);
-    view.cct += (state.cct - view.cct) * cctAlpha;
-
-    if (Math.abs(view.intensity) < 0.0005 && targetIntensity === 0) view.intensity = 0;
     if (Math.abs(view.yaw - state.yaw) < 0.02) view.yaw = state.yaw;
     if (Math.abs(view.tilt - state.tilt) < 0.02) view.tilt = state.tilt;
-    if (Math.abs(view.cct - state.cct) < 0.5) view.cct = state.cct;
 
+    // Presence fades in/out so the camera overlay never pops.
+    const targetPresence = state.power && state.presence.detected ? 1 : 0;
+    view.presence += (targetPresence - view.presence) * (1 - Math.exp(-dt / 0.22));
+    if (Math.abs(view.presence - targetPresence) < 0.002) view.presence = targetPresence;
+
+    tickAutoPresence(now);
     updateMotionStatus(now);
-    updateThermal(now);
-    render();
+    updatePowerModel();
+    render(now, dt);
     updateReadout(now);
 
     requestAnimationFrame(tick);
@@ -2956,30 +3202,26 @@ button:focus-visible,a:focus-visible,input:focus-visible{
     }
     window.addEventListener('resize', fitScene);
 
-    // Initialize thermal display, input fills and all labels from one source of truth.
     syncAllControls();
-    syncPowerUI();
-    syncLightControls();
-    syncPoseControls();
-    syncSceneButtons();
-
-    // Lets marketing pages deep-link a specific light recipe, e.g.
-    // simulator.html?scene=night — keeping the first rendered frame in sync.
-    const params = new URLSearchParams(window.location.search);
-    const requestedScene = params.get('scene');
-    if (requestedScene && Object.prototype.hasOwnProperty.call(SCENES, requestedScene)) {
-      applyScene(requestedScene, { silent: true });
-    }
-    if (params.get('mode') === 'voice') {
-      setConsoleMode('voice');
-    }
-
-    view.cct = state.cct;
+    view.ring = expressionOf(state.expression).ring.slice();
+    view.ringAlpha = 0;
     view.yaw = state.yaw;
     view.tilt = state.tilt;
-    view.intensity = 0;
-    sim.lastTempAt = performance.now();
+    view.presence = 0;
+    sim.autoNextAt = performance.now() + 4500;
     updateReadout(performance.now());
+
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('mode') === 'voice') setConsoleMode('voice');
+    if (params.get('presence') === '1') {
+      state.presence.auto = false;
+      setPresence(true, { auto: false, confidence: 0.93, distance: 0.62 });
+    }
+    const requestedExpression = params.get('expr');
+    if (requestedExpression && EXPRESSIONS[requestedExpression]) {
+      setExpression(requestedExpression, { silent: true });
+    }
+    if (params.get('power') === 'off') setPower(false, { silent: true });
 
     window.setInterval(checkTimer, 250);
     requestAnimationFrame(tick);
