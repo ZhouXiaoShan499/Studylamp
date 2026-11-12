@@ -1844,12 +1844,12 @@ button:focus-visible,a:focus-visible,input:focus-visible{
               <span class="model-dock__state" id="modelState">本地脚本</span>
             </summary>
             <div class="model-dock__body">
-              <p class="model-dock__note">填入任意 OpenAI 兼容接口的 Key，它就用真实大模型回答；不填则继续走本地脚本。动作、计时和在场检测始终由本地执行。</p>
+              <p class="model-dock__note">填入任意 OpenAI 兼容接口的 Key，它就用真实大模型回答；不填则继续走本地脚本。动作、计时和在场检测始终由本地执行。模型名以服务商控制台为准，填错会报 404。</p>
               <div class="model-dock__grid">
                 <label>服务商
                   <select id="modelPreset" aria-label="模型服务商">
+                    <option value="deepseek">DeepSeek · deepseek-flash</option>
                     <option value="bailian">阿里云百炼 · qwen-plus</option>
-                    <option value="deepseek">DeepSeek · deepseek-chat</option>
                     <option value="zhipu">智谱 GLM · glm-4-flash</option>
                     <option value="moonshot">月之暗面 · moonshot-v1-8k</option>
                     <option value="openai">OpenAI · gpt-4o-mini</option>
@@ -2894,8 +2894,8 @@ button:focus-visible,a:focus-visible,input:focus-visible{
 
   /* ------------------------------------------------------- live model api */
   const MODEL_PRESETS = {
+    deepseek: { base: 'https://api.deepseek.com', name: 'deepseek-flash' },
     bailian:  { base: 'https://dashscope.aliyuncs.com/compatible-mode/v1', name: 'qwen-plus' },
-    deepseek: { base: 'https://api.deepseek.com/v1', name: 'deepseek-chat' },
     zhipu:    { base: 'https://open.bigmodel.cn/api/paas/v4', name: 'glm-4-flash' },
     moonshot: { base: 'https://api.moonshot.cn/v1', name: 'moonshot-v1-8k' },
     openai:   { base: 'https://api.openai.com/v1', name: 'gpt-4o-mini' },
@@ -2912,9 +2912,9 @@ button:focus-visible,a:focus-visible,input:focus-visible{
 
   const model = {
     enabled: false,
-    preset: 'bailian',
-    baseUrl: MODEL_PRESETS.bailian.base,
-    name: MODEL_PRESETS.bailian.name,
+    preset: 'deepseek',
+    baseUrl: MODEL_PRESETS.deepseek.base,
+    name: MODEL_PRESETS.deepseek.name,
     key: '',
     history: []
   };
