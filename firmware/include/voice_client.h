@@ -27,6 +27,10 @@ bool monitor();
 // Prints the RMS level of every frame (task 1 verification: breath/clap test).
 void setMonitor(bool on);
 
+// 现场调 VAD 灵敏度：rms<=0 恢复编译期默认值。串口命令 `vad <rms>` 调它。
+void setThreshold(float rms);
+float threshold();
+
 // Records the next utterance even if it is quieter than MIC_VAD_RMS.
 void requestListen();
 

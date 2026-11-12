@@ -154,15 +154,36 @@ constexpr bool VOICE_NIGHT_GUARD = true;  // 22:00-07:00 只放行"关灯"
 #ifndef LAMP_CLOUD_ASR
 #define LAMP_CLOUD_ASR 1
 #endif
-// 语音语义后端，编译期三选一（LAMP_CLOUD_ASR_PROVIDER）：
+// 语音语义后端，编译期四选一（LAMP_CLOUD_ASR_PROVIDER）：
 //   1 = 百度短语音（默认）：语音 → 文字，本地 8 条关键词匹配点灯
 //   2 = 百度转文字 + 国产大模型（OpenAI 兼容协议，DeepSeek/通义/智谱/豆包）：
 //       支持自然说法，但要两家凭据（百度 AK/SK + LLM Key）
 //   3 = 阿里云百炼一家：qwen3-asr-flash 转文字 + deepseek-v4.1-flash 判动作，
 //       一个 API Key 走完两跳，不需要百度账号
-// 三家都是国内可直连、无需翻墙。
+//   4 = 腾讯云：一句话识别（TC3 签名，SecretId + SecretKey）
+//       + TokenHub 大模型（Bearer sk-）。三套凭据、强依赖系统时钟。
+// 四家都是国内可直连、无需翻墙。
 #ifndef LAMP_CLOUD_ASR_PROVIDER
 #define LAMP_CLOUD_ASR_PROVIDER 1
+#endif
+
+// 派生语义宏：代码里只读这三个，**不再直接比较 PROVIDER**。
+// 起因是旧代码用 `#if LAMP_CLOUD_ASR_PROVIDER != 3` 这种否定式判断，
+// 一加 provider=4 就为真，百度的 fetchToken/recognizeOnce 会被重新编进来
+// （docs/13 坑 1 已经因为 `== 2` 栽过一次）。改成肯定式，加第 5 家也不会误伤。
+#if LAMP_CLOUD_ASR_PROVIDER == 1
+#define LAMP_BACKEND_BAIDU 1
+#elif LAMP_CLOUD_ASR_PROVIDER == 2
+#define LAMP_BACKEND_BAIDU 1
+#define LAMP_BACKEND_LLM 1
+#elif LAMP_CLOUD_ASR_PROVIDER == 3
+#define LAMP_BACKEND_ALIYUN 1
+#define LAMP_BACKEND_LLM 1
+#elif LAMP_CLOUD_ASR_PROVIDER == 4
+#define LAMP_BACKEND_TENCENT 1
+#define LAMP_BACKEND_LLM 1
+#else
+#error "LAMP_CLOUD_ASR_PROVIDER 只能取 1/2/3/4（见 docs/14、docs/26）"
 #endif
 constexpr uint16_t CLOUD_ASR_TIMEOUT_MS = 8000;
 constexpr uint16_t CLOUD_ASR_DEV_PID = 1537;  // 1537 = 普通话纯中文；方言/极速版改这里
@@ -195,6 +216,28 @@ constexpr const char* CLOUD_BAILIAN_LLM_MODEL = "deepseek-v4.1-flash";
 // 2 s 音频 base64 后约 86 KB，上传 + 推理比百度的裸 PCM 慢，单独放宽窗口。
 constexpr uint16_t CLOUD_BAILIAN_TIMEOUT_MS = 15000;
 
+// ---- 腾讯云（provider=4）----------------------------------------------------
+// 听和想是两套鉴权、两个域名，这是和百炼最大的结构差别：
+//   听：asr.tencentcloudapi.com，Action=SentenceRecognition，TC3-HMAC-SHA256 现算，
+//       要求 X-TC-Timestamp 与服务器相差 ≤5 分钟 —— 所以必须先 SNTP 对时；
+//   想：TokenHub，OpenAI 兼容，Bearer sk-，不签名、不对时。
+// 一句话识别不接受裸 PCM：VoiceFormat=wav 时给完整 WAV（含 44 字节头），
+// 再 base64 且**不能带换行**（mbedtls 默认每 76 字符插 \n，必须原地压掉）。
+constexpr const char* CLOUD_TC_ASR_HOST = "asr.tencentcloudapi.com";
+constexpr const char* CLOUD_TC_ASR_SERVICE = "asr";
+constexpr const char* CLOUD_TC_ASR_ACTION = "SentenceRecognition";
+constexpr const char* CLOUD_TC_ASR_VERSION = "2019-06-14";
+constexpr const char* CLOUD_TC_ASR_ENGINE = "16k_zh";  // 方言改 16k_zh_dialect
+constexpr uint16_t CLOUD_TC_ASR_TIMEOUT_MS = 8000;
+// 热词表：短句场景提升识别率最明显的一招。格式「词|权重」，逗号分隔。
+constexpr const char* CLOUD_TC_HOTWORDS = "开灯|10,关灯|10,亮一点|8,暗一点|8,夜灯|8";
+// 2 = 服务端砍掉标点，响应体更小；0 = 保留。
+constexpr uint8_t CLOUD_TC_FILTER_PUNC = 2;
+// 系统时钟的「有效」门槛（2023-11-14）。低于它说明还没对时，
+// 此时发请求必然 AuthFailure.SignatureExpire，不如直接拒发并打日志。
+constexpr uint32_t CLOCK_MIN_VALID_EPOCH = 1700000000UL;
+constexpr uint16_t CLOUD_TC_LLM_TIMEOUT_MS = 8000;
+
 // 云端 Key 的两个来源，优先级：NVS（串口 key 命令） > 编译期常量（secrets.h）。
 // 把下面两个宏写进 include/secrets.h（git-ignored，和 WiFi 密码放在一起），
 // 就能一次烧板、不用再连串口敲命令；留空则只认串口写入的 NVS。
@@ -203,6 +246,35 @@ constexpr uint16_t CLOUD_BAILIAN_TIMEOUT_MS = 15000;
 #endif
 #ifndef LAMP_CLOUD_SECRET_KEY
 #define LAMP_CLOUD_SECRET_KEY ""
+#endif
+
+// ---- 第二跳（语义）可以单独换一家，不吃 ASR 那把 Key -------------------------
+// 腾讯云 TokenHub / 混元 走 OpenAI 兼容协议，只要一个 Bearer `sk-...`：
+// 不签名、不对时，所以「模型换成腾讯 DeepSeek」是一项独立的小改动，
+// 和 ASR 那条 TC3 路线（SecretId + SecretKey + SNTP）完全解耦。
+//
+// 填了 LAMP_CLOUD_LLM_KEY 之后，classifyIntent() 自动把第二跳改走腾讯，
+// 第一跳仍按 LAMP_CLOUD_ASR_PROVIDER 走百度/百炼，两家各用各的 Key。
+// 留空 = 沿用旧行为（provider=3 一个百炼 Key 打两跳）。
+#ifndef LAMP_CLOUD_LLM_KEY
+#define LAMP_CLOUD_LLM_KEY ""
+#endif
+// 腾讯有两套入口，Key 不通用。2026-11-12 实测：控制台「TokenHub → API Key」
+// 生成的那把 sk- 只认 tokenhub.tencentmaas.com；混元入口会返回 invalid_api_key，
+// 而 TokenHub 旧域名 tokenhub.tencentcloudmaas.com 返回 401002。
+//   tokenhub.tencentmaas.com            （TokenHub，当前账号实测可用）
+//   api.hunyuan.cloud.tencent.com       （混元，用另一套 Key）
+#ifndef LAMP_TENCENT_LLM_HOST
+#define LAMP_TENCENT_LLM_HOST "tokenhub.tencentmaas.com"
+#endif
+#ifndef LAMP_TENCENT_LLM_PATH
+#define LAMP_TENCENT_LLM_PATH "/v1/chat/completions"
+#endif
+// 模型名是易耗品（docs/13、docs/26 都栽过）。必须与控制台「API Key」页显示的一致，
+// 大小写和版本后缀都算数。报 Model not exist 再依次试：
+//   deepseek-v4.1-flash / deepseek-v3 / deepseek-r1 / hunyuan-turbos-latest
+#ifndef LAMP_TENCENT_LLM_MODEL
+#define LAMP_TENCENT_LLM_MODEL "DeepSeek-V4.1-Flash-1017"
 #endif
 
 // ---- misc ----------------------------------------------------------------
@@ -221,8 +293,15 @@ constexpr uint16_t MIC_PREROLL_FRAMES = 4;     // 128 ms kept before the trigger
 // INMP441 在 16 bit 槽里只有几十 LSB（实测说话峰值 ~56），先做数字增益再判断。
 // 增益后的值会同时用于 VAD 和送给 Vosk 的音频，两头都受益。
 constexpr uint16_t MIC_GAIN = 4;
-// 触发阈值 = max(底噪 × 3, 这个下限)。实测静音 RMS≈13，增益后≈200，所以下限取 450。
-constexpr float MIC_VAD_RMS = 450.0f;
+// 触发阈值 = max(底噪 × 1.5, 这个下限)，底噪估计封顶 220。
+// 2026-11-12 实测：安静 RMS 40~90；有人/风扇在旁时底噪能到 150~190；
+// 正常坐姿（约 50 cm）说「开灯」只有 200~400。下限取 180：低于它的多半是噪声，
+// 再低会把空调/风扇的起伏当成说话（实测会连续空发 ASR 请求）。
+constexpr float MIC_VAD_RMS = 180.0f;
+constexpr uint8_t MIC_VAD_FRAMES = 3;             // 连续 3 帧（96 ms）超阈值才算开口
+constexpr float MIC_VAD_FACTOR = 1.5f;            // 自适应阈值 = max(底噪 × 1.5, 下限)
+constexpr float MIC_NOISE_FLOOR_MAX = 220.0f;     // 底噪估计封顶，避免被环境噪声带飞
+constexpr uint32_t MIC_RETRIGGER_GUARD_MS = 800;  // 说完后的冷却，避免句尾余音再触发
 constexpr uint32_t MIC_SILENCE_MS = 700;       // trailing silence ends a phrase
 constexpr uint32_t MIC_MAX_UTTERANCE_MS = 8000;
 // 触发后固定录这么久再整段发送：边录边发在弱网下会把主循环拖死（实测 10 s 只发出 0.16 s 音频）。

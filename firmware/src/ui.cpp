@@ -183,6 +183,7 @@ void printHelp() {
         "  mute | unmute              disable / enable motion\n"
         "  log                        dump the tail of the event log\n"
         "  mic on|off|test [seconds]  PDM mic level meter (voice task 1)\n"
+        "  vad <rms> | vad 0          VAD sensitivity, 0 = restore default\n"
         "  key <API_KEY> [SECRET]     store cloud ASR key in NVS\n"
         "  asr                        cloud ASR status (provider / key / token)\n"
         "  voice status|listen        link status / record one utterance\n"

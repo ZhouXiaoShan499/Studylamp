@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#080907">
+<title>实时监测台 · LAMP—1</title>
+<meta name="description" content="LAMP—1 实时监测台：浏览器通过 Web Serial 直连 ESP32-S3 原生 USB，显示麦克风电平、VAD、命令词命中与事件流。不经过任何服务器。">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="assets/site.css">
+<style>
+  body{
+    margin:0;
+    min-height:100vh;
+    background:
+      radial-gradient(900px 520px at 78% -8%, rgba(136,101,61,.13), transparent 62%),
+      radial-gradient(700px 520px at -6% 88%, rgba(72,89,62,.09), transparent 70%),
+      var(--site-bg);
+    color:var(--site-text);
+    font-family:var(--site-sans);
+    -webkit-font-smoothing:antialiased;
+  }
+  ::selection{background:rgba(229,183,118,.24);color:#fff9ed}
+  :where(a,button):focus-visible{outline:2px solid var(--site-accent);outline-offset:3px}
+
+  /* ------------------------------------------------------------------ 顶栏 */
+  .deck-head{
+    position:sticky;top:0;z-index:20;
+    display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;
+    padding:12px clamp(14px,2.6vw,26px);
+    border-bottom:1px solid var(--site-line);
+    background:rgba(8,9,7,.88);
+    backdrop-filter:blur(10px);
+  }
+  .deck-brand{display:flex;align-items:center;gap:11px}
+  .deck-mark{
+    width:30px;height:30px;display:grid;place-items:center;
+    border:1px solid var(--site-line-strong);border-radius:9px;color:var(--site-accent);
+  }
+  .deck-mark svg{width:17px;height:17px}
+  .deck-title{display:flex;flex-direction:column;gap:1px;line-height:1.15}
+  .deck-title b{font-family:var(--site-mono);font-size:12px;letter-spacing:.16em;font-weight:600}
+  .deck-title span{font-size:11px;color:var(--site-muted-2);letter-spacing:.04em}
+  .deck-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+
+  .src-badge{
+    display:inline-flex;align-items:center;gap:8px;
+    padding:6px 12px;border:1px solid var(--site-line);border-radius:999px;
+    font-family:var(--site-mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--site-muted);
+  }
+  .src-badge i{width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.7}
+  .src-badge[data-state="live"]{color:#b6cba8;border-color:rgba(182,203,168,.38)}
+  .src-badge[data-state="live"] i{animation:deckPulse 1.6s ease-in-out infinite}
+  .src-badge[data-state="replay"]{color:#8fd8ff;border-color:rgba(143,216,255,.32)}
+  .src-badge[data-state="connecting"]{color:#e5b776;border-color:rgba(229,183,118,.35)}
+  .src-badge[data-state="error"]{color:#ff9b8f;border-color:rgba(255,155,143,.4)}
+  @keyframes deckPulse{50%{opacity:.25}}
+
+  .btn{
+    font:inherit;font-size:12.5px;line-height:1;
+    padding:9px 15px;border-radius:999px;
+    border:1px solid var(--site-line-strong);background:transparent;color:var(--site-text-soft);
+    cursor:pointer;transition:background .18s,color .18s,border-color .18s;
+  }
+  .btn:hover:not(:disabled){background:rgba(242,237,226,.07);color:#fff}
+  .btn--primary{background:var(--site-accent);border-color:var(--site-accent);color:#17110a;font-weight:600}
+  .btn--primary:hover:not(:disabled){background:#f0c98f;border-color:#f0c98f}
+  .btn:disabled{opacity:.42;cursor:not-allowed}
+  .btn[hidden]{display:none}
+
+  /* ------------------------------------------------------------------ 栅格 */
+  .deck{
+    display:grid;
+    grid-template-columns:minmax(0,1.62fr) minmax(0,1fr);
+    grid-template-areas:"scope link" "voice voice" "events state" "foot foot";
+    gap:14px;
+    width:min(100%,1300px);
+    margin:0 auto;
+    padding:clamp(14px,2.4vw,26px) clamp(14px,2.4vw,26px) 38px;
+  }
+  .deck-scope{grid-area:scope}
+  .deck-link{grid-area:link}
+  .deck-voice{grid-area:voice}
+  .deck-events{grid-area:events}
+  .deck-state{grid-area:state}
+  .deck-foot{grid-area:foot}
+
+  .card{
+    position:relative;
+    padding:15px 16px 14px;
+    border:1px solid var(--site-line);
+    border-radius:14px;
+    background:linear-gradient(180deg,rgba(23,26,20,.92),rgba(9,11,8,.92));
+    box-shadow:0 1px 0 rgba(255,255,255,.02) inset;
+  }
+  .card-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:12px}
+  .card-head h2{
+    margin:0;font-size:13px;font-weight:600;letter-spacing:.02em;
+    display:flex;align-items:baseline;
+  }
+  .card-head h2 em{
+    font-family:var(--site-mono);font-style:normal;font-size:10px;
+    letter-spacing:.15em;color:var(--site-muted-2);margin-left:8px;
+  }
+  .card-meta{font-family:var(--site-mono);font-size:10.5px;letter-spacing:.06em;color:var(--site-muted-2);text-align:right}
+  .card-note{margin:12px 0 0;font-size:11px;line-height:1.7;color:var(--site-muted-2)}
+
+  /* ------------------------------------------------------------ 电平示波 */
+  .scope-wrap{position:relative;height:236px}
+  #scope{width:100%;height:100%;display:block}
+  .scope-empty{
+    position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+    max-width:min(86%,520px);margin:0;padding:14px 20px;
+    text-align:center;line-height:1.9;
+    font-size:12px;color:var(--site-muted);
+    border:1px solid rgba(242,237,226,.1);border-radius:12px;
+    background:rgba(8,9,7,.88);
+    pointer-events:none;
+  }
+  .scope-empty b{color:var(--site-text-soft);font-weight:600}
+  .scope-empty[hidden]{display:none}
+
+  .readout{display:flex;flex-wrap:wrap;gap:8px 22px;margin:14px 0 0;padding-top:12px;border-top:1px solid var(--site-line)}
+  .readout > div{display:flex;flex-direction:column;gap:2px;min-width:64px}
+  .readout dt{font-family:var(--site-mono);font-size:9.5px;letter-spacing:.14em;color:var(--site-muted-2)}
+  .readout dd{margin:0;font-family:var(--site-mono);font-size:15px;color:var(--site-text);font-variant-numeric:tabular-nums}
+  .readout dd.pill{
+    align-self:flex-start;font-size:11.5px;letter-spacing:.04em;
+    padding:2px 9px;border-radius:999px;border:1px solid var(--site-line);color:var(--site-muted);
+  }
+  .readout dd.pill[data-on="1"]{color:#e5b776;border-color:rgba(229,183,118,.4)}
+  .readout dd.pill[data-on="0"]{color:#8f9286}
+  .readout dd.pill[data-on="hit"]{color:#b6cba8;border-color:rgba(182,203,168,.45)}
+  .readout dd.pill[data-on="stale"]{color:#ff9b8f;border-color:rgba(255,155,143,.4)}
+
+  /* ------------------------------------------------------------- 语音结果 */
+  .voice-heard{
+    margin:4px 0 12px;
+    font-size:clamp(30px,5.2vw,46px);
+    line-height:1.15;font-weight:600;letter-spacing:.02em;
+    color:var(--site-accent);
+    min-height:1.15em;
+  }
+  .voice-heard.is-empty{
+    color:var(--site-muted-2);font-weight:400;
+    font-size:clamp(18px,2.6vw,22px);
+  }
+  .voice-reply{
+    margin:0 0 12px;padding-left:12px;
+    border-left:2px solid rgba(229,183,118,.45);
+    font-size:13.5px;line-height:1.8;color:var(--site-text-soft);
+  }
+  .voice-reply[hidden]{display:none}
+  .voice-kv{display:flex;flex-wrap:wrap;gap:10px 30px;margin:0;padding-top:12px;border-top:1px solid var(--site-line)}
+  .voice-kv > div{display:flex;flex-direction:column;gap:2px;min-width:72px}
+  .voice-kv dt{font-family:var(--site-mono);font-size:9.5px;letter-spacing:.13em;color:var(--site-muted-2)}
+  .voice-kv dd{margin:0;font-family:var(--site-mono);font-size:15px;color:var(--site-text-soft);font-variant-numeric:tabular-nums}
+
+  /* ------------------------------------------------------------- 命令输入 */
+  .cmd-row{display:flex;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid var(--site-line)}
+  .cmd-row input{
+    flex:1;min-width:0;
+    background:rgba(242,237,226,.04);
+    border:1px solid var(--site-line-strong);border-radius:9px;
+    color:var(--site-text);padding:8px 10px;
+    font:12px var(--site-mono);
+  }
+  .cmd-row input::placeholder{color:var(--site-muted-2)}
+  .cmd-row input:focus{outline:1px solid var(--site-accent);outline-offset:1px}
+  .cmd-row button{
+    font:12px var(--site-sans);padding:0 14px;border-radius:9px;
+    border:1px solid var(--site-line-strong);background:transparent;
+    color:var(--site-text-soft);cursor:pointer;
+  }
+  .cmd-row button:hover{background:rgba(242,237,226,.07);color:#fff}
+
+  /* -------------------------------------------------------------- 键值表 */
+  .kv{margin:0;display:grid;gap:8px}
+  .kv > div{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+  .kv dt{font-size:12px;color:var(--site-muted);white-space:nowrap}
+  .kv dd{
+    margin:0;font-family:var(--site-mono);font-size:12px;color:var(--site-text-soft);
+    text-align:right;font-variant-numeric:tabular-nums;word-break:break-all;
+  }
+
+  /* -------------------------------------------------------------- 事件流 */
+  .events{
+    list-style:none;margin:0;padding:0;
+    display:grid;gap:5px;
+    max-height:268px;overflow-y:auto;overscroll-behavior:contain;
+  }
+  .events::-webkit-scrollbar{width:8px}
+  .events::-webkit-scrollbar-thumb{background:rgba(242,237,226,.14);border-radius:4px}
+  .ev{display:grid;grid-template-columns:74px 46px minmax(0,1fr);gap:9px;align-items:baseline;font-size:12.5px;line-height:1.55}
+  .ev time{font-family:var(--site-mono);font-size:10.5px;color:var(--site-muted-2);font-variant-numeric:tabular-nums}
+  .ev-chip{
+    font-family:var(--site-mono);font-size:9.5px;letter-spacing:.08em;text-align:center;
+    padding:1px 0;border:1px solid var(--site-line);border-radius:999px;color:var(--site-muted);
+  }
+  .ev-text{color:var(--site-text-soft);min-width:0;overflow-wrap:anywhere}
+  .ev--command .ev-chip{color:#e5b776;border-color:rgba(229,183,118,.42)}
+  .ev--wake .ev-chip{color:#b6cba8;border-color:rgba(182,203,168,.42)}
+  .ev--led .ev-chip{color:#cfc8b9;border-color:rgba(242,237,226,.22)}
+  .ev--timeout .ev-chip{color:#d8b27c;border-color:rgba(216,178,124,.35)}
+  .ev--error .ev-chip{color:#ff9b8f;border-color:rgba(255,155,143,.45)}
+  .events-empty{margin:14px 0 0;font-size:12px;color:var(--site-muted-2)}
+  .events-empty[hidden]{display:none}
+
+  /* ------------------------------------------------------------------ 脚注 */
+  .deck-foot{font-size:11.5px;line-height:1.8;color:var(--site-muted-2);display:grid;gap:6px;max-width:860px}
+  .deck-foot p{margin:0}
+  .deck-foot code{font-family:var(--site-mono);font-size:11px;color:var(--site-text-soft)}
+
+  .toast{
+    position:fixed;left:50%;bottom:22px;transform:translate(-50%,14px);
+    max-width:min(92vw,560px);
+    padding:11px 16px;border-radius:11px;
+    background:rgba(24,20,14,.96);border:1px solid rgba(229,183,118,.32);
+    color:var(--site-text);font-size:12.5px;line-height:1.65;
+    box-shadow:0 12px 40px rgba(0,0,0,.55);
+    opacity:0;pointer-events:none;transition:opacity .22s,transform .22s;z-index:50;
+  }
+  .toast.is-on{opacity:1;transform:translate(-50%,0)}
+
+  .site-skip{
+    position:absolute;left:12px;top:-40px;z-index:60;
+    padding:8px 14px;border-radius:8px;background:var(--site-accent);color:#17110a;
+    font-size:12px;text-decoration:none;transition:top .2s;
+  }
+  .site-skip:focus{top:12px}
+
+  @media (max-width:900px){
+    .deck{grid-template-columns:1fr;grid-template-areas:"scope" "voice" "events" "link" "state" "foot"}
+    .scope-wrap{height:200px}
+    .deck-title span{display:none}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important}
+  }
+</style>
+</head>
+<body>
+<a class="site-skip" href="#main">跳到主要内容</a>
+
+<header class="deck-head">
+  <div class="deck-brand">
+    <span class="deck-mark" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none">
+        <circle cx="12" cy="8.2" r="4.4" stroke="currentColor" stroke-width="1.35"/>
+        <path d="M12 12.7v5.5M8.6 20.2h6.8" stroke="currentColor" stroke-width="1.35" stroke-linecap="round"/>
+        <path d="M9.8 6.7c.7-.9 2.1-1.2 3.1-.6" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" opacity=".55"/>
+      </svg>
+    </span>
+    <span class="deck-title">
+      <b>LIVE DECK</b>
+      <span>实时监测台 · 数据不经过服务器</span>
+    </span>
+  </div>
+
+  <div class="deck-actions">
+    <span class="src-badge" id="srcBadge" data-state="idle"><i aria-hidden="true"></i><span id="srcText">未连接</span></span>
+    <button class="btn btn--primary" id="connectBtn" type="button">连接设备</button>
+    <button class="btn" id="disconnectBtn" type="button" hidden>断开</button>
+    <button class="btn" id="replayBtn" type="button">播放录制</button>
+  </div>
+</header>
+
+<main class="deck" id="main">
+  <section class="card deck-scope" aria-label="麦克风输入电平">
+    <header class="card-head">
+      <h2>输入电平 <em>INPUT LEVEL</em></h2>
+      <span class="card-meta" id="scopeMeta">等待连接</span>
+    </header>
+    <div class="scope-wrap">
+      <canvas id="scope" role="img" aria-label="最近 20 秒的麦克风 RMS 与 AFE 音量曲线"></canvas>
+      <p class="scope-empty" id="scopeEmpty">
+        点右上角「连接设备」，选 <b>COM6</b>（ESP32-S3 原生 USB）<br>
+        没有设备或浏览器不支持？点「播放录制」看一段真实串口记录。
+      </p>
+    </div>
+    <dl class="readout">
+      <div><dt>RMS</dt><dd id="rmsVal">—</dd></div>
+      <div><dt>PEAK</dt><dd id="peakVal">—</dd></div>
+      <div><dt>dBFS</dt><dd id="dbfsVal">—</dd></div>
+      <div><dt>VAD</dt><dd class="pill" id="vadVal" data-on="unknown">—</dd></div>
+      <div><dt>识别窗口</dt><dd class="pill" id="mnVal" data-on="idle">—</dd></div>
+    </dl>
+  </section>
+
+  <section class="card deck-voice" aria-label="语音识别结果">
+    <header class="card-head">
+      <h2>语音 <em>VOICE</em></h2>
+      <span class="card-meta" id="voiceMeta">等待说话</span>
+    </header>
+    <p class="voice-heard is-empty" id="voiceHeard">等待说话…</p>
+    <p class="voice-reply" id="voiceReply" hidden></p>
+    <dl class="voice-kv">
+      <div><dt>意图 / INTENT</dt><dd id="voiceIntent">—</dd></div>
+      <div><dt>动作 / ACTION</dt><dd id="voiceAction">—</dd></div>
+      <div><dt>ASR 耗时</dt><dd id="voiceLatency">—</dd></div>
+      <div><dt>已识别</dt><dd id="voiceCount">0</dd></div>
+    </dl>
+  </section>
+
+  <aside class="card deck-link" aria-label="串口链路状态">
+    <header class="card-head"><h2>链路 <em>LINK</em></h2></header>
+    <dl class="kv">
+      <div><dt>端口</dt><dd id="linkPort">—</dd></div>
+      <div><dt>波特率</dt><dd id="linkBaud">115200</dd></div>
+      <div><dt>行速率</dt><dd id="linkRate">—</dd></div>
+      <div><dt>采样速率</dt><dd id="linkSamples">—</dd></div>
+      <div><dt>累计字节</dt><dd id="linkBytes">—</dd></div>
+      <div><dt>忽略行</dt><dd id="linkErrors" title="诊断噪声行（AFE 峰值比、DUMP 等），不是解析失败">0</dd></div>
+      <div><dt>复位次数</dt><dd id="linkResets">0</dd></div>
+      <div><dt>设备运行</dt><dd id="linkUptime">—</dd></div>
+    </dl>
+  </aside>
+
+  <section class="card deck-events" aria-label="事件流">
+    <header class="card-head">
+      <h2>事件流 <em>EVENTS</em></h2>
+      <span class="card-meta" id="eventCount">0</span>
+    </header>
+    <ol class="events" id="events" aria-live="polite"></ol>
+    <p class="events-empty" id="eventsEmpty">还没有事件。对着麦克风说一句「开灯」试试。</p>
+  </section>
+
+  <aside class="card deck-state" aria-label="机体状态">
+    <header class="card-head"><h2>机体状态 <em>STATE</em></h2></header>
+    <dl class="kv">
+      <div><dt>LED / 亮度</dt><dd id="ledState">—</dd></div>
+      <div><dt>最近命中</dt><dd id="lastCmd">—</dd></div>
+      <div><dt>自由堆</dt><dd id="heapVal">—</dd></div>
+      <div><dt>WiFi</dt><dd id="wifiInfo">—</dd></div>
+      <div><dt>内存</dt><dd id="memInfo">—</dd></div>
+      <div><dt>固件</dt><dd id="fwVal">—（等待固件上报）</dd></div>
+    </dl>
+    <form class="cmd-row" id="cmdForm">
+      <input id="cmdInput" type="text" autocomplete="off" placeholder="串口命令：vad 120 / mic off / status">
+      <button type="submit">发送</button>
+    </form>
+    <p class="card-note">
+      命令框会向设备写串口（连接时自动发一次 <code>mic on</code>，之后你发什么就写什么）。
+    </p>
+  </aside>
+
+  <footer class="deck-foot">
+    <p>
+      数据来自 ESP32-S3 原生 USB 串口（Web Serial），<strong>不经过任何服务器</strong>。板子上跑的是 <code>firmware/</code> 那版（provider=4，腾讯云直连）：页面把 <code>[ASR]</code> / <code>[LLM]</code> / <code>[cmd]</code> 翻译成上面的识别结果、意图和动作。音频只走「设备 → 腾讯云」，浏览器拿不到。
+    </p>
+    <p>
+      连接后页面会自动发 <code>mic on</code> 打开电平显示（固件平时不打印 <code>[mic] rms</code>）。觉得不灵敏就在命令框发 <code>vad 120</code>，想回默认发 <code>vad 0</code>；也可以发 <code>status</code> 看完整状态。
+    </p>
+    <p>
+      串口同一时刻只能被一个程序占用：连接前请关掉 <code>idf.py monitor</code>、串口助手。开关串口可能触发一次复位（USB-Serial-JTAG 的 DTR/RTS 语义），页面会自动重新计时并计入「复位次数」。Web Serial 只在 Chrome / Edge 桌面版可用，页面必须跑在 <code>https</code> 或 <code>localhost</code>。
+    </p>
+  </footer>
+</main>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<noscript><p style="padding:20px;font-size:13px;color:#cfc8b9">这个页面需要 JavaScript 才能读取串口实时数据。</p></noscript>
+<script src="assets/live-parser.js" defer></script>
+<script src="assets/live.js" defer></script>
+</body>
+</html>

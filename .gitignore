@@ -8,6 +8,9 @@
 # 本地凭据（WiFi 密码 / 电脑局域网 IP），从 secrets.h.example 复制
 firmware/include/secrets.h
 
+# 云厂商密钥（腾讯 SecretId/SecretKey、TokenHub Key 等），从 tencent.env.example 复制
+.secrets/
+
 # Python
 __pycache__/
 *.py[cod]

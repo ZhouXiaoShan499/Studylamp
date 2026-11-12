@@ -26,8 +26,9 @@ bool begin();
 // 凭据齐全且 WiFi 已连上。voice_client 用它决定"要不要开始录音"。
 bool ready();
 
-// 串口写入凭据。百度要两个参数，国产 LLM 只要第一个。返回凭据是否可用。
-bool setKey(const char* api_key, const char* secret_key);
+// 串口写入凭据。百度要两个参数，百炼只要第一个，腾讯要三个
+// （SecretId / SecretKey / TokenHub Key）。返回凭据是否可用。
+bool setKey(const char* api_key, const char* secret_key, const char* llm_key = nullptr);
 
 // 同步上传并识别，失败返回空串。调用期间会阻塞 0.5~2 s，调用方需自行给出反馈。
 String transcribe(const int16_t* pcm, size_t samples);
@@ -37,6 +38,11 @@ String transcribe(const int16_t* pcm, size_t samples);
 String classifyText(const String& text);
 
 const char* providerName();
+// 一段文本 → 动作标签（on/off/...）或 "ANSWER:..." 对话回答。
+// 固定命令走本地词表，不花 LLM 的 1.5~2 s；其余才问模型。
+// voice_client 的 `voice say <text>` 与真正的 ASR 文本走同一条路由。
+String interpret(const String& text);
+
 void printStatus();
 
 }  // namespace cloudasr

@@ -5,6 +5,7 @@
 #include <Arduino.h>
 #include <Esp.h>
 #include <LittleFS.h>
+#include <sys/time.h>
 
 #include "cloud_asr.h"
 #include "config.h"
@@ -14,6 +15,7 @@
 #include "motion.h"
 #include "pdm_mic.h"
 #include "pwm.h"
+#include "tc3_sign.h"
 #include "timer_task.h"
 #include "ui.h"
 #include "voice_client.h"
@@ -679,8 +681,19 @@ void onCommand(int argc, char** argv) {
             Serial.println("usage: time <epoch-seconds>");
             return;
         }
-        timers::setEpoch(static_cast<uint32_t>(strtoul(argv[1], nullptr, 10)));
+        const uint32_t epoch = static_cast<uint32_t>(strtoul(argv[1], nullptr, 10));
+        timers::setEpoch(epoch);
+#if LAMP_CLOUD_ASR
+        // 顺手把系统时钟也设了：TC3 签名读的是 time()，不是 timers 里的计数。
+        // 现场没网时靠手机看一眼时间手填，比等 NTP 快（docs/14 §5.4）。
+        struct timeval tv {};
+        tv.tv_sec = static_cast<time_t>(epoch);
+        settimeofday(&tv, nullptr);
+        Serial.printf("clock set to %lu（系统时钟 + 定时器）\n",
+                      static_cast<unsigned long>(epoch));
+#else
         Serial.printf("clock set to %lu\n", static_cast<unsigned long>(timers::epoch()));
+#endif
         return;
     }
 
@@ -737,20 +750,41 @@ void onCommand(int argc, char** argv) {
         }
         return;
     }
+    if (strcmp(cmd, "vad") == 0) {
+        // 现场调 VAD 灵敏度：vad 120 更灵敏，vad 0 回到编译期默认值。
+        if (argc < 2) {
+            Serial.printf("[voice] VAD threshold = %.0f (default %.0f)\n",
+                          voice::threshold(), MIC_VAD_RMS);
+            Serial.println("usage: vad <rms> | vad 0 (restore default)");
+        } else {
+            voice::setThreshold(static_cast<float>(atof(argv[1])));
+        }
+        return;
+    }
     if (strcmp(cmd, "key") == 0) {
         if (argc < 2) {
-#if LAMP_CLOUD_ASR_PROVIDER == 3
+#if LAMP_BACKEND_TENCENT
+            Serial.println("usage: key <SecretId> <SecretKey> <TokenHubKey>");
+            Serial.println("  SecretId=AKID...  SecretKey=32 位  TokenHubKey=sk-...");
+#elif LAMP_BACKEND_ALIYUN
             Serial.println("usage: key <DASHSCOPE_API_KEY>   // 百炼一个 key 就够");
 #else
             Serial.println("usage: key <API_KEY> [SECRET_KEY]");
 #endif
             return;
         }
-        cloudasr::setKey(argv[1], argc >= 3 ? argv[2] : nullptr);
+        cloudasr::setKey(argv[1], argc >= 3 ? argv[2] : nullptr,
+                         argc >= 4 ? argv[3] : nullptr);
         return;
     }
     if (strcmp(cmd, "asr") == 0) {
-        cloudasr::printStatus();
+        // `asr selftest` 跑 TC3 官方向量：不联网、不需要 Key，
+        // 用来把「签名算错」和「网络不通」彻底分开（docs/26 §11 的 P2）。
+        if (argc >= 2 && strcmp(argv[1], "selftest") == 0) {
+            tc3::printSelfTest();
+        } else {
+            cloudasr::printStatus();
+        }
         return;
     }
     if (strcmp(cmd, "voice") == 0) {
@@ -810,6 +844,9 @@ void setup() {
 
     ui::logf("{\"ev\":\"boot\",\"fw\":\"%s\",\"heap\":%lu}", FW_VERSION,
              static_cast<unsigned long>(ESP.getFreeHeap()));
+    Serial.printf("[mem] psram=%lu heap=%lu\n",
+                  static_cast<unsigned long>(ESP.getPsramSize()),
+                  static_cast<unsigned long>(ESP.getFreeHeap()));
     ui::setStatus("ready");
 }
 

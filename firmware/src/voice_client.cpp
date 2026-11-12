@@ -60,6 +60,10 @@ uint32_t lastMonitorPrint = 0;
 // 自适应底噪（增益后的 RMS）。静音时慢慢跟住环境，说话时不被带跑。
 float noiseFloor = 120.0f;
 float lastThreshold = MIC_VAD_RMS;
+// 阈值下限：可用串口 `vad <rms>` 调，0 = 回到编译期默认值 MIC_VAD_RMS。
+float baseThreshold = MIC_VAD_RMS;
+// 连续超阈值的帧数：单帧噪声尖峰不触发，少发一次空 ASR 请求。
+uint8_t hotFrames = 0;
 
 enum class State : uint8_t { Idle, Recording, Waiting };
 State state = State::Idle;
@@ -126,13 +130,22 @@ void copyPreroll() {
 // 国产 LLM / 百炼（provider 2、3）返回的动作标签 → 灯光动作。
 void handleIntent(const String& intent) {
     if (intent.isEmpty()) return;
-    if (intent.indexOf("on") >= 0) {
+    // "none" 里含子串 "on"，先排除掉。不清这个，模型回 none 反而会把灯打开
+    // （2026-11-12 实测：ASR 识别到无关语句 → LLM 回 none → 灯亮了）。
+    String label = intent;
+    label.trim();
+    label.toLowerCase();
+    if (label == "none" || label.indexOf("none") >= 0) {
+        Serial.printf("[voice] 无动作标签: %s\n", intent.c_str());
+        return;
+    }
+    if (label.indexOf("on") >= 0) {
         lighting::setBrightness(lighting::isOn() ? lighting::brightness() : 70);
-    } else if (intent.indexOf("off") >= 0) {
+    } else if (label.indexOf("off") >= 0) {
         lighting::setBrightness(0);
-    } else if (intent.indexOf("max") >= 0) {
+    } else if (label.indexOf("max") >= 0) {
         lighting::setBrightness(100);
-    } else if (intent.indexOf("up") >= 0) {
+    } else if (label.indexOf("up") >= 0) {
         const int next = static_cast<int>(lighting::brightness()) + 20;
         lighting::setBrightness(static_cast<uint8_t>(next > 100 ? 100 : next));
     } else if (intent.indexOf("down") >= 0) {
@@ -204,8 +217,12 @@ void sendUtterance(uint32_t now) {
         Serial.println("[asr] empty result");
     } else {
 #if LAMP_CLOUD_ASR_PROVIDER >= 2
-        // LLM 已把文字映射成动作标签，直接按标签点灯。
-        handleIntent(text);
+        // 两跳里"想"这一跳可能返回动作标签，也可能返回一句对话（没有喇叭，打到网页上）。
+        if (text.startsWith("ANSWER:")) {
+            Serial.printf("[REPLY] %s\n", text.substring(7).c_str());
+        } else {
+            handleIntent(text);
+        }
 #else
         Serial.printf("[ASR] %s\n", text.c_str());
         handleAsrText(text);
@@ -427,13 +444,20 @@ void tick(uint32_t now) {
     switch (state) {
         case State::Idle: {
             rememberPreroll(got);
-            // 底噪缓慢跟住环境（只在 idle 更新，说话时不被自己带跑），
-            // 阈值取 max(底噪 × 3, MIC_VAD_RMS)，安静房间和吵闹房间都能用。
+            // 底噪缓慢跟住环境（只在 idle 更新，说话时不被自己带跑）。
+            // 倍率不能太大：实测环境底噪 150 时，×2.2 会把阈值推到 330，
+            // 正常距离的说话（250~500）就被吞了。1.5 + 底噪封顶更稳。
             noiseFloor = noiseFloor * 0.98f + level * 0.02f;
-            const float dynamic = noiseFloor * 3.0f;
-            lastThreshold = (dynamic > MIC_VAD_RMS) ? dynamic : MIC_VAD_RMS;
-            const bool trigger = forceListen || level >= lastThreshold;
+            if (noiseFloor > MIC_NOISE_FLOOR_MAX) noiseFloor = MIC_NOISE_FLOOR_MAX;
+            const float dynamic = noiseFloor * MIC_VAD_FACTOR;
+            lastThreshold = (dynamic > baseThreshold) ? dynamic : baseThreshold;
+            // 连续 MIC_VAD_FRAMES 帧超阈值才算开口：单帧噪声尖峰不触发，少发空请求。
+            hotFrames = (level >= lastThreshold) ? static_cast<uint8_t>(hotFrames + 1) : 0;
+            // 说完之后的冷却期，句尾余音不会立刻再触发一次。
+            const bool cooling = (lastVoiceAt != 0) && ((now - lastVoiceAt) < MIC_RETRIGGER_GUARD_MS);
+            const bool trigger = forceListen || (!cooling && hotFrames >= MIC_VAD_FRAMES);
             if (!trigger) break;
+            hotFrames = 0;
             forceListen = false;
 #if LAMP_CLOUD_ASR
             if (!cloudasr::ready()) {
@@ -501,8 +525,21 @@ bool monitor() { return monitorOn; }
 
 void setMonitor(bool on) {
     monitorOn = on;
-    Serial.printf("[mic] monitor %s (VAD threshold %.0f)\n", on ? "on" : "off", MIC_VAD_RMS);
+    Serial.printf("[mic] monitor %s (VAD threshold %.0f)\n", on ? "on" : "off", baseThreshold);
 }
+
+// 串口 `vad <rms>` 用：现场调灵敏度，不用重烧固件。
+// 传 0（或负数）恢复编译期默认值 MIC_VAD_RMS。
+void setThreshold(float rms) {
+    baseThreshold = (rms > 0.0f) ? rms : MIC_VAD_RMS;
+    // 让自适应底噪从干净状态重新收敛，避免沿用上次的噪声估计。
+    noiseFloor = 40.0f;
+    hotFrames = 0;
+    Serial.printf("[voice] VAD threshold = %.0f (%s)\n", baseThreshold,
+                  rms > 0.0f ? "manual" : "auto");
+}
+
+float threshold() { return baseThreshold; }
 
 void requestListen() {
     if (!pdmmic::ready()) pdmmic::begin();
@@ -520,8 +557,13 @@ void sendText(const char* text) {
     // 云端模式没有服务端可发，直接当"已识别的文本"本地执行，用于串口自测。
     Serial.printf("[voice] local text: %s\n", text);
 #if LAMP_CLOUD_ASR_PROVIDER >= 2
-    // 有 LLM（provider 2/3）时，串口自测也走同一套语义判断，测的才是真链路。
-    handleIntent(cloudasr::classifyText(String(text)));
+    // 串口自测也走同一条路由：本地词表 → 未命中才问 LLM。
+    const String out = cloudasr::interpret(String(text));
+    if (out.startsWith("ANSWER:")) {
+        Serial.printf("[REPLY] %s\n", out.substring(7).c_str());
+    } else if (!out.isEmpty()) {
+        handleIntent(out);
+    }
 #else
     handleAsrText(String(text));
 #endif
@@ -547,7 +589,7 @@ void printStatus() {
     Serial.printf("[voice] cloud=%s wifi=%s mic=%s state=%s monitor=%d\n",
                   cloudasr::providerName(), wifiUp ? "up" : "down",
                   pdmmic::ready() ? "ready" : "missing", stateName(), monitorOn ? 1 : 0);
-    Serial.printf("[voice] threshold=%.0f silence=%lums\n", MIC_VAD_RMS,
+    Serial.printf("[voice] threshold=%.0f silence=%lums\n", baseThreshold,
                   static_cast<unsigned long>(MIC_SILENCE_MS));
     cloudasr::printStatus();
 #else

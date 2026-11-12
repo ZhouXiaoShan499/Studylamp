@@ -68,9 +68,12 @@ bool begin() {
     // INMP441 输出 24 bit、MSB 对齐在 32 bit 槽里，且要求 WS 周期 64 BCLK
     // （每声道 32 bit）。用 16 bit 槽只有 32 BCLK，麦克风会错位输出低频漂移，
     // 所以这里必须用 32 bit 槽，读到 int32 后右移 16 位取高 16 bit。
+    //
+    // slot_mask 必须保持默认的 BOTH：单声道只取 LEFT 时 WS 周期缩成 32 BCLK，
+    // INMP441 会给出带直流偏置的错位数据（实测 min=-2972/max=616，RMS 恒定 1450，
+    // ASR 永远识别为静音）。idf/lamp_sr 的已验证配置就是默认 BOTH。
     cfg.slot_cfg = I2S_STD_PHILIPS_SLOT_DEFAULT_CONFIG(I2S_DATA_BIT_WIDTH_32BIT, I2S_SLOT_MODE_MONO);
     cfg.slot_cfg.slot_bit_width = I2S_SLOT_BIT_WIDTH_32BIT;
-    cfg.slot_cfg.slot_mask = I2S_STD_SLOT_LEFT;  // L/R 接 GND = 左声道
     cfg.gpio_cfg.mclk = I2S_GPIO_UNUSED;
     cfg.gpio_cfg.bclk = static_cast<gpio_num_t>(PIN_VOICE_TX);   // INMP441 SCK
     cfg.gpio_cfg.ws = static_cast<gpio_num_t>(PIN_VOICE_WS);     // INMP441 WS
