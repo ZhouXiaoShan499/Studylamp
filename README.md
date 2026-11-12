@@ -3,7 +3,7 @@
 > 一个放在桌面上的 AI 机器人：能听、能说、能看、会动。<br>
 > ESP32-S3 做身体，云端大模型做大脑。
 
-[官网](https://zhouxiaoshan499.github.io/Studylamp/) · [数字样机](https://zhouxiaoshan499.github.io/Studylamp/simulator.html?mode=voice) · [产品定位与开发规划](docs/11-AI学习机器人产品定位与开发规划.md) · [仓库文档](#文档导航)
+[官网](https://zhouxiaoshan499.github.io/Studylamp/) · [数字样机](https://zhouxiaoshan499.github.io/Studylamp/simulator.html?mode=voice) · [台架记录](https://zhouxiaoshan499.github.io/Studylamp/mvp.html) · [产品定位与开发规划](docs/11-AI学习机器人产品定位与开发规划.md) · [仓库文档](#文档导航)
 
 ![LAMP—1 书桌场景概念渲染：白色圆底座、单柱中段一个黑色摩擦关节，顶部白色圆盘头，宽导光环围住黑色凸面视窗，两段平板臂](web/assets/scene-desk.jpg)
 
@@ -212,50 +212,59 @@ LAMP—1 是一款面向**离开学校之后仍在学习的年轻职场人**的�
 ```text
 Studylamp/
 ├── README.md                     本文件
-├── docs/                         方案、验证与项目记录
-│   ├── 11-AI学习机器人产品定位与开发规划.md   ← 当前主文档
-│   ├── 09-智能交互台灯项目总结.md       台灯时期总结（历史口径）
-│   ├── 10-照明方案调整.md             照明方案记录（已被取消）
-│   ├── 07-语音产品化方案.md           云端 ASR/LLM/TTS、成本与延迟
-│   ├── 08-对标AutonomousLamp模型接入方案.md
-│   ├── 06-语音AI链路实施手册.md        麦克风、服务端、串口联调
-│   ├── 06-面包板点亮验证.md           按键 → 灯的最小闭环
-│   ├── 03-技术方案.md                早期硬件与照明方案（历史）
-│   ├── 01-商业计划书.md              早期商业与财务测算（历史）
-│   ├── 02-市场调研与竞品分析.md        市场与竞品（历史）
-│   ├── 04-MVP验证计划.md             用户验证与指标阈值
-│   └── 05-风险与里程碑.md            风险登记册与阶段门
-├── firmware/                     ESP32-S3 固件（本分支未改动）
-│   ├── src/
-│   │   ├── main.cpp
-│   │   ├── voice_client.cpp
-│   │   ├── pdm_mic.cpp           INMP441 I2S 采集
+├── docs/                         方案、验证与项目记录（33 篇 Markdown）
+│   ├── 11-AI学习机器人产品定位与开发规划.md   ← 当前主文档（定位，稳定）
+│   ├── 24-项目方案规划.md             ← 执行计划（滚动，排期与验收）
+│   ├── 23-技术栈清单.md               技术栈登记，随代码更新
+│   ├── 12–22-…                      阶段 0 方案、离线语音实测与联调记录（冻结）
+│   ├── 25–30-…                      官网实时数据、腾讯云语音、阶段总结
+│   ├── 01–10-…                      早期商业 / 市场 / 台灯方案（历史口径）
+│   └── mvp/                         台架实物照片与最小语音闭环说明
+├── firmware/                     ESP32-S3 固件（A / B 两条线并行）
+│   ├── src/                      B 线：PlatformIO / Arduino 功能仓库
+│   │   ├── main.cpp              主循环、串口命令、状态机
+│   │   ├── voice_client.cpp      语音闭环与会话
+│   │   ├── cloud_asr.cpp         云端 ASR + LLM 混合路由（provider 1–4）
+│   │   ├── local_intent.cpp      本地词表：36 条说法 / 8 个意图
+│   │   ├── tc3_sign.cpp          腾讯云 TC3-HMAC-SHA256 签名
+│   │   ├── pdm_mic.cpp           INMP441 I2S 采集与 VAD
 │   │   ├── lighting.cpp          台架照明通道（仅调试）
 │   │   ├── motion.cpp            PWM 舵机（总线舵机待重写）
-│   │   ├── timer_task.cpp
-│   │   ├── ui.cpp
+│   │   ├── timer_task.cpp        8 槽定时任务
+│   │   ├── ui.cpp                OLED 状态显示（编译期关闭）
+│   │   ├── voice_uart.cpp        离线语音模块 UART（默认关闭）
 │   │   └── ir_engine.cpp / ir_store.cpp   红外后备代码
 │   ├── src/bringup/              按键 → 灯的最小验证
-│   ├── idf/lamp_sr/              当前主线：ESP-IDF 5.4.3 + esp-sr 离线命令词（已烧录运行）
+│   ├── idf/lamp_sr/              A 线（当前主线）：ESP-IDF 5.4.3 + esp-sr 离线命令词
 │   ├── idf/lamp_voice/           ESP-IDF 云端语音客户端（备选）
 │   ├── idf/pdm_probe/            ESP-IDF 麦克风探针
 │   ├── micropython/              开发板 bring-up 脚本
-│   └── include/                  配置、引脚与 secrets 模板
-├── server/                       语音服务（开发链路，未改动）
-│   ├── voice_server.py           WS 8765：PCM → Vosk → Ollama
+│   └── include/                  config.h（引脚与全部参数）、secrets 模板
+├── server/                       语音服务（开发链路 A 路）
+│   ├── voice_server.py           WS 8765：PCM → Vosk → Ollama（支持 --no-llm）
 │   ├── lamp_server.py            TCP 8766 + HTTP 8080
-│   ├── ask.py / asr_test.py / test_client.py
+│   ├── ask.py / asr_test.py / test_client.py / test_client_voice.py
 │   └── models/                   Vosk 模型，不入库
-├── web/                          官网与数字样机（仅改文案）
-│   ├── index.html
-│   ├── product.html
-│   ├── simulator.html            REV C 硬件形态数字样机（双舵机 + 在场检测）
-│   ├── technology.html
+├── web/                          官网、样机与开发者工具（纯静态，无构建）
+│   ├── index.html                首页
+│   ├── product.html              产品
+│   ├── simulator.html            REV C 数字样机（双舵机 + 在场检测）
+│   ├── technology.html           技术与规格
 │   ├── mvp.html                  阶段 0 台架 MVP 记录（硬件 / 实测 / 未完成项）
+│   ├── live.html                 实时监测台（Web Serial）
 │   └── assets/
 ├── tools/
-│   └── mvp_calc.py               BOM / 功耗 / 热 / 经济性计算器
-└── .github/workflows/pages.yml   GitHub Pages 自动部署
+│   ├── mvp_calc.py               BOM / 功耗 / 热 / 经济性计算器
+│   ├── tencent_voice_check.py    腾讯云自检：TC3 签名 / ASR / LLM / TTS
+│   ├── bailian_voice_check.py    百炼链路自检
+│   ├── scan_cloud_keys.py        全仓 / 仅 web 的 Key 体检
+│   ├── kws_probe.py              命令词识别探针
+│   ├── test-live-deck.js         live.js 的 Node 断言
+│   ├── mp_deploy.py / mp_eval.py MicroPython 部署与评测
+│   └── strip-watermark.py        素材处理
+└── .github/workflows/
+    ├── ci.yml                    三项必检：仓库卫生 / Python 语法 / PlatformIO 全编译
+    └── pages.yml                 GitHub Pages 自动部署
 ```
 
 ## 快速开始
@@ -266,6 +275,8 @@ Studylamp/
 
 - 官网：<https://zhouxiaoshan499.github.io/Studylamp/>
 - 数字样机：<https://zhouxiaoshan499.github.io/Studylamp/simulator.html?mode=voice>
+- 台架记录：<https://zhouxiaoshan499.github.io/Studylamp/mvp.html>
+- 实时监测台（开发者工具）：<https://zhouxiaoshan499.github.io/Studylamp/live.html>
 
 本地直接打开，无需构建：
 
@@ -278,6 +289,10 @@ start web\index.html
 > 语音台的对话框默认走本地脚本（不联网）。展开「接入真实模型」填入任意 OpenAI 兼容接口的 Key（百炼 / DeepSeek / 智谱 / 月之暗面 / OpenAI），回复就改成真实大模型生成；转头、计时、灯环这些动作始终由本地执行，断网也照旧。
 >
 > Key 只存在浏览器里（勾「在这台电脑记住」才写入 localStorage，否则仅当前标签页的 sessionStorage），请求直连你填的服务商地址，本站没有后端。**Key 不会入库**——与 `secrets.h` 同一口径。
+
+> **台架记录**（`mvp.html`）回答的是「阶段 0 现在这台机器能做什么」：正在用的硬件与引脚、真机跑通的能力、实测数据，以及四个还没解决的口子。它是记录页不是产品页——没测到的地方一律标「未实测」，台架一改就要跟着改。
+>
+> **实时监测台**（`live.html`）是开发者工具：浏览器通过 Web Serial 直连 ESP32-S3 原生 USB，显示麦克风电平、VAD、命令词命中与事件流，也能直接发 `mic on` / `vad 120` 这类串口命令。需要 Chrome / Edge 桌面版；串口同一时刻只能被一个程序占用，连之前先关掉 `idf.py monitor`。
 
 ### 2. 编译固件
 
@@ -390,6 +405,7 @@ python test_client.py --text "今天适合复习吗"
 | [11-AI学习机器人产品定位与开发规划.md](docs/11-AI学习机器人产品定位与开发规划.md) | **当前主文档**：定位、用户、功能、硬件、技术、三阶段规划 |
 | [24-项目方案规划.md](docs/24-项目方案规划.md) | **执行计划（滚动版）**：现状盘点、D1–D4 待拍板决策、阶段 0.5 排期与验收、文档治理规则 |
 | [23-技术栈清单.md](docs/23-技术栈清单.md) | 技术栈登记：固件两条线、PC 服务、模型与云服务的实际版本（含已停用项） |
+| [台架记录（网站页）](web/mvp.html) | 阶段 0 的实物记录：硬件与引脚、已跑通 / 待硬件 / 未开始、实测数据与四个未解决项 |
 | [MVP 初始阶段说明](docs/mvp/README.md) | 阶段 0 台架验证实物照片（speech.jpg）与最小语音闭环说明 |
 
 ### 方案与实施
@@ -409,6 +425,17 @@ python test_client.py --text "今天适合复习吗"
 | [19-离线语音后续路线图.md](docs/19-离线语音后续路线图.md) | 从「已烧录」到「插电即用」的里程碑与验收 |
 | [21-免唤醒与按键方案.md](docs/21-免唤醒与按键方案.md) | 免唤醒现状澄清，按键触发与语音并行的改造方案 |
 | [22-按键与语音并行硬件方案.md](docs/22-按键与语音并行硬件方案.md) | 按键与语音并行的纯硬件接法（不改代码） |
+
+### 阶段记录（25–30，滚动的实施与总结）
+
+| 文档 | 作用 |
+|------|------|
+| [25-官网实时数据方案.md](docs/25-官网实时数据方案.md) | 服务端中继 + SSE；已被 v2 取代，留作手机 / 远程的备用通道 |
+| [26-腾讯云API直连方案.md](docs/26-腾讯云API直连方案.md) | 三接口、TC3 鉴权、成本与实施顺序 |
+| [27-腾讯云Key上网站方案.md](docs/27-腾讯云Key上网站方案.md) | 为什么 Key 不能进前端、代理契约与安全红线 |
+| [28-实时数据方案v2-USB直连.md](docs/28-实时数据方案v2-USB直连.md) | Web Serial 直连的完整方案与实测 |
+| [29-腾讯云联调实录.md](docs/29-腾讯云联调实录.md) | 联调实录：错误码、三跳实测、设备端实测、混合路由 |
+| [30-阶段总结-官网实时数据与腾讯云语音.md](docs/30-阶段总结-官网实时数据与腾讯云语音.md) | 11-10 至 11-12 的阶段总结与交接记录 |
 
 ### 实测与联调记录（冻结，只作证据引用）
 
