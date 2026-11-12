@@ -140,5 +140,26 @@ check('复位后清空曲线', live.ring.mic.length === 0 && live.ring.afe.lengt
   'mic=' + live.ring.mic.length + ' afe=' + live.ring.afe.length);
 check('复位后有系统事件', live.events.some(e => e.kind === 'system'), '');
 
+/* ---- 5. Arduino 固件的连接类日志（provider=4）---- */
+console.log('\n[连接类日志]');
+live.ingest('[wifi] status=6 WL_DISCONNECTED', t + 70);
+check('WiFi 重连失败记成事件', live.events[0].kind === 'warn',
+  'kind=' + live.events[0].kind);
+check('事件带状态码', live.state.wifiStatus === 6, 'wifiStatus=' + live.state.wifiStatus);
+check('断线后清掉旧 IP', live.state.wifiIp === '', 'ip=' + live.state.wifiIp);
+
+live.ingest('[wifi] scan: 3 AP(s) visible', t + 80);
+check('扫到 AP 记成事件', /3 个 AP/.test(live.events[0].text), live.events[0].text);
+
+live.ingest('[wifi]   -62 dBm ch6 Xiaomi_037C  <== match', t + 90);
+check('目标 SSID 命中被标出来', /SSID 命中/.test(live.events[0].text), live.events[0].text);
+
+live.ingest('[wifi] connected ssid="Xiaomi_037C" ip=192.168.31.91 rssi=-28', t + 100);
+check('连上后状态码归位', live.state.wifiStatus === 3, 'wifiStatus=' + live.state.wifiStatus);
+check('连上后记录 IP', live.state.wifiIp === '192.168.31.91', live.state.wifiIp);
+
+live.ingest('[voice] cloud=tencent wifi=down mic=ready state=idle monitor=1', t + 110);
+check('status 输出可见', live.events[0].text.indexOf('cloud=tencent') >= 0, live.events[0].text);
+
 console.log('\n' + (failures ? failures + ' 项失败' : '全部通过'));
 process.exit(failures ? 1 : 0);
