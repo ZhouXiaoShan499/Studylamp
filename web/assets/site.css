@@ -19,7 +19,7 @@
   --site-sans:"Segoe UI","SF Pro Display","PingFang SC","Hiragino Sans GB","Microsoft YaHei UI","Microsoft YaHei",sans-serif;
   --site-serif:"Iowan Old Style","Baskerville","Songti SC","STSong","SimSun",serif;
   --site-mono:"SFMono-Regular","Cascadia Mono","Cascadia Code","Consolas","Liberation Mono",monospace;
-  --site-header-h:68px;
+  --site-header-h:72px;
   --site-max:1520px;
   --site-pad:clamp(18px,2.6vw,40px);
   --site-ease:cubic-bezier(.22,.61,.36,1);
@@ -269,7 +269,7 @@ body.site-page h1,body.site-page h2,body.site-page h3,body.site-page h4{margin:0
 .site-brand__mark svg{width:18px;height:18px}
 .site-brand__name{
   font-family:var(--site-mono);
-  font-size:13px;
+  font-size:14px;
   line-height:1;
   letter-spacing:.14em;
   white-space:nowrap;
@@ -279,7 +279,7 @@ body.site-page h1,body.site-page h2,body.site-page h3,body.site-page h4{margin:0
   padding-left:12px;
   border-left:1px solid var(--site-line-strong);
   color:var(--site-muted);
-  font-size:9.5px;
+  font-size:10.5px;
   line-height:1.2;
   letter-spacing:.07em;
   white-space:nowrap;
@@ -292,7 +292,7 @@ body.site-page h1,body.site-page h2,body.site-page h3,body.site-page h4{margin:0
   position:relative;
   padding:10px 0;
   color:#93978b;
-  font-size:11px;
+  font-size:12.5px;
   line-height:1;
   letter-spacing:.06em;
   text-decoration:none;
