@@ -191,13 +191,16 @@ constexpr const char* CLOUD_ASR_CUID = "lamp01";
 
 // 国产大模型（provider=2）参数。base 只要 host（不带 https:// 和 /v1），
 // 各家填各自的：
-//   DeepSeek: api.deepseek.com                 model: deepseek-chat
+//   DeepSeek: api.deepseek.com                 model: deepseek-flash
 //   通义千问: dashscope.aliyuncs.com/compatible-mode/v1   model: qwen-plus
 //   智谱:     open.bigmodel.cn/api/paas/v4     model: glm-4-flash
 //   豆包:     ark.cn-beijing.volces.com/api/v3  model: <你的 endpoint id>
 constexpr const char* CLOUD_LLM_HOST = "api.deepseek.com";
 constexpr const char* CLOUD_LLM_PATH = "/v1/chat/completions";
-constexpr const char* CLOUD_LLM_MODEL = "deepseek-chat";
+// 旧名 deepseek-chat / deepseek-reasoner 是 V3.x 别名，已下线，请求会返回 404。
+// 现行模型名 deepseek-flash。路径 /v1/chat/completions 与 /chat/completions
+// 实测都可用（无效 Key 均返回 401 而非 404），保留 /v1 与 OpenAI 兼容写法一致。
+constexpr const char* CLOUD_LLM_MODEL = "deepseek-flash";
 
 // 阿里云百炼（provider=3）：两跳走同一个域名、同一个 Key，串口只写一个 sk-xxx。
 //   第一跳 ASR：qwen3-asr-flash。OpenAI 兼容模式下把 44 字节 WAV 头 + 16k PCM
