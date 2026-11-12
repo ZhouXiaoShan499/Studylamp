@@ -13,6 +13,8 @@ bool connected() { return false; }
 bool listening() { return false; }
 bool monitor() { return false; }
 void setMonitor(bool) {}
+void setThreshold(float) {}
+float threshold() { return MIC_VAD_RMS; }
 void requestListen() {}
 void sendText(const char*) {}
 void printStatus() { Serial.println("[voice] disabled at compile time (LAMP_HAS_VOICE=0)"); }
@@ -29,6 +31,8 @@ bool connected() { return false; }
 bool listening() { return false; }
 bool monitor() { return false; }
 void setMonitor(bool) {}
+void setThreshold(float) {}
+float threshold() { return MIC_VAD_RMS; }
 void requestListen() {}
 void sendText(const char*) {}
 void printStatus() { Serial.println("[voice] disabled: LAMP_WIFI_SSID/LAMP_WIFI_PASS missing"); }
