@@ -4,8 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#080907">
-<title>实时监测台 · LAMP—1</title>
-<meta name="description" content="LAMP—1 实时监测台：浏览器通过 Web Serial 直连 ESP32-S3 原生 USB，显示麦克风电平、VAD、命令词命中与事件流。不经过任何服务器。">
+<title>开发者工具 · 实时监测台 · LAMP—1</title>
+<meta name="description" content="LAMP—1 开发者工具：浏览器通过 Web Serial 直连 ESP32-S3 原生 USB，显示麦克风电平、VAD、命令词命中与事件流。需要设备与 Chrome / Edge 桌面版。不是产品功能。">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="assets/site.css">
 <style>
@@ -254,7 +254,7 @@
     </span>
     <span class="deck-title">
       <b>LIVE DECK</b>
-      <span>实时监测台 · 数据不经过服务器</span>
+      <span>开发者工具 · 实时监测台 · 数据不经过服务器</span>
     </span>
   </div>
 
@@ -265,6 +265,11 @@
     <button class="btn" id="replayBtn" type="button">播放录制</button>
   </div>
 </header>
+
+<p class="devnote">
+  <b>DEV TOOL</b>
+  这里是裸板串口数据，不是产品功能，需要接设备才能看。普通访客请回 <a href="index.html">官网首页</a>，或直接打开 <a href="simulator.html">数字样机</a>。
+</p>
 
 <main class="deck" id="main">
   <section class="card deck-scope" aria-label="麦克风输入电平">
