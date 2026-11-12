@@ -610,3 +610,30 @@ body.site-page h1,body.site-page h2,body.site-page h3,body.site-page h4{margin:0
   .site-reset{width:31px;padding:0;justify-content:center}
   .site-menu__foot p{max-width:none}
 }
+
+/* developer-tool notice bar (live deck) */
+.devnote{
+  display:flex;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:8px 12px;
+  margin:0;
+  padding:9px clamp(14px,2.6vw,26px);
+  border-bottom:1px solid rgba(229,183,118,.22);
+  background:rgba(229,183,118,.07);
+  color:#d5c3a4;
+  font-size:11.5px;
+  line-height:1.6;
+}
+.devnote b{
+  padding:1px 6px;
+  border:1px solid rgba(229,183,118,.45);
+  border-radius:3px;
+  color:#f0d4a8;
+  font-family:var(--site-mono);
+  font-size:8px;
+  font-weight:400;
+  letter-spacing:.08em;
+}
+.devnote a{color:#f0d4a8;text-decoration:none;border-bottom:1px solid rgba(229,183,118,.4)}
+.devnote a:hover{color:#fff}
