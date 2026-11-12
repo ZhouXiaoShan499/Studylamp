@@ -216,6 +216,11 @@
   var AR_REPLY = /^\[REPLY\]\s*(.*)$/;
   var AR_ASR_REPLY = /^\[asr\]\s+reply\s+(\d+)\s+B\s+in\s+(\d+)\s+ms/;
   var AR_WIFI = /^\[wifi\]\s+connected ssid="([^"]*)"\s+ip=(\S+)\s+rssi=(-?\d+)/;
+  /* 重连失败时固件每 10 s 打一行 status，扫到的 AP 也是 [wifi] 前缀。
+     这两类以前落到 ignore，恰好是「为什么连不上」的全部证据，现在收成事件。 */
+  var AR_WIFI_STATUS = /^\[wifi\]\s+status=(-?\d+)\s+(.+)$/;
+  var AR_WIFI_SCAN = /^\[wifi\]\s+scan:\s+(\d+)\s+AP/;
+  var AR_WIFI_AP = /^\[wifi\]\s+(-?\d+)\s+dBm\s+ch(\d+)\s+(.+?)\s*(<== match)?$/;
   var AR_MEM = /^\[mem\]\s+psram=(\d+)\s+heap=(\d+)/;
   var AR_EMPTY = /^\[asr\]\s+empty result/;
   var AR_NOT_READY = /cloud ASR not ready|wifi down, dropped|no key, dropped/;
@@ -285,6 +290,30 @@
     m = AR_WIFI.exec(s);
     if (m) {
       return { type: 'link', ssid: m[1], ip: m[2], rssi: parseInt(m[3], 10) };
+    }
+
+    m = AR_WIFI_STATUS.exec(s);
+    if (m) {
+      var wst = parseInt(m[1], 10);
+      return {
+        type: 'event', kind: wst === 3 ? 'link' : 'warn',
+        wifiStatus: wst,
+        text: 'WiFi 状态 ' + wst + ' · ' + m[2].trim()
+      };
+    }
+
+    m = AR_WIFI_SCAN.exec(s);
+    if (m) {
+      return { type: 'event', kind: 'system', text: 'WiFi 扫描：看到 ' + m[1] + ' 个 AP' };
+    }
+
+    m = AR_WIFI_AP.exec(s);
+    if (m) {
+      var hit = /<==/.test(s);
+      return {
+        type: 'event', kind: hit ? 'link' : 'system',
+        text: 'AP ' + m[3].trim() + ' · ' + m[1] + ' dBm · ch' + m[2] + (hit ? ' ← SSID 命中' : '')
+      };
     }
 
     m = AR_MEM.exec(s);

@@ -47,6 +47,7 @@
     // Arduino 固件（provider=4）用到的字段
     lastText: '', lastIntent: '', lastAction: null, asrMs: 0, voiceCount: 0,
     lastReply: '', lastVoiceAt: 0, ledPct: null, wifiIp: '', wifiRssi: null, wifiSsid: '',
+    wifiStatus: null,
     psramBytes: 0, heapBytes: 0, lastStatus: ''
   };
   var stats = {
@@ -213,6 +214,12 @@
         checkReset(r.uptime);
         applyPatch(r.patch);
         if (r.fw) { state.fw = r.fw; el.fw.textContent = r.fw; }
+        // 重连失败时固件每 10 s 报一次状态码：断线就清掉旧 IP，
+        // 否则顶栏会一直显示上次连上的地址，看着像「网是好的」。
+        if (r.wifiStatus !== undefined) {
+          state.wifiStatus = r.wifiStatus;
+          if (r.wifiStatus !== 3) { state.wifiIp = ''; state.wifiRssi = null; }
+        }
         pushEvent(r);
         break;
       case 'hello':
@@ -267,6 +274,7 @@
         state.wifiSsid = r.ssid || '';
         state.wifiIp = r.ip || '';
         state.wifiRssi = r.rssi;
+        state.wifiStatus = 3;
         pushEvent({ kind: 'link', text: 'WiFi ' + state.wifiSsid + ' · ' + state.wifiIp });
         break;
       case 'health':
@@ -275,6 +283,9 @@
         break;
       case 'status':
         state.lastStatus = r.text || '';
+        // 以前只存不进事件流，于是在页面里敲 status 什么都看不到——
+        // 而它恰好是判断 wifi / key / clock 的唯一入口。现在照实落一行。
+        pushEvent({ kind: 'system', text: r.text || '' });
         break;
       default:
         stats.ignored++;
@@ -512,9 +523,11 @@
     }
 
     if (el.wifiInfo) {
+      var wst = state.wifiStatus;
+      var down = (wst !== null && wst !== 3);
       el.wifiInfo.textContent = state.wifiIp
         ? state.wifiIp + (state.wifiRssi !== null ? ' · ' + state.wifiRssi + ' dBm' : '')
-        : '—';
+        : (down ? '未连接（状态 ' + wst + '）' : '—');
     }
     if (el.memInfo) {
       el.memInfo.textContent = state.psramBytes
