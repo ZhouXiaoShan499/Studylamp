@@ -992,6 +992,88 @@ button:focus-visible,a:focus-visible,input:focus-visible{
   font-size:9px;
 }
 .voice-disclaimer{margin:11px 0 0;color:#5f6359;font-size:8px;line-height:1.6}
+
+/* ------------------------------------------------------- live model dock */
+.model-dock{
+  margin:14px 0 0;
+  border:1px solid var(--line);
+  border-radius:12px;
+  background:rgba(255,255,255,.014);
+  transition:border-color .25s var(--ease),background .25s var(--ease);
+}
+.model-dock[open]{border-color:rgba(229,183,118,.24);background:rgba(229,183,118,.03)}
+.model-dock > summary{
+  display:flex;align-items:center;gap:8px;
+  padding:9px 11px;
+  list-style:none;cursor:pointer;
+  color:#9a9e90;font-size:9.5px;
+  transition:color .25s var(--ease);
+}
+.model-dock > summary::-webkit-details-marker{display:none}
+.model-dock > summary:hover{color:#c3c7b8}
+.model-dock > summary::after{
+  content:"+";margin-left:8px;
+  color:#7e7565;font-family:var(--mono);font-size:11px;line-height:1;
+}
+.model-dock[open] > summary::after{content:"–"}
+.model-dock[open] > summary{border-bottom:1px solid var(--line)}
+.model-dock__led{
+  width:5px;height:5px;flex:0 0 auto;
+  border-radius:50%;background:#5b5f56;
+  transition:background .3s var(--ease),box-shadow .3s var(--ease);
+}
+.model-dock.is-live .model-dock__led{background:var(--accent);box-shadow:0 0 8px rgba(229,183,118,.75)}
+.model-dock__label{display:inline-flex;align-items:baseline;gap:7px;color:#cfc7b8}
+.model-dock__label em{color:#7c7663;font-family:var(--mono);font-size:7px;font-style:normal;letter-spacing:.1em}
+.model-dock__state{margin-left:auto;color:#7e8275;font-family:var(--mono);font-size:7.5px;letter-spacing:.05em}
+.model-dock.is-live .model-dock__state{color:var(--accent)}
+.model-dock__body{padding:11px}
+.model-dock__note{margin:0 0 10px;color:#898d80;font-size:9px;line-height:1.7}
+.model-dock__grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:8px}
+.model-dock__grid label{display:flex;flex-direction:column;gap:4px;color:#8f9385;font-size:8.5px;letter-spacing:.02em}
+.model-dock__wide{grid-column:1 / -1}
+.model-dock input,.model-dock select{
+  width:100%;height:29px;padding:0 9px;
+  border:1px solid var(--line);border-radius:8px;
+  background:rgba(0,0,0,.2);
+  color:#ddd6c8;
+  font-family:inherit;font-size:9.5px;
+  outline:none;
+  transition:border-color .25s var(--ease);
+}
+.model-dock select{color-scheme:dark}
+.model-dock input::placeholder{color:#5d6157}
+.model-dock input:focus,.model-dock select:focus{border-color:rgba(229,183,118,.45)}
+.model-key{display:flex;gap:6px}
+.model-key input{flex:1;min-width:0}
+.model-key button{
+  flex:0 0 auto;height:29px;padding:0 9px;
+  border:1px solid var(--line);border-radius:8px;
+  background:rgba(255,255,255,.02);
+  color:#9a9e90;font-size:8px;
+  transition:color .25s var(--ease),border-color .25s var(--ease);
+}
+.model-key button:hover{color:var(--accent);border-color:rgba(229,183,118,.3)}
+.model-dock__actions{display:flex;align-items:center;flex-wrap:wrap;gap:7px;margin-top:10px}
+.model-remember{display:inline-flex;align-items:center;gap:5px;color:#8b8f81;font-size:8px;cursor:pointer}
+.model-remember input{width:11px;height:11px;flex:0 0 auto;accent-color:#c6a06a}
+.model-btn{
+  height:27px;padding:0 10px;
+  border:1px solid var(--line);border-radius:7px;
+  background:rgba(255,255,255,.02);
+  color:#aeb2a3;font-size:9px;
+  transition:color .25s var(--ease),border-color .25s var(--ease),background .25s var(--ease);
+}
+.model-btn:hover{color:var(--accent);border-color:rgba(229,183,118,.32)}
+.model-btn--primary{border-color:rgba(229,183,118,.34);background:rgba(229,183,118,.12);color:var(--accent)}
+.model-btn--ghost{margin-left:auto;border-color:transparent;background:none;color:#71756a}
+.model-btn[disabled]{opacity:.45;pointer-events:none}
+.model-dock__msg{margin:0;color:#84887b;font-size:8.5px;line-height:1.65}
+.model-dock__msg:not(:empty){margin-top:9px}
+.model-dock__msg.is-ok{color:#93b281}
+.model-dock__msg.is-err{color:#d49a82}
+.model-dock__warn{margin:9px 0 0;color:#686c61;font-size:8px;line-height:1.65}
+.voice-bubble__note{display:block;margin-top:5px;color:#c08d6f;font-size:7.5px;line-height:1.55}
 @media (max-width:760px){
   .console-tabs{padding:7px 18px 0}
   .voice-head{grid-template-columns:44px 1fr;gap:11px}
@@ -1680,7 +1762,7 @@ button:focus-visible,a:focus-visible,input:focus-visible{
         <div class="hero">
           <p class="eyebrow">LAMP—1 / Interactive model 001 · REV C</p>
           <h1>它听见你，<span class="accent">也回应你。</span></h1>
-          <p class="hero-desc">这是最终硬件形态的行为仿真：不接硬件、不录音，动作与检测结果由脚本生成。拖动它的头，或点一句示例试试。</p>
+          <p class="hero-desc">这是最终硬件形态的行为仿真：不接硬件、不录音，动作与检测结果由脚本生成。拖动它的头、点一句示例，或在语音台填入自己的 API Key，让它接上真实大模型。</p>
           <div class="hero-meta">
             <span>REV C</span><i></i><span>双舵机</span><i></i><span>在场检测</span><i></i><span>行为仿真</span>
           </div>
@@ -1755,6 +1837,49 @@ button:focus-visible,a:focus-visible,input:focus-visible{
             </div>
           </div>
 
+          <details class="model-dock" id="modelDock">
+            <summary>
+              <span class="model-dock__led" aria-hidden="true"></span>
+              <span class="model-dock__label">接入真实模型<em>LIVE MODEL</em></span>
+              <span class="model-dock__state" id="modelState">本地脚本</span>
+            </summary>
+            <div class="model-dock__body">
+              <p class="model-dock__note">填入任意 OpenAI 兼容接口的 Key，它就用真实大模型回答；不填则继续走本地脚本。动作、计时和在场检测始终由本地执行。</p>
+              <div class="model-dock__grid">
+                <label>服务商
+                  <select id="modelPreset" aria-label="模型服务商">
+                    <option value="bailian">阿里云百炼 · qwen-plus</option>
+                    <option value="deepseek">DeepSeek · deepseek-chat</option>
+                    <option value="zhipu">智谱 GLM · glm-4-flash</option>
+                    <option value="moonshot">月之暗面 · moonshot-v1-8k</option>
+                    <option value="openai">OpenAI · gpt-4o-mini</option>
+                    <option value="custom">自定义 · OpenAI 兼容</option>
+                  </select>
+                </label>
+                <label>模型名
+                  <input id="modelName" type="text" autocomplete="off" spellcheck="false" placeholder="qwen-plus">
+                </label>
+                <label class="model-dock__wide">接口地址
+                  <input id="modelBaseUrl" type="url" autocomplete="off" spellcheck="false" placeholder="https://…/v1">
+                </label>
+                <label class="model-dock__wide">API Key
+                  <span class="model-key">
+                    <input id="modelKey" type="password" autocomplete="off" spellcheck="false" placeholder="sk-…">
+                    <button type="button" id="modelKeyToggle" aria-label="显示或隐藏 Key">显示</button>
+                  </span>
+                </label>
+              </div>
+              <div class="model-dock__actions">
+                <label class="model-remember"><input type="checkbox" id="modelRemember"> 在这台电脑记住</label>
+                <button type="button" class="model-btn" id="modelTest">测试连接</button>
+                <button type="button" class="model-btn model-btn--primary" id="modelApply">启用</button>
+                <button type="button" class="model-btn model-btn--ghost" id="modelClear">清除</button>
+              </div>
+              <p class="model-dock__msg" id="modelMsg" role="status" aria-live="polite"></p>
+              <p class="model-dock__warn">Key 只存在这台设备的浏览器里，请求直接发给你填的服务商。本站没有后端，收不到也用不到你的 Key；公用电脑不要勾选“记住”。</p>
+            </div>
+          </details>
+
           <button class="voice-ptt" id="voicePtt" type="button" aria-describedby="voicePttHint">
             <span class="voice-ptt__icon" aria-hidden="true">
               <svg viewBox="0 0 16 16" fill="none">
@@ -1787,7 +1912,7 @@ button:focus-visible,a:focus-visible,input:focus-visible{
             <button type="submit">发送</button>
           </form>
 
-          <p class="voice-disclaimer">仿真模式：不打开麦克风、不上传语音、不调用真实大模型。</p>
+          <p class="voice-disclaimer" id="voiceDisclaimer">仿真模式：不打开麦克风、不上传语音、不调用真实大模型。填入 API Key 可切换为真实模型回答。</p>
         </div>
 
         <section class="group" aria-labelledby="presenceHeading">
@@ -2190,6 +2315,20 @@ button:focus-visible,a:focus-visible,input:focus-visible{
   const voiceForm = $('#voiceForm');
   const voiceInput = $('#voiceInput');
   const voiceSuggestions = $$('.voice-suggestions [data-voice-prompt]');
+
+  const modelDock = $('#modelDock');
+  const modelPreset = $('#modelPreset');
+  const modelName = $('#modelName');
+  const modelBaseUrl = $('#modelBaseUrl');
+  const modelKeyInput = $('#modelKey');
+  const modelRemember = $('#modelRemember');
+  const modelKeyToggle = $('#modelKeyToggle');
+  const modelTestBtn = $('#modelTest');
+  const modelApply = $('#modelApply');
+  const modelClear = $('#modelClear');
+  const modelStateLabel = $('#modelState');
+  const modelMsg = $('#modelMsg');
+  const voiceDisclaimer = $('#voiceDisclaimer');
 
   /* ----------------------------------------------------------------- utils */
   const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
@@ -2753,6 +2892,206 @@ button:focus-visible,a:focus-visible,input:focus-visible{
     '现在几点'
   ];
 
+  /* ------------------------------------------------------- live model api */
+  const MODEL_PRESETS = {
+    bailian:  { base: 'https://dashscope.aliyuncs.com/compatible-mode/v1', name: 'qwen-plus' },
+    deepseek: { base: 'https://api.deepseek.com/v1', name: 'deepseek-chat' },
+    zhipu:    { base: 'https://open.bigmodel.cn/api/paas/v4', name: 'glm-4-flash' },
+    moonshot: { base: 'https://api.moonshot.cn/v1', name: 'moonshot-v1-8k' },
+    openai:   { base: 'https://api.openai.com/v1', name: 'gpt-4o-mini' },
+    custom:   { base: '', name: '' }
+  };
+  const MODEL_PROMPT = [
+    '你是 LAMP—1，一台放在办公桌上的桌面 AI 机器人。',
+    '你的身体只有一根立柱、一个能转动的头和一圈灯环，没有腿和手臂，也不负责照明。',
+    '说话规则：中文口语；每次最多两句话、不超过 60 个字；不用 Markdown、列表、表情符号；不描述你做不到的动作。',
+    '别人问你是谁，就说自己是桌面上的在场者，主要陪人专注学习、回答问题。'
+  ].join('\n');
+  const MODEL_CFG_KEY = 'lamp1.model.cfg.v1';
+  const MODEL_SECRET_KEY = 'lamp1.model.key.v1';
+
+  const model = {
+    enabled: false,
+    preset: 'bailian',
+    baseUrl: MODEL_PRESETS.bailian.base,
+    name: MODEL_PRESETS.bailian.name,
+    key: '',
+    history: []
+  };
+
+  function modelError(message) {
+    const error = new Error(message);
+    error.userFacing = true;
+    return error;
+  }
+
+  function describeHttpError(status, detail) {
+    const tail = detail ? ` 服务商说：${String(detail).slice(0, 100)}` : '';
+    if (status === 401 || status === 403) return `Key 被拒了（${status}），检查有没有输错或已过期。${tail}`;
+    if (status === 404) return `接口地址或模型名不对（404）。${tail}`;
+    if (status === 429) return `被限流了（429），等一会儿再试。${tail}`;
+    if (status >= 500) return `服务商那边出错了（${status}），稍后再试。${tail}`;
+    return `请求失败（${status}）。${tail}`;
+  }
+
+  async function callModel(messages, options) {
+    const opts = options || {};
+    const base = String(model.baseUrl || '').trim().replace(/\/+$/, '');
+    const key = String(model.key || '').trim();
+    const name = String(model.name || '').trim();
+    if (!base) throw modelError('还没有填接口地址。');
+    if (!key) throw modelError('还没有填 API Key。');
+    if (!name) throw modelError('还没有填模型名。');
+
+    const endpoint = /\/chat\/completions$/.test(base) ? base : `${base}/chat/completions`;
+    const controller = new AbortController();
+    const timer = window.setTimeout(() => controller.abort(), opts.timeout || 26000);
+
+    let response;
+    try {
+      response = await fetch(endpoint, {
+        method: 'POST',
+        mode: 'cors',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${key}`
+        },
+        body: JSON.stringify({
+          model: name,
+          messages,
+          temperature: opts.temperature === undefined ? 0.6 : opts.temperature,
+          max_tokens: opts.maxTokens || 260,
+          stream: false
+        }),
+        signal: controller.signal
+      });
+    } catch (error) {
+      window.clearTimeout(timer);
+      if (error && error.name === 'AbortError') {
+        throw modelError('模型没有在 26 秒内回话，请求已取消。');
+      }
+      throw modelError('请求没发出去。多数服务商不允许网页直连（跨域被拦），可以换一家，或把接口地址填成你自己的转发地址。');
+    }
+    window.clearTimeout(timer);
+
+    if (!response.ok) {
+      let detail = '';
+      try {
+        const body = await response.json();
+        detail = (body && body.error && body.error.message) || (body && body.message) || '';
+      } catch (error) {
+        detail = '';
+      }
+      throw modelError(describeHttpError(response.status, detail));
+    }
+
+    let data;
+    try {
+      data = await response.json();
+    } catch (error) {
+      throw modelError('服务商返回的不是 JSON，接口地址可能指向了网页而不是 API。');
+    }
+    const choice = data && data.choices && data.choices[0];
+    const text = choice && choice.message && choice.message.content;
+    if (!text) throw modelError('模型返回了空内容，检查模型名是否正确。');
+    return String(text)
+      .trim()
+      .replace(/^["'「『]+|["'」』]+$/g, '')
+      .replace(/\s+/g, ' ')
+      .slice(0, 240);
+  }
+
+  async function askModel(text) {
+    const messages = [{ role: 'system', content: MODEL_PROMPT }]
+      .concat(model.history.slice(-6))
+      .concat([{ role: 'user', content: text }]);
+    const reply = await callModel(messages);
+    model.history.push({ role: 'user', content: text }, { role: 'assistant', content: reply });
+    if (model.history.length > 12) model.history = model.history.slice(-12);
+    return reply;
+  }
+
+  function refreshModelUi() {
+    const live = model.enabled && Boolean(model.key) && Boolean(model.baseUrl) && Boolean(model.name);
+    modelDock.classList.toggle('is-live', live);
+    modelStateLabel.textContent = live ? `已接入 · ${model.name}` : '本地脚本';
+    modelApply.textContent = live ? '停用' : '启用';
+    voiceDisclaimer.textContent = live
+      ? `已接入 ${model.name}：语音仍用示例文本，回复来自真实模型；动作与在场检测仍是本地仿真。`
+      : '仿真模式：不打开麦克风、不上传语音、不调用真实大模型。填入 API Key 可切换为真实模型回答。';
+  }
+
+  function setModelMsg(text, kind) {
+    modelMsg.textContent = text || '';
+    modelMsg.classList.remove('is-ok', 'is-err');
+    if (kind) modelMsg.classList.add(`is-${kind}`);
+  }
+
+  function syncModelDraft() {
+    model.preset = modelPreset.value;
+    model.baseUrl = modelBaseUrl.value.trim();
+    model.name = modelName.value.trim();
+    model.key = modelKeyInput.value.trim();
+  }
+
+  function writeModelStorage() {
+    try {
+      window.localStorage.setItem(MODEL_CFG_KEY, JSON.stringify({
+        preset: model.preset,
+        baseUrl: model.baseUrl,
+        name: model.name,
+        enabled: model.enabled,
+        remember: modelRemember.checked
+      }));
+    } catch (error) { /* 隐私模式下写不进去，忽略 */ }
+
+    try {
+      if (!model.key) {
+        window.localStorage.removeItem(MODEL_SECRET_KEY);
+        window.sessionStorage.removeItem(MODEL_SECRET_KEY);
+        return;
+      }
+      if (modelRemember.checked) {
+        window.localStorage.setItem(MODEL_SECRET_KEY, model.key);
+        window.sessionStorage.removeItem(MODEL_SECRET_KEY);
+      } else {
+        window.sessionStorage.setItem(MODEL_SECRET_KEY, model.key);
+        window.localStorage.removeItem(MODEL_SECRET_KEY);
+      }
+    } catch (error) { /* 同上 */ }
+  }
+
+  function loadModelConfig() {
+    let cfg = null;
+    let storedKey = '';
+    try {
+      cfg = JSON.parse(window.localStorage.getItem(MODEL_CFG_KEY) || 'null');
+      storedKey = window.localStorage.getItem(MODEL_SECRET_KEY)
+        || window.sessionStorage.getItem(MODEL_SECRET_KEY)
+        || '';
+    } catch (error) {
+      cfg = null;
+      storedKey = '';
+    }
+
+    if (cfg) {
+      model.preset = MODEL_PRESETS[cfg.preset] ? cfg.preset : 'custom';
+      model.baseUrl = cfg.baseUrl || MODEL_PRESETS[model.preset].base;
+      model.name = cfg.name || MODEL_PRESETS[model.preset].name;
+      modelRemember.checked = Boolean(cfg.remember);
+      model.enabled = Boolean(cfg.enabled);
+    }
+    model.key = storedKey;
+    if (!model.key) model.enabled = false;
+
+    modelPreset.value = model.preset;
+    modelBaseUrl.value = model.baseUrl;
+    modelName.value = model.name;
+    modelKeyInput.value = model.key;
+    refreshModelUi();
+  }
+
+
   function setConsoleMode(mode) {
     const isVoice = mode === 'voice';
     consoleEl.classList.toggle('is-voice', isVoice);
@@ -2774,17 +3113,23 @@ button:focus-visible,a:focus-visible,input:focus-visible{
     if (kind === 'listening') announce('正在听。仿真模式不会录音。');
   }
 
-  function addVoiceBubble(role, text) {
+  function addVoiceBubble(role, text, metaText, note) {
     if (!text) return;
     voiceEmpty.hidden = true;
     const bubble = document.createElement('div');
     bubble.className = `voice-bubble voice-bubble--${role}`;
     const meta = document.createElement('span');
     meta.className = 'voice-bubble__meta';
-    meta.textContent = role === 'user' ? '你 · 输入' : 'LAMP—1 · 脚本仿真';
+    meta.textContent = metaText || (role === 'user' ? '你 · 输入' : 'LAMP—1 · 脚本仿真');
     const body = document.createElement('p');
     body.textContent = text;
     bubble.append(meta, body);
+    if (note) {
+      const noteEl = document.createElement('small');
+      noteEl.className = 'voice-bubble__note';
+      noteEl.textContent = note;
+      bubble.append(noteEl);
+    }
     voiceTranscript.append(bubble);
     voiceTranscript.scrollTop = voiceTranscript.scrollHeight;
   }
@@ -2876,23 +3221,43 @@ button:focus-visible,a:focus-visible,input:focus-visible{
     return `我听见了「${text}」。这是前端仿真，真实回答要等云端大模型接入。`;
   }
 
+  function settleVoiceTurn(text, metaText, note) {
+    setVoiceState('speaking', '正在回应…', '它会用屏幕、灯环和一次动作回应。');
+    addVoiceBubble('lamp', text, metaText, note);
+    voiceBusy = false;
+    voiceTurnTimer = window.setTimeout(() => {
+      if (voiceBusy) return;
+      setVoiceState('', '已回应', model.enabled
+        ? `已接入 ${model.name}，可以继续问。`
+        : '可以继续问，或切回本体台。');
+    }, 680);
+  }
+
   function runVoiceTurn(text) {
     const clean = String(text || '').trim();
     if (!clean || voiceBusy) return;
     voiceBusy = true;
     window.clearTimeout(voiceTurnTimer);
     addVoiceBubble('user', clean);
-    setVoiceState('thinking', '正在听懂…', '把这句话交给仿真脚本，不连接真实服务。');
-    voiceTurnTimer = window.setTimeout(() => {
-      const response = answerVoice(clean);
-      setVoiceState('speaking', '正在回应…', '它会用屏幕、灯环和一次动作回应。');
-      addVoiceBubble('lamp', response);
-      voiceBusy = false;
-      voiceTurnTimer = window.setTimeout(() => {
-        if (voiceBusy) return;
-        setVoiceState('', '已回应', '可以继续问，或切回本体台。');
-      }, 680);
-    }, 620);
+
+    const live = model.enabled && Boolean(model.key) && Boolean(model.baseUrl) && Boolean(model.name);
+    setVoiceState('thinking', '正在听懂…', live
+      ? `把这句话发给 ${model.name}，等它回应。`
+      : '把这句话交给仿真脚本，不连接真实服务。');
+
+    // 本地意图先执行：计时、转头、灯环这些动作不依赖模型，断网也照旧
+    const localReply = answerVoice(clean);
+
+    if (!live) {
+      voiceTurnTimer = window.setTimeout(() => settleVoiceTurn(localReply, 'LAMP—1 · 脚本仿真'), 620);
+      return;
+    }
+
+    askModel(clean).then(reply => {
+      settleVoiceTurn(reply, `LAMP—1 · ${model.name}`);
+    }).catch(error => {
+      settleVoiceTurn(localReply, 'LAMP—1 · 脚本兜底', (error && error.message) || '模型没有响应。');
+    });
   }
 
   function startVoiceListening() {
@@ -3127,6 +3492,80 @@ button:focus-visible,a:focus-visible,input:focus-visible{
     runVoiceTurn(text);
   });
 
+  modelPreset.addEventListener('change', () => {
+    const preset = MODEL_PRESETS[modelPreset.value];
+    if (!preset) return;
+    if (preset.base) modelBaseUrl.value = preset.base;
+    if (preset.name) modelName.value = preset.name;
+    setModelMsg('', '');
+  });
+
+  modelKeyToggle.addEventListener('click', () => {
+    const shown = modelKeyInput.type === 'text';
+    modelKeyInput.type = shown ? 'password' : 'text';
+    modelKeyToggle.textContent = shown ? '显示' : '隐藏';
+    modelKeyToggle.setAttribute('aria-label', shown ? '显示 Key' : '隐藏 Key');
+  });
+
+  modelTestBtn.addEventListener('click', async () => {
+    syncModelDraft();
+    if (!model.key) {
+      setModelMsg('先填 API Key 再测试。', 'err');
+      modelKeyInput.focus();
+      return;
+    }
+    modelTestBtn.disabled = true;
+    setModelMsg(`正在连接 ${model.name || '模型'}…`, '');
+    try {
+      const reply = await callModel([
+        { role: 'system', content: '你只需回两个字：收到。' },
+        { role: 'user', content: '测试连接' }
+      ], { maxTokens: 24, timeout: 20000, temperature: 0 });
+      setModelMsg(`连接成功，${model.name} 回了「${reply.slice(0, 20)}」。`, 'ok');
+    } catch (error) {
+      setModelMsg((error && error.message) || '测试失败。', 'err');
+    } finally {
+      modelTestBtn.disabled = false;
+    }
+  });
+
+  modelApply.addEventListener('click', () => {
+    if (model.enabled) {
+      model.enabled = false;
+      writeModelStorage();
+      refreshModelUi();
+      setModelMsg('已停用，回到本地脚本。Key 还留在这台设备上，点“清除”可以删掉。', 'ok');
+      showToast('已切回本地脚本');
+      return;
+    }
+    syncModelDraft();
+    if (!model.baseUrl) { setModelMsg('先填接口地址。', 'err'); modelBaseUrl.focus(); return; }
+    if (!model.name) { setModelMsg('先填模型名。', 'err'); modelName.focus(); return; }
+    if (!model.key) { setModelMsg('先填 API Key。', 'err'); modelKeyInput.focus(); return; }
+    model.enabled = true;
+    model.history = [];
+    writeModelStorage();
+    refreshModelUi();
+    setModelMsg(`已接入 ${model.name}。按住说话或输入一句话试试。`, 'ok');
+    showToast(`已接入 ${model.name}`);
+    modelDock.open = false;
+  });
+
+  modelClear.addEventListener('click', () => {
+    model.enabled = false;
+    model.key = '';
+    model.history = [];
+    modelKeyInput.value = '';
+    try {
+      window.localStorage.removeItem(MODEL_SECRET_KEY);
+      window.sessionStorage.removeItem(MODEL_SECRET_KEY);
+    } catch (error) { /* 忽略 */ }
+    writeModelStorage();
+    refreshModelUi();
+    setModelMsg('已清除这台设备上的 Key，回到本地脚本。', 'ok');
+    showToast('已清除 API Key');
+  });
+
   voicePtt.addEventListener('pointerdown', event => {
     event.preventDefault();
     startVoiceListening();
@@ -3203,6 +3642,7 @@ button:focus-visible,a:focus-visible,input:focus-visible{
     window.addEventListener('resize', fitScene);
 
     syncAllControls();
+    loadModelConfig();
     view.ring = expressionOf(state.expression).ring.slice();
     view.ringAlpha = 0;
     view.yaw = state.yaw;

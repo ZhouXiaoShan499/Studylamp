@@ -107,6 +107,7 @@ git branch -d feat/my-change
 | 内容 | 原因 | 放哪里 |
 |------|------|--------|
 | `firmware/include/secrets.h` | Wi-Fi 密码、云端 Key | 本地从 `secrets.h.example` 复制 |
+| 网页样机里填的模型 Key | 只属于使用者本人 | 存在其浏览器 localStorage / sessionStorage，代码里只留占位符 |
 | `firmware/.pio/`、`firmware/idf/**/build/` | 编译产物 | 忽略，重新编译 |
 | `firmware/idf/**/managed_components/` | 组件管理器下载的第三方依赖 | 由 `idf.py` 重新拉取 |
 | `server/models/`、`*.wav` | Vosk 模型与录音体积大 | 外部下载 / 本地保存 |
