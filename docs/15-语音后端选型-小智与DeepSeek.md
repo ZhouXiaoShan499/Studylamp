@@ -93,7 +93,7 @@ Opus 编码 / VAD              LLM  ← 这里接 DeepSeek 官方 Key
 **验收**：串口 `voice say 什么是机会成本` → 返回一段中文；`voice listen` 说「开灯」→ 灯亮。
 **意义**：不花一分钱验证 DeepSeek Key、模型名、网络三件事，同时把阿里云彻底摘掉。
 
-> 顺带修一个已经过期的地方：`config.h` 里 provider=2 的默认 `CLOUD_LLM_MODEL = "deepseek-chat"` 已经下线，应改成 `deepseek-flash`，路径建议同时从 `/v1/chat/completions` 改成 `/chat/completions`。这就是 `docs/13` 坑 6 的翻版——模型名当易耗品。
+> 顺带修一个已经过期的地方（已完成）：`config.h` 里 provider=2 的默认 `CLOUD_LLM_MODEL` 曾是 `"deepseek-chat"`，该名字是 V3.x 别名、已下线，请求返回 404，现改为 `deepseek-flash`。路径保留 `/v1/chat/completions` 未动——实测 `/v1/chat/completions` 与 `/chat/completions` 都通（无效 Key 均返回 401 而非 404），`/v1` 与 OpenAI 兼容写法一致。这就是 `docs/13` 坑 6 的翻版——模型名当易耗品，换模型时先打一次裸请求探 401/404。
 
 ### Step 2（喇叭到货后，半天）：小智冒烟测试
 
