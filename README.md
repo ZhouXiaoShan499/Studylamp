@@ -251,6 +251,7 @@ Studylamp/
 │   ├── product.html
 │   ├── simulator.html            REV C 硬件形态数字样机（双舵机 + 在场检测）
 │   ├── technology.html
+│   ├── mvp.html                  阶段 0 台架 MVP 记录（硬件 / 实测 / 未完成项）
 │   └── assets/
 ├── tools/
 │   └── mvp_calc.py               BOM / 功耗 / 热 / 经济性计算器
