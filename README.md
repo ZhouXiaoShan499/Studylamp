@@ -3,7 +3,7 @@
 > 一个放在桌面上的 AI 机器人：能听、能说、能看、会动。<br>
 > ESP32-S3 做身体，云端大模型做大脑。
 
-[官网](https://zhouxiaoshan499.github.io/Studylamp/) · [数字样机](https://zhouxiaoshan499.github.io/Studylamp/simulator.html?mode=voice) · [台架记录](https://zhouxiaoshan499.github.io/Studylamp/mvp.html) · [产品定位与开发规划](docs/11-AI学习机器人产品定位与开发规划.md) · [仓库文档](#文档导航)
+[官网](https://zhouxiaoshan499.github.io/Studylamp/) · [数字样机](https://zhouxiaoshan499.github.io/Studylamp/simulator.html?mode=voice) · [产品定位与开发规划](docs/11-AI学习机器人产品定位与开发规划.md) · [仓库文档](#文档导航)
 
 ![LAMP—1 书桌场景概念渲染：白色圆底座、单柱中段一个黑色摩擦关节，顶部白色圆盘头，宽导光环围住黑色凸面视窗，两段平板臂](web/assets/scene-desk.jpg)
 
@@ -64,7 +64,7 @@ LAMP—1 是一款面向**离开学校之后仍在学习的年轻职场人**的�
 | 5 | 摄像头视觉感知 | GC0308 采集图像，基础人员在场检测 | P2 | 二 | ⬜ 未接入 |
 | 6 | 学习计时与提醒 | 番茄钟、倒计时、任务提醒、时长记录 | P1 | 三 | 🟡 倒计时已有（`timer_task.cpp`），学习化未做 |
 
-> 状态口径以 [docs/20](docs/20-离线语音实测纪要.md)（离线实测）、[docs/29](docs/29-腾讯云联调实录.md)（腾讯云联调）、[docs/30](docs/30-阶段总结-官网实时数据与腾讯云语音.md)（阶段总结）、[docs/23](docs/23-技术栈清单.md)（技术栈）为准；一页速览见 [台架记录](web/mvp.html)。
+> 状态口径以 [docs/20](docs/20-离线语音实测纪要.md)（离线实测）、[docs/29](docs/29-腾讯云联调实录.md)（腾讯云联调）、[docs/30](docs/30-阶段总结-官网实时数据与腾讯云语音.md)（阶段总结）、[docs/23](docs/23-技术栈清单.md)（技术栈）为准。
 >
 > 目前真正能演示的有两条：**A 线**说「开灯 / 关灯」→ GPIO5 电平翻转，离线、不联网，但只注册了 5 条命令词、样本 3 次；**B 线**说一句话 → 腾讯云 ASR → 本地词表或大模型 → 灯状态变化，网页同步显示识别文本与回答。两条都属于**台架验证**、不是产品功能：灯不在产品定义里，「会说」这一环也还没有喇叭。
 >
@@ -250,7 +250,6 @@ Studylamp/
 │   ├── product.html              产品
 │   ├── simulator.html            REV C 数字样机（双舵机 + 在场检测）
 │   ├── technology.html           技术与规格
-│   ├── mvp.html                  阶段 0 台架 MVP 记录（硬件 / 实测 / 未完成项）
 │   ├── live.html                 实时监测台（Web Serial）
 │   └── assets/
 ├── tools/
@@ -275,7 +274,6 @@ Studylamp/
 
 - 官网：<https://zhouxiaoshan499.github.io/Studylamp/>
 - 数字样机：<https://zhouxiaoshan499.github.io/Studylamp/simulator.html?mode=voice>
-- 台架记录：<https://zhouxiaoshan499.github.io/Studylamp/mvp.html>
 - 实时监测台（开发者工具）：<https://zhouxiaoshan499.github.io/Studylamp/live.html>
 
 本地直接打开，无需构建：
@@ -290,8 +288,6 @@ start web\index.html
 >
 > Key 只存在浏览器里（勾「在这台电脑记住」才写入 localStorage，否则仅当前标签页的 sessionStorage），请求直连你填的服务商地址，本站没有后端。**Key 不会入库**——与 `secrets.h` 同一口径。
 
-> **台架记录**（`mvp.html`）回答的是「阶段 0 现在这台机器能做什么」：正在用的硬件与引脚、真机跑通的能力、实测数据，以及四个还没解决的口子。它是记录页不是产品页——没测到的地方一律标「未实测」，台架一改就要跟着改。
->
 > **实时监测台**（`live.html`）是开发者工具：浏览器通过 Web Serial 直连 ESP32-S3 原生 USB，显示麦克风电平、VAD、命令词命中与事件流，也能直接发 `mic on` / `vad 120` 这类串口命令。右上角「连接 WiFi」可以在网页里填 SSID / 密码或扫描 2.4 GHz 热点，凭据写进设备 NVS，换网不用重新烧固件（需先烧 `firmware/` 这版 Arduino 固件）。需要 Chrome / Edge 桌面版；串口同一时刻只能被一个程序占用，连之前先关掉 `idf.py monitor`。
 
 ### 2. 编译固件
@@ -405,7 +401,6 @@ python test_client.py --text "今天适合复习吗"
 | [11-AI学习机器人产品定位与开发规划.md](docs/11-AI学习机器人产品定位与开发规划.md) | **当前主文档**：定位、用户、功能、硬件、技术、三阶段规划 |
 | [24-项目方案规划.md](docs/24-项目方案规划.md) | **执行计划（滚动版）**：现状盘点、D1–D4 待拍板决策、阶段 0.5 排期与验收、文档治理规则 |
 | [23-技术栈清单.md](docs/23-技术栈清单.md) | 技术栈登记：固件两条线、PC 服务、模型与云服务的实际版本（含已停用项） |
-| [台架记录（网站页）](web/mvp.html) | 阶段 0 的实物记录：硬件与引脚、已跑通 / 待硬件 / 未开始、实测数据与四个未解决项 |
 | [MVP 初始阶段说明](docs/mvp/README.md) | 阶段 0 台架验证实物照片（speech.jpg）与最小语音闭环说明 |
 
 ### 方案与实施
@@ -472,7 +467,6 @@ python test_client.py --text "今天适合复习吗"
 - 摄像头只承诺基础人员在场检测，不承诺学习状态、坐姿或专注度识别；
 - 学习场景需求、用户付费意愿、桌面机器人形态均未经过真实用户验证；
 - 未做 3C/CE、EMC、热、跌落和寿命测试；
-- [台架记录页](web/mvp.html)里的数字随台架变化：动了接线或换固件，要同步改那一页；
 - 部分历史文档/代码注释仍保留台灯、双色温、红外优先等表述，以 `docs/11` 和实际接线为准。
 
 ## 现阶段最重要的三件事
