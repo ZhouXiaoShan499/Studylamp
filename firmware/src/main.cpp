@@ -21,13 +21,9 @@
 #include "voice_client.h"
 #include "voice_uart.h"
 
-#if defined(LAMP_WIFI_SSID) && defined(LAMP_WIFI_PASS)
+#include <Preferences.h>
 #include <WiFi.h>
 #include <time.h>
-#define LAMP_WIFI_ENABLED 1
-#else
-#define LAMP_WIFI_ENABLED 0
-#endif
 
 namespace {
 
@@ -380,7 +376,21 @@ void statusTick(uint32_t now) {
     motion::setNightMode(isNightNow());
 }
 
-#if LAMP_WIFI_ENABLED
+// ------------------------------------------------------------------- WiFi ---
+// 凭据来源：NVS（网页「连接 WiFi」或串口 `wifi connect` 写入）优先；
+// NVS 为空时回落到 secrets.h 的编译期常量。换热点、改密码不用重新烧固件。
+constexpr const char* kWifiNvsNamespace = "lampwifi";
+
+String wifiSsid;
+String wifiPass;
+bool wifiFromNvs = false;
+bool wifiStarted = false;
+bool wifiScanned = false;
+bool wifiAnnounced = false;
+bool wifiNoCredsWarned = false;
+uint32_t wifiLastAttempt = 0;
+uint32_t wifiLastSync = 0;
+
 // 连不上时把真实原因打出来。只看到 wifi=down 分不清是"热点不在 2.4 GHz"
 // 还是"密码错"——这两种的处理方式完全不同。
 const char* wifiStatusName(wl_status_t s) {
@@ -394,19 +404,194 @@ const char* wifiStatusName(wl_status_t s) {
     }
 }
 
+int wifiHexDigit(char c) {
+    if (c >= '0' && c <= '9') return c - '0';
+    if (c >= 'a' && c <= 'f') return c - 'a' + 10;
+    if (c >= 'A' && c <= 'F') return c - 'A' + 10;
+    return -1;
+}
+
+// 网页用 encodeURIComponent() 编码 SSID/密码：空格、引号、中文都不会把命令行拆坏。
+// 只解码 %XX，不把 '+' 当空格——encodeURIComponent 本身会把 '+' 编成 %2B。
+String wifiUrlDecode(const char* text) {
+    String out;
+    if (text == nullptr) return out;
+    for (const char* p = text; *p != '\0'; ++p) {
+        if (*p == '%' && p[1] != '\0' && p[2] != '\0') {
+            const int hi = wifiHexDigit(p[1]);
+            const int lo = wifiHexDigit(p[2]);
+            if (hi >= 0 && lo >= 0) {
+                out += static_cast<char>((hi << 4) | lo);
+                p += 2;
+                continue;
+            }
+        }
+        out += *p;
+    }
+    return out;
+}
+
+void wifiPrintStatus() {
+    const wl_status_t st = WiFi.status();
+    if (st == WL_CONNECTED) {
+        Serial.printf("[wifi] connected ssid=\"%s\" ip=%s rssi=%d\n", WiFi.SSID().c_str(),
+                      WiFi.localIP().toString().c_str(), static_cast<int>(WiFi.RSSI()));
+    } else {
+        Serial.printf("[wifi] status=%d %s\n", static_cast<int>(st), wifiStatusName(st));
+    }
+    if (wifiSsid.isEmpty()) {
+        Serial.println("[wifi] credentials none");
+    } else {
+        Serial.printf("[wifi] credentials ssid=\"%s\" source=%s password=%s\n", wifiSsid.c_str(),
+                      wifiFromNvs ? "nvs" : "secrets.h", wifiPass.isEmpty() ? "empty" : "set");
+    }
+}
+
+void wifiLoadCredentials() {
+    Preferences prefs;
+    if (prefs.begin(kWifiNvsNamespace, true)) {
+        wifiSsid = prefs.getString("ssid", "");
+        wifiPass = prefs.getString("pass", "");
+        prefs.end();
+    }
+
+    wifiFromNvs = !wifiSsid.isEmpty();
+    if (!wifiFromNvs) {
+        wifiSsid = LAMP_WIFI_SSID;
+        wifiPass = LAMP_WIFI_PASS;
+    }
+
+    if (wifiSsid.isEmpty()) {
+        wifiNoCredsWarned = true;
+        Serial.println("[wifi] no credentials: send 'wifi connect <ssid> <pass>' or write include/secrets.h");
+    } else {
+        Serial.printf("[wifi] credentials ssid=\"%s\" source=%s password=%s\n", wifiSsid.c_str(),
+                      wifiFromNvs ? "nvs" : "secrets.h", wifiPass.isEmpty() ? "empty" : "set");
+    }
+}
+
+void wifiStartConnect() {
+    if (wifiSsid.isEmpty()) {
+        Serial.println("[wifi] no credentials: send 'wifi connect <ssid> <pass>'");
+        return;
+    }
+    WiFi.disconnect(true);
+    delay(50);  // 等射频复位；紧接着 begin() 才不会继承上一轮的失败状态
+    WiFi.begin(wifiSsid.c_str(), wifiPass.c_str());  // non-blocking
+    wifiStarted = true;
+    wifiScanned = false;
+    wifiAnnounced = false;
+    wifiNoCredsWarned = false;
+    wifiLastAttempt = millis();
+    Serial.printf("[wifi] connecting ssid=\"%s\"\n", wifiSsid.c_str());
+}
+
+bool wifiSaveCredentials(const String& ssid, const String& pass) {
+    if (ssid.isEmpty()) {
+        Serial.println("[wifi] bad ssid: empty");
+        return false;
+    }
+    if (ssid.length() > 32) {
+        Serial.println("[wifi] bad ssid: longer than 32 bytes");
+        return false;
+    }
+    if (pass.length() > 63) {
+        Serial.println("[wifi] bad password: longer than 63 bytes");
+        return false;
+    }
+
+    Preferences prefs;
+    if (!prefs.begin(kWifiNvsNamespace, false)) {
+        Serial.println("[wifi] bad nvs: cannot open namespace");
+        return false;
+    }
+    prefs.putString("ssid", ssid);
+    prefs.putString("pass", pass);
+    prefs.end();
+
+    wifiSsid = ssid;
+    wifiPass = pass;
+    wifiFromNvs = true;
+    // 只报长度和有没有密码，密码本身绝不进串口/日志。
+    Serial.printf("[wifi] saved ssid=\"%s\" password=%s\n", ssid.c_str(),
+                  pass.isEmpty() ? "empty" : "set");
+    wifiStartConnect();
+    return true;
+}
+
+void wifiClearCredentials() {
+    Preferences prefs;
+    if (prefs.begin(kWifiNvsNamespace, false)) {
+        prefs.remove("ssid");
+        prefs.remove("pass");
+        prefs.end();
+    }
+
+    wifiFromNvs = false;
+    wifiSsid = LAMP_WIFI_SSID;
+    wifiPass = LAMP_WIFI_PASS;
+    wifiStarted = false;
+    wifiScanned = false;
+    wifiAnnounced = false;
+    WiFi.disconnect(true);
+    Serial.println("[wifi] cleared");
+
+    if (wifiSsid.isEmpty()) {
+        wifiNoCredsWarned = false;
+    } else {
+        Serial.printf("[wifi] falling back to secrets.h ssid=\"%s\"\n", wifiSsid.c_str());
+        wifiStartConnect();
+    }
+}
+
+int wifiScanAndPrint() {
+    WiFi.scanDelete();
+    const int n = WiFi.scanNetworks(false, true);
+    if (n < 0) {
+        Serial.printf("[wifi] scan failed code=%d\n", n);
+        WiFi.scanDelete();
+        return n;
+    }
+    Serial.printf("[wifi] scan: %d AP(s) visible\n", n);
+    for (int i = 0; i < n && i < 20; ++i) {
+        const String ssid = WiFi.SSID(i);
+        const bool hidden = ssid.isEmpty();
+        Serial.printf("[wifi]   %d dBm ch%-2d %s%s\n", static_cast<int>(WiFi.RSSI(i)),
+                      static_cast<int>(WiFi.channel(i)), hidden ? "<hidden>" : ssid.c_str(),
+                      (!hidden && ssid == wifiSsid) ? "  <== match" : "");
+    }
+    WiFi.scanDelete();
+    Serial.println("[wifi] scan done");
+    return n;
+}
+
+void wifiScanNow() {
+    const bool wasConnected = (WiFi.status() == WL_CONNECTED);
+    if (!wasConnected) {
+        // 未连接时必须先彻底断开，否则扫描会和后台的 begin() 抢射频（返回 -2）。
+        WiFi.disconnect(true);
+        delay(80);
+    }
+    wifiScanAndPrint();
+    // 扫描可能短暂打断射频：扫完还没连上就立刻重连，别让页面停在断网状态。
+    if (WiFi.status() != WL_CONNECTED && !wifiSsid.isEmpty()) wifiStartConnect();
+}
+
 void wifiTick(uint32_t now) {
-    static uint32_t lastAttempt = 0;
-    static uint32_t lastSync = 0;
-    static bool started = false;
-    static bool scanned = false;
-    static bool announced = false;
+    if (wifiSsid.isEmpty()) {
+        if (!wifiNoCredsWarned) {
+            wifiNoCredsWarned = true;
+            Serial.println("[wifi] no credentials: send 'wifi connect <ssid> <pass>' or write include/secrets.h");
+        }
+        return;
+    }
 
     if (WiFi.status() != WL_CONNECTED) {
-        announced = false;
-        if (now - lastAttempt >= 10000) {
-            lastAttempt = now;
+        wifiAnnounced = false;
+        if (now - wifiLastAttempt >= 10000) {
+            wifiLastAttempt = now;
 
-            if (started) {
+            if (wifiStarted) {
                 const wl_status_t st = WiFi.status();
                 Serial.printf("[wifi] status=%d %s\n", static_cast<int>(st), wifiStatusName(st));
             }
@@ -414,37 +599,30 @@ void wifiTick(uint32_t now) {
             // 第一次重试时扫一遍空口，把能看到的 AP 列出来（含是否命中目标 SSID）。
             // 关键：必须先把 WiFi 彻底断开、停掉后台连接，否则 scanNetworks() 会跟
             // begin() 抢射频，直接返回 -2 (SCAN_FAILED)，一个 AP 都列不出来。
-            if (started && !scanned) {
-                scanned = true;
+            if (wifiStarted && !wifiScanned) {
+                wifiScanned = true;
                 WiFi.disconnect(true);   // 关闭射频，释放出来给扫描用
                 delay(80);               // 等射频真正复位
-                const int n = WiFi.scanNetworks();
-                Serial.printf("[wifi] scan: %d AP(s) visible\n", n);
-                for (int i = 0; i < n && i < 10; ++i) {
-                    Serial.printf("[wifi]   %d dBm ch%-2d %s%s\n", static_cast<int>(WiFi.RSSI(i)),
-                                  WiFi.channel(i), WiFi.SSID(i).c_str(),
-                                  WiFi.SSID(i) == LAMP_WIFI_SSID ? "  <== match" : "");
-                }
-                WiFi.scanDelete();
+                wifiScanAndPrint();
             }
 
-            WiFi.begin(LAMP_WIFI_SSID, LAMP_WIFI_PASS);  // non-blocking
-            if (!started) {
-                started = true;
-                ui::logf("{\"ev\":\"wifi_begin\",\"ssid\":\"%s\"}", LAMP_WIFI_SSID);
-            }
+            WiFi.begin(wifiSsid.c_str(), wifiPass.c_str());  // non-blocking
         }
         return;
     }
+
     // 连上的那一刻打一条，否则日志里只有 wifi_begin 没有结果，看不出到底通没通。
-    if (!announced) {
-        announced = true;
+    if (!wifiAnnounced) {
+        wifiAnnounced = true;
         Serial.printf("[wifi] connected ssid=\"%s\" ip=%s rssi=%d\n", WiFi.SSID().c_str(),
                       WiFi.localIP().toString().c_str(), static_cast<int>(WiFi.RSSI()));
         ui::logf("{\"ev\":\"wifi_ok\",\"ip\":\"%s\"}", WiFi.localIP().toString().c_str());
+        // 运行时才配网时 cloudasr::begin() 早已跑过，SNTP 没踢出去；
+        // 这里补一次：TC3 签名要求时钟误差 ≤5 分钟，时钟不对第一跳必失败。
+        configTime(0, 0, "ntp.tencent.com", "ntp.aliyun.com", "cn.pool.ntp.org");
     }
-    if (now - lastSync >= 5000) {
-        lastSync = now;
+    if (now - wifiLastSync >= 5000) {
+        wifiLastSync = now;
         const time_t value = time(nullptr);
         if (value > 1600000000L) {
             const uint32_t epoch = static_cast<uint32_t>(value);
@@ -454,7 +632,6 @@ void wifiTick(uint32_t now) {
         }
     }
 }
-#endif
 
 // ------------------------------------------------------------- command shell ---
 uint32_t micMonitorUntil = 0;
@@ -470,6 +647,14 @@ void printStatusReport() {
                   static_cast<unsigned>(irstore::kSlots));
     Serial.printf("[status] timers=%u clock=%s motion=%s\n", static_cast<unsigned>(timers::count()),
                   timers::timeValid() ? "synced" : "no-epoch", motion::muted() ? "muted" : "on");
+    if (wifiSsid.isEmpty()) {
+        Serial.println("[status] wifi=unconfigured");
+    } else if (WiFi.status() == WL_CONNECTED) {
+        Serial.printf("[status] wifi=up ssid=\"%s\" ip=%s\n", WiFi.SSID().c_str(),
+                      WiFi.localIP().toString().c_str());
+    } else {
+        Serial.printf("[status] wifi=down status=%d\n", static_cast<int>(WiFi.status()));
+    }
     voice::printStatus();
 }
 
@@ -805,6 +990,42 @@ void onCommand(int argc, char** argv) {
         }
         return;
     }
+    if (strcmp(cmd, "wifi") == 0) {
+        const char* sub = argc >= 2 ? argv[1] : "status";
+        if (strcmp(sub, "status") == 0) {
+            wifiPrintStatus();
+            return;
+        }
+        if (strcmp(sub, "scan") == 0) {
+            wifiScanNow();
+            return;
+        }
+        if (strcmp(sub, "clear") == 0 || strcmp(sub, "reset") == 0) {
+            wifiClearCredentials();
+            return;
+        }
+
+        // wifi connect <ssid> <pass>，另外接受 wifi <ssid> <pass> 简写。
+        // 值由网页用 encodeURIComponent() 编码；密码传 "-" 表示开放网络（无密码）。
+        int ssidArg = 1;
+        int passArg = 2;
+        if (strcmp(sub, "connect") == 0 || strcmp(sub, "set") == 0) {
+            ssidArg = 2;
+            passArg = 3;
+        }
+        if (argc <= ssidArg) {
+            Serial.println("usage: wifi connect <ssid> <password>   ('-' = open network)");
+            Serial.println("       wifi status | wifi scan | wifi clear");
+            return;
+        }
+        const String ssid = wifiUrlDecode(argv[ssidArg]);
+        String pass;
+        if (argc > passArg && strcmp(argv[passArg], "-") != 0) {
+            pass = wifiUrlDecode(argv[passArg]);
+        }
+        wifiSaveCredentials(ssid, pass);
+        return;
+    }
 
     Serial.printf("unknown command: %s (try 'help')\n", cmd);
 }
@@ -816,6 +1037,13 @@ void setup() {
     irstore::begin();  // mounts LittleFS; ui::begin() writes into /log
     ui::begin();
     ui::setCommandHandler(onCommand);
+
+    // WiFi 凭据自己存在 "lampwifi" 命名空间里，不需要 Arduino core 再存一份；
+    // persistent(false) 可以避免每 10 秒一次的重试反复写 flash。
+    WiFi.persistent(false);
+    WiFi.mode(WIFI_STA);
+    wifiLoadCredentials();
+    if (!wifiSsid.isEmpty()) wifiStartConnect();
 
     pinMode(PIN_STATUS_LED, OUTPUT);
     digitalWrite(PIN_STATUS_LED, LOW);
@@ -862,9 +1090,7 @@ void loop() {
     statusTick(now);
     beepTick(now);
 
-#if LAMP_WIFI_ENABLED
     wifiTick(now);
-#endif
 #if LAMP_HAS_VOICE
     voice::tick(now);
 #endif
