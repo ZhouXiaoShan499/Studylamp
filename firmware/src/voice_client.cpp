@@ -20,24 +20,6 @@ void sendText(const char*) {}
 void printStatus() { Serial.println("[voice] disabled at compile time (LAMP_HAS_VOICE=0)"); }
 }  // namespace voice
 
-#elif !defined(LAMP_WIFI_SSID) || !defined(LAMP_WIFI_PASS)
-
-namespace voice {
-void begin() {
-    Serial.println("[voice] no WiFi credentials: copy include/secrets.h.example to include/secrets.h");
-}
-void tick(uint32_t) {}
-bool connected() { return false; }
-bool listening() { return false; }
-bool monitor() { return false; }
-void setMonitor(bool) {}
-void setThreshold(float) {}
-float threshold() { return MIC_VAD_RMS; }
-void requestListen() {}
-void sendText(const char*) {}
-void printStatus() { Serial.println("[voice] disabled: LAMP_WIFI_SSID/LAMP_WIFI_PASS missing"); }
-}  // namespace voice
-
 #else
 
 #include <ArduinoJson.h>

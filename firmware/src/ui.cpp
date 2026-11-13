@@ -18,7 +18,7 @@ namespace ui {
 namespace {
 
 CommandHandler handler = nullptr;
-char line[128];
+char line[384];
 size_t lineLen = 0;
 char statusText[64] = "boot";
 char learnText[40] = "";
@@ -185,6 +185,9 @@ void printHelp() {
         "  mic on|off|test [seconds]  PDM mic level meter (voice task 1)\n"
         "  vad <rms> | vad 0          VAD sensitivity, 0 = restore default\n"
         "  key <API_KEY> [SECRET]     store cloud ASR key in NVS\n"
+        "  wifi status|scan           WiFi state / scan nearby 2.4 GHz APs\n"
+        "  wifi connect <ssid> <pass> save to NVS and reconnect ('-' = open)\n"
+        "  wifi clear                 erase saved WiFi credentials\n"
         "  asr                        cloud ASR status (provider / key / token)\n"
         "  voice status|listen        link status / record one utterance\n"
         "  voice say <text>           run one text through the command matcher\n");

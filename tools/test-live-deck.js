@@ -149,16 +149,49 @@ check('事件带状态码', live.state.wifiStatus === 6, 'wifiStatus=' + live.st
 check('断线后清掉旧 IP', live.state.wifiIp === '', 'ip=' + live.state.wifiIp);
 
 live.ingest('[wifi] scan: 3 AP(s) visible', t + 80);
-check('扫到 AP 记成事件', /3 个 AP/.test(live.events[0].text), live.events[0].text);
+check('扫描开始记一行事件', /3 个网络/.test(live.events[0].text), live.events[0].text);
+check('扫描进入 scanning 状态', live.state.wifiScan.phase === 'scanning',
+  'phase=' + live.state.wifiScan.phase);
 
 live.ingest('[wifi]   -62 dBm ch6 Xiaomi_037C  <== match', t + 90);
-check('目标 SSID 命中被标出来', /SSID 命中/.test(live.events[0].text), live.events[0].text);
+live.ingest('[wifi]   -70 dBm ch11 Neighbor', t + 95);
+check('扫描结果进列表', live.state.wifiScan.items.length === 2,
+  'items=' + live.state.wifiScan.items.length);
+check('按信号强弱排序', live.state.wifiScan.items[0].ssid === 'Xiaomi_037C',
+  live.state.wifiScan.items[0].ssid);
+check('当前 SSID 被标记', live.state.wifiScan.items[0].match === true, 'match');
 
-live.ingest('[wifi] connected ssid="Xiaomi_037C" ip=192.168.31.91 rssi=-28', t + 100);
+live.ingest('[wifi] scan done', t + 100);
+check('扫描结束', live.state.wifiScan.phase === 'done', 'phase=' + live.state.wifiScan.phase);
+
+live.ingest('[wifi] saved ssid="Xiaomi_037C" password=set', t + 110);
+check('保存凭据记成事件', /已保存 WiFi 凭据/.test(live.events[0].text), live.events[0].text);
+check('保存后进入 connecting', live.state.wifiConnecting === true,
+  'connecting=' + live.state.wifiConnecting);
+
+live.ingest('[wifi] connecting ssid="Xiaomi_037C"', t + 115);
+check('connecting 回执带上 SSID', live.state.wifiSsid === 'Xiaomi_037C',
+  'ssid=' + live.state.wifiSsid);
+
+live.ingest('[wifi] connected ssid="Xiaomi_037C" ip=192.168.31.91 rssi=-28', t + 120);
 check('连上后状态码归位', live.state.wifiStatus === 3, 'wifiStatus=' + live.state.wifiStatus);
 check('连上后记录 IP', live.state.wifiIp === '192.168.31.91', live.state.wifiIp);
+check('连上后结束 connecting', live.state.wifiConnecting === false,
+  'connecting=' + live.state.wifiConnecting);
 
-live.ingest('[voice] cloud=tencent wifi=down mic=ready state=idle monitor=1', t + 110);
+live.ingest('[wifi] credentials ssid="Xiaomi_037C" source=nvs password=set', t + 125);
+check('凭据来源可读', live.state.wifiConfigured === true && live.state.wifiPasswordSet === true,
+  'configured=' + live.state.wifiConfigured + ' pass=' + live.state.wifiPasswordSet);
+
+live.ingest('[wifi] bad password: longer than 63 bytes', t + 130);
+check('固件拒绝参数时给出提示', /设备拒绝/.test(live.state.wifiLastReason),
+  live.state.wifiLastReason);
+
+live.ingest("unknown command: wifi (try 'help')", t + 135);
+check('旧固件被标记为不支持 wifi', live.state.wifiSupported === false,
+  'supported=' + live.state.wifiSupported);
+
+live.ingest('[voice] cloud=tencent wifi=down mic=ready state=idle monitor=1', t + 140);
 check('status 输出可见', live.events[0].text.indexOf('cloud=tencent') >= 0, live.events[0].text);
 
 console.log('\n' + (failures ? failures + ' 项失败' : '全部通过'));

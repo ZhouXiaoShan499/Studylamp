@@ -25,6 +25,12 @@
   var el = {
     badge: $('srcBadge'), srcText: $('srcText'),
     connectBtn: $('connectBtn'), disconnectBtn: $('disconnectBtn'), replayBtn: $('replayBtn'),
+    wifiBtn: $('wifiBtn'), wifiDialog: $('wifiDialog'), wifiCloseBtn: $('wifiCloseBtn'),
+    wifiForm: $('wifiForm'), wifiSsid: $('wifiSsid'), wifiPass: $('wifiPass'),
+    wifiPassToggle: $('wifiPassToggle'), wifiConnectBtn: $('wifiConnectBtn'),
+    wifiClearBtn: $('wifiClearBtn'), wifiScanBtn: $('wifiScanBtn'),
+    wifiScanList: $('wifiScanList'), wifiScanNote: $('wifiScanNote'),
+    wifiDialogStatus: $('wifiDialogStatus'), wifiHint: $('wifiHint'),
     scopeMeta: $('scopeMeta'), scopeEmpty: $('scopeEmpty'),
     rms: $('rmsVal'), peak: $('peakVal'), dbfs: $('dbfsVal'), vad: $('vadVal'), mn: $('mnVal'),
     port: $('linkPort'), baud: $('linkBaud'), rate: $('linkRate'), samples: $('linkSamples'),
@@ -48,6 +54,10 @@
     lastText: '', lastIntent: '', lastAction: null, asrMs: 0, voiceCount: 0,
     lastReply: '', lastVoiceAt: 0, ledPct: null, wifiIp: '', wifiRssi: null, wifiSsid: '',
     wifiStatus: null,
+    // 网页配网面板：凭据只经过串口，不经过服务器
+    wifiConfigured: false, wifiPasswordSet: false,
+    wifiConnecting: false, wifiSupported: null, wifiLastReason: '',
+    wifiScan: { phase: 'idle', expected: -1, items: [], error: '' },
     psramBytes: 0, heapBytes: 0, lastStatus: ''
   };
   var stats = {
@@ -62,6 +72,9 @@
   var readLoopToken = 0;
   var replayToken = 0;
   var toastTimer = 0;
+  var wifiScanTimer = 0;
+  var wifiConnectTimer = 0;
+  var wifiProbeTimer = 0;
 
   /* ---------------------------------------------------------------- 工具 */
   function clamp(v, a, b) { return v < a ? a : v > b ? b : v; }
@@ -154,6 +167,8 @@
     action: '动作', empty: '空', warn: '注意', link: '链路', reply: '回答'
   };
 
+  var WIFI_FIELD_LABEL = { ssid: 'SSID', password: '密码', nvs: 'NVS' };
+
   function renderEvents() {
     el.eventCount.textContent = events.length ? events.length + ' 条' : '0';
     el.eventsEmpty.hidden = events.length > 0;
@@ -217,8 +232,16 @@
         // 重连失败时固件每 10 s 报一次状态码：断线就清掉旧 IP，
         // 否则顶栏会一直显示上次连上的地址，看着像「网是好的」。
         if (r.wifiStatus !== undefined) {
+          state.wifiSupported = true;
           state.wifiStatus = r.wifiStatus;
-          if (r.wifiStatus !== 3) { state.wifiIp = ''; state.wifiRssi = null; }
+          if (r.wifiStatus !== 3) {
+            state.wifiIp = '';
+            state.wifiRssi = null;
+            state.wifiConnecting = false;
+            state.wifiLastReason = r.text || ('WiFi 状态 ' + r.wifiStatus);
+            clearWifiConnectTimer();
+          }
+          renderWifiStatus();
         }
         pushEvent(r);
         break;
@@ -271,25 +294,477 @@
         if (r.asrMs) state.asrMs = r.asrMs;
         break;
       case 'link':
+        state.wifiSupported = true;
+        state.wifiConfigured = true;
         state.wifiSsid = r.ssid || '';
         state.wifiIp = r.ip || '';
         state.wifiRssi = r.rssi;
         state.wifiStatus = 3;
+        state.wifiConnecting = false;
+        state.wifiLastReason = '';
+        clearWifiConnectTimer();
         pushEvent({ kind: 'link', text: 'WiFi ' + state.wifiSsid + ' · ' + state.wifiIp });
+        renderWifiStatus();
+        break;
+      case 'wifiSaved':
+        state.wifiSupported = true;
+        state.wifiConfigured = true;
+        state.wifiSsid = r.ssid || '';
+        state.wifiPasswordSet = !!r.hasPassword;
+        state.wifiConnecting = true;
+        state.wifiLastReason = '';
+        pushEvent({ kind: 'link', text: '已保存 WiFi 凭据：' + state.wifiSsid + '，正在连接…' });
+        renderWifiStatus();
+        break;
+      case 'wifiConnecting':
+        state.wifiSupported = true;
+        state.wifiConfigured = true;
+        if (r.ssid) state.wifiSsid = r.ssid;
+        state.wifiConnecting = true;
+        renderWifiStatus();
+        break;
+      case 'wifiCleared':
+        state.wifiSupported = true;
+        state.wifiConfigured = false;
+        state.wifiSsid = '';
+        state.wifiIp = '';
+        state.wifiRssi = null;
+        state.wifiStatus = null;
+        state.wifiConnecting = false;
+        state.wifiPasswordSet = false;
+        state.wifiLastReason = '已清除设备里保存的 WiFi 凭据。';
+        clearWifiTimers();
+        pushEvent({ kind: 'warn', text: '已清除设备里保存的 WiFi 凭据' });
+        renderWifiStatus();
+        break;
+      case 'wifiCred':
+        state.wifiSupported = true;
+        state.wifiConfigured = true;
+        state.wifiSsid = r.ssid || '';
+        state.wifiPasswordSet = !!r.hasPassword;
+        renderWifiStatus();
+        break;
+      case 'wifiCredNone':
+        state.wifiSupported = true;
+        state.wifiConfigured = false;
+        state.wifiSsid = '';
+        state.wifiPasswordSet = false;
+        renderWifiStatus();
+        break;
+      case 'wifiError':
+        state.wifiSupported = true;
+        state.wifiConnecting = false;
+        state.wifiLastReason = '设备拒绝：' + (WIFI_FIELD_LABEL[r.field] || r.field) +
+          (r.detail ? ' ' + r.detail : '');
+        clearWifiConnectTimer();
+        pushEvent({ kind: 'warn', text: 'WiFi 配置失败：' + (r.detail || r.field) });
+        renderWifiStatus();
+        break;
+      case 'wifiScan':
+        state.wifiSupported = true;
+        state.wifiScan.phase = 'scanning';
+        state.wifiScan.expected = r.count;
+        state.wifiScan.items = [];
+        state.wifiScan.error = '';
+        startWifiScanTimer();
+        pushEvent({ kind: 'system', text: 'WiFi 扫描：看到 ' + r.count + ' 个网络' });
+        renderWifiScan();
+        break;
+      case 'wifiAp':
+        if (r.ssid) addWifiAp(r);
+        break;
+      case 'wifiScanDone':
+        state.wifiScan.phase = 'done';
+        clearWifiScanTimer();
+        renderWifiScan();
+        break;
+      case 'wifiScanFailed':
+        state.wifiScan.phase = 'error';
+        state.wifiScan.error = '扫描失败（code ' + r.code + '），射频可能正忙；等 2 秒再试。';
+        clearWifiScanTimer();
+        pushEvent({ kind: 'warn', text: 'WiFi 扫描失败 code=' + r.code });
+        renderWifiScan();
+        break;
+      case 'unknownCommand':
+        if (r.command === 'wifi') {
+          state.wifiSupported = false;
+          state.wifiConnecting = false;
+          state.wifiLastReason = '当前固件没有 wifi 命令：请先烧录最新 firmware/ 再试。';
+          clearWifiTimers();
+          pushEvent({ kind: 'warn', text: '固件不认识 wifi 命令（需重新烧录固件）' });
+        } else {
+          pushEvent({ kind: 'warn', text: '固件不认识命令：' + r.command });
+        }
+        renderWifiStatus();
         break;
       case 'health':
         state.psramBytes = r.psram || 0;
         state.heapBytes = r.heap || 0;
         break;
-      case 'status':
+      case 'status': {
         state.lastStatus = r.text || '';
         // 以前只存不进事件流，于是在页面里敲 status 什么都看不到——
         // 而它恰好是判断 wifi / key / clock 的唯一入口。现在照实落一行。
+        var wm = /^wifi=(up|down|unconfigured)\b(.*)$/.exec(state.lastStatus);
+        if (wm) {
+          state.wifiSupported = true;
+          if (wm[1] === 'up') {
+            var sm = /ssid="([^"]*)"/.exec(wm[2]);
+            var im = /ip=(\S+)/.exec(wm[2]);
+            if (sm) state.wifiSsid = sm[1];
+            if (im) state.wifiIp = im[1];
+            state.wifiConfigured = true;
+            state.wifiStatus = 3;
+            state.wifiConnecting = false;
+            state.wifiLastReason = '';
+          } else if (wm[1] === 'unconfigured') {
+            state.wifiConfigured = false;
+            state.wifiSsid = '';
+            state.wifiIp = '';
+          } else {
+            state.wifiIp = '';
+            state.wifiConnecting = false;
+          }
+          renderWifiStatus();
+        }
         pushEvent({ kind: 'system', text: r.text || '' });
         break;
+      }
       default:
         stats.ignored++;
     }
+  }
+
+  /* ------------------------------------------------------------ WiFi 面板 */
+  // 凭据只在「设备 ↔ 浏览器」之间走串口：网页把 SSID/密码用 encodeURIComponent
+  // 编码成命令行参数，固件解码后写进自己的 NVS，密码永远不会回传。
+  function utf8Length(text) {
+    var n = 0;
+    for (var i = 0; i < text.length; i++) {
+      var c = text.charCodeAt(i);
+      if (c < 0x80) n += 1;
+      else if (c < 0x800) n += 2;
+      else if (c >= 0xd800 && c <= 0xdbff) { n += 4; i++; }
+      else n += 3;
+    }
+    return n;
+  }
+
+  // 固件用单独的 "-" 表示开放网络（空密码）；密码本身是 "-" 时必须转义成 %2D。
+  function commandSafePassword(pass) {
+    var encoded = encodeURIComponent(pass);
+    return encoded === '-' ? '%2D' : encoded;
+  }
+
+  function clearWifiScanTimer() {
+    if (wifiScanTimer) { clearTimeout(wifiScanTimer); wifiScanTimer = 0; }
+  }
+
+  function clearWifiConnectTimer() {
+    if (wifiConnectTimer) { clearTimeout(wifiConnectTimer); wifiConnectTimer = 0; }
+  }
+
+  function clearWifiTimers() {
+    clearWifiScanTimer();
+    clearWifiConnectTimer();
+    if (wifiProbeTimer) { clearTimeout(wifiProbeTimer); wifiProbeTimer = 0; }
+  }
+
+  function startWifiScanTimer() {
+    clearWifiScanTimer();
+    wifiScanTimer = setTimeout(function () {
+      wifiScanTimer = 0;
+      if (state.wifiScan.phase !== 'scanning') return;
+      state.wifiScan.phase = 'error';
+      state.wifiScan.error = '设备 12 秒没有回应扫描。点「扫描」重试，或发 status 看链路。';
+      renderWifiScan();
+    }, 12000);
+  }
+
+  function armWifiConnectTimer() {
+    clearWifiConnectTimer();
+    wifiConnectTimer = setTimeout(function () {
+      wifiConnectTimer = 0;
+      if (!state.wifiConnecting) return;
+      state.wifiConnecting = false;
+      state.wifiLastReason = '设备 20 秒没有回连接结果。点「扫描」看热点是否可见，或发 status 查状态。';
+      renderWifiStatus();
+    }, 20000);
+  }
+
+  function probeWifiSupport() {
+    if (wifiProbeTimer) clearTimeout(wifiProbeTimer);
+    wifiProbeTimer = setTimeout(function () {
+      wifiProbeTimer = 0;
+      if (mode === 'live' && state.wifiSupported === null &&
+          el.wifiDialog && el.wifiDialog.open) {
+        state.wifiLastReason = '没收到设备的 wifi 回执：如果固件是旧的，请先烧录最新 firmware/。';
+        renderWifiStatus();
+      }
+    }, 4000);
+  }
+
+  function addWifiAp(ap) {
+    var items = state.wifiScan.items;
+    var entry = { ssid: ap.ssid, rssi: ap.rssi, ch: ap.ch, match: !!ap.match };
+    var found = -1;
+    for (var i = 0; i < items.length; i++) {
+      if (items[i].ssid === entry.ssid) { found = i; break; }
+    }
+    if (found >= 0) {
+      if (entry.rssi > items[found].rssi) items[found] = entry;
+    } else {
+      items.push(entry);
+    }
+    items.sort(function (a, b) { return b.rssi - a.rssi; });
+    renderWifiScan();
+  }
+
+  function renderWifiScan() {
+    if (!el.wifiScanList) return;
+    var scan = state.wifiScan;
+    if (el.wifiScanNote) {
+      if (scan.phase === 'scanning') {
+        el.wifiScanNote.textContent = '扫描中…（约 2 秒）';
+      } else if (scan.phase === 'done') {
+        el.wifiScanNote.textContent = scan.items.length
+          ? '点一个网络填入 SSID；共 ' + scan.items.length + ' 个可见，已按信号强弱排序。'
+          : '没扫到网络：确认设备离路由器 3 m 内，且热点是 2.4 GHz。';
+      } else if (scan.phase === 'error') {
+        el.wifiScanNote.textContent = scan.error || '扫描失败。';
+      } else {
+        el.wifiScanNote.textContent = '点「扫描」列出附近网络，或直接输入 SSID。';
+      }
+    }
+
+    var frag = document.createDocumentFragment();
+    var current = el.wifiSsid && el.wifiSsid.value ? el.wifiSsid.value : '';
+    for (var i = 0; i < scan.items.length; i++) {
+      (function (item) {
+        var li = document.createElement('li');
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'wifi-ap';
+        btn.dataset.ssid = item.ssid;
+        if (item.ssid === current) btn.setAttribute('aria-pressed', 'true');
+        var name = document.createElement('b');
+        name.textContent = item.ssid;
+        var meta = document.createElement('span');
+        meta.textContent = item.rssi + ' dBm · ch' + item.ch + (item.match ? ' · 当前' : '');
+        btn.appendChild(name);
+        btn.appendChild(meta);
+        btn.addEventListener('click', function () {
+          if (el.wifiSsid) el.wifiSsid.value = item.ssid;
+          renderWifiScan();
+          if (el.wifiPass) el.wifiPass.focus();
+        });
+        li.appendChild(btn);
+        frag.appendChild(li);
+      })(scan.items[i]);
+    }
+    el.wifiScanList.replaceChildren(frag);
+  }
+
+  function renderWifiStatus() {
+    if (el.wifiBtn) {
+      el.wifiBtn.dataset.state = state.wifiIp ? 'on' : (mode === 'live' ? 'off' : 'idle');
+      el.wifiBtn.title = state.wifiIp
+        ? 'WiFi 已连接：' + state.wifiSsid + ' · ' + state.wifiIp
+        : '配置设备 WiFi';
+    }
+    if (el.wifiInfo) {
+      el.wifiInfo.textContent = state.wifiIp
+        ? state.wifiIp + (state.wifiRssi !== null ? ' · ' + state.wifiRssi + ' dBm' : '')
+        : (state.wifiSsid ? '未连接' + (state.wifiStatus !== null ? '（状态 ' + state.wifiStatus + '）' : '') : '—');
+      el.wifiInfo.dataset.on = state.wifiIp ? 'on' : (state.wifiSsid || state.wifiStatus !== null ? 'off' : 'idle');
+    }
+    if (!el.wifiDialog || !el.wifiDialog.open) return;
+
+    var live = mode === 'live';
+    var canSend = live && state.wifiSupported !== false;
+    var status, statusState;
+    if (!serialSupported()) {
+      status = '当前浏览器不支持 Web Serial，请用 Chrome / Edge 桌面版打开。';
+      statusState = 'error';
+    } else if (!live) {
+      status = '还没连接设备。先点右上角「连接设备」，选 COM 口后再回来。';
+      statusState = 'off';
+    } else if (state.wifiSupported === false) {
+      status = '当前固件不认识 wifi 命令，先烧录最新 firmware/ 再试。';
+      statusState = 'error';
+    } else if (state.wifiIp) {
+      status = '设备已联网 · ' + (state.wifiSsid || 'SSID 未知') + ' · ' + state.wifiIp +
+        (state.wifiRssi !== null ? ' · ' + state.wifiRssi + ' dBm' : '');
+      statusState = 'on';
+    } else if (state.wifiConnecting) {
+      status = '正在连接 ' + (state.wifiSsid || 'WiFi') + '…';
+      statusState = 'off';
+    } else if (state.wifiSsid) {
+      status = '设备未联网 · 已保存「' + state.wifiSsid + '」' +
+        (state.wifiStatus !== null ? ' · 状态 ' + state.wifiStatus : '');
+      statusState = 'off';
+    } else {
+      status = '设备还没配置 WiFi。输入 SSID 和密码后点「保存并连接」。';
+      statusState = 'off';
+    }
+    if (el.wifiDialogStatus.textContent !== status) el.wifiDialogStatus.textContent = status;
+    el.wifiDialogStatus.dataset.state = statusState;
+
+    if (el.wifiHint) {
+      var hint = '';
+      var hintState = '';
+      if (state.wifiLastReason) {
+        hint = state.wifiLastReason;
+        hintState = 'error';
+      } else if (!live) {
+        hint = '连接设备后才能发送配置命令。';
+      } else if (state.wifiConnecting) {
+        hint = '正在等待设备联网，最多 20 秒。';
+        hintState = 'busy';
+      } else if (state.wifiScan.phase === 'scanning') {
+        hint = '正在扫描，约 2 秒。';
+        hintState = 'busy';
+      } else {
+        hint = '密码只写入设备，页面不回显、不上传。';
+      }
+      if (el.wifiHint.textContent !== hint) el.wifiHint.textContent = hint;
+      el.wifiHint.dataset.state = hintState;
+    }
+
+    if (el.wifiConnectBtn) {
+      el.wifiConnectBtn.disabled = !canSend || state.wifiConnecting;
+      el.wifiConnectBtn.textContent = state.wifiConnecting ? '正在连接…' : '保存并连接';
+    }
+    if (el.wifiScanBtn) el.wifiScanBtn.disabled = !canSend || state.wifiScan.phase === 'scanning';
+    if (el.wifiClearBtn) el.wifiClearBtn.disabled = !canSend;
+  }
+
+  function renderWifi() {
+    renderWifiStatus();
+    renderWifiScan();
+  }
+
+  function openWifiDialog() {
+    if (!el.wifiDialog) return;
+    if (typeof el.wifiDialog.showModal === 'function') {
+      if (!el.wifiDialog.open) el.wifiDialog.showModal();
+    } else if (el.wifiDialog.setAttribute) {
+      el.wifiDialog.setAttribute('open', '');
+    }
+    if (el.wifiSsid && !el.wifiSsid.value && state.wifiSsid) el.wifiSsid.value = state.wifiSsid;
+    renderWifi();
+    if (mode === 'live') {
+      sendLine('wifi status\n').then(function (ok) { if (ok) probeWifiSupport(); });
+    }
+    setTimeout(function () { if (el.wifiSsid) el.wifiSsid.focus(); }, 40);
+  }
+
+  function closeWifiDialog() {
+    if (!el.wifiDialog) return;
+    if (typeof el.wifiDialog.close === 'function' && el.wifiDialog.open) el.wifiDialog.close();
+    else if (el.wifiDialog.removeAttribute) el.wifiDialog.removeAttribute('open');
+  }
+
+  function toggleWifiPassword() {
+    if (!el.wifiPass) return;
+    var show = el.wifiPass.type === 'password';
+    el.wifiPass.type = show ? 'text' : 'password';
+    if (el.wifiPassToggle) {
+      el.wifiPassToggle.textContent = show ? '隐藏' : '显示';
+      el.wifiPassToggle.setAttribute('aria-label', show ? '隐藏密码' : '显示密码');
+    }
+  }
+
+  function submitWifi(ev) {
+    if (ev && ev.preventDefault) ev.preventDefault();
+    if (mode !== 'live') { toast('先连接设备再配置 WiFi'); return; }
+    if (state.wifiSupported === false) { toast('当前固件不支持 wifi 命令，请先烧录新固件'); return; }
+
+    var ssid = el.wifiSsid && el.wifiSsid.value ? el.wifiSsid.value.trim() : '';
+    var pass = el.wifiPass && el.wifiPass.value ? el.wifiPass.value : '';
+    if (!ssid) {
+      state.wifiLastReason = '请先填 WiFi 名称（SSID）。';
+      renderWifiStatus();
+      if (el.wifiSsid) el.wifiSsid.focus();
+      return;
+    }
+    if (utf8Length(ssid) > 32) {
+      state.wifiLastReason = 'SSID 最长 32 字节（中文约 10 个字）。';
+      renderWifiStatus();
+      return;
+    }
+    if (utf8Length(pass) > 63) {
+      state.wifiLastReason = '密码最长 63 字节。';
+      renderWifiStatus();
+      return;
+    }
+
+    var cmd = 'wifi connect ' + encodeURIComponent(ssid) + ' ' +
+      (pass ? commandSafePassword(pass) : '-') + '\n';
+    state.wifiSsid = ssid;
+    state.wifiConnecting = true;
+    state.wifiLastReason = '';
+    renderWifiStatus();
+    sendLine(cmd).then(function (ok) {
+      if (!ok) {
+        state.wifiConnecting = false;
+        state.wifiLastReason = '串口写入失败：重新点「连接设备」再试。';
+        renderWifiStatus();
+        return;
+      }
+      armWifiConnectTimer();
+    });
+  }
+
+  function scanWifi() {
+    if (mode !== 'live') { toast('先连接设备再扫描'); return; }
+    if (state.wifiSupported === false) { toast('当前固件不支持 wifi 命令，请先烧录新固件'); return; }
+    state.wifiScan.phase = 'scanning';
+    state.wifiScan.expected = -1;
+    state.wifiScan.items = [];
+    state.wifiScan.error = '';
+    renderWifiScan();
+    renderWifiStatus();
+    startWifiScanTimer();
+    sendLine('wifi scan\n').then(function (ok) {
+      if (ok) return;
+      clearWifiScanTimer();
+      state.wifiScan.phase = 'error';
+      state.wifiScan.error = '串口写入失败：重新连接设备后再试。';
+      renderWifiScan();
+    });
+  }
+
+  function clearWifiSaved() {
+    if (mode !== 'live') { toast('先连接设备再清除'); return; }
+    if (state.wifiSupported === false) { toast('当前固件不支持 wifi 命令，请先烧录新固件'); return; }
+    var ask = true;
+    if (typeof window !== 'undefined' && typeof window.confirm === 'function') {
+      ask = window.confirm('清除设备里保存的 WiFi 凭据？清除后设备会断开，除非 secrets.h 里还有一份。');
+    }
+    if (!ask) return;
+    sendLine('wifi clear\n').then(function (ok) {
+      if (ok) {
+        toast('已发送清除命令');
+      } else {
+        state.wifiLastReason = '串口写入失败。';
+        renderWifiStatus();
+      }
+    });
+  }
+
+  function resetWifiSession() {
+    state.wifiIp = '';
+    state.wifiRssi = null;
+    state.wifiStatus = null;
+    state.wifiConnecting = false;
+    state.wifiSupported = null;
+    state.wifiLastReason = '';
+    state.wifiScan.phase = 'idle';
+    state.wifiScan.items = [];
+    state.wifiScan.error = '';
+    clearWifiTimers();
+    renderWifiStatus();
   }
 
   /* ----------------------------------------------------------------- 串口 */
@@ -407,6 +882,7 @@
         setStatus('error', '已断开');
         el.scopeMeta.textContent = '已断开 · 可重新连接';
         pushEvent({ kind: 'system', text: '串口断开', uptime: 0 });
+        resetWifiSession();
       }
     }
   }
@@ -430,6 +906,7 @@
         try { await p.close(); } catch (e2) { /* 交给下次连接 */ }
       }
     }
+    resetWifiSession();
     if (!silent) {
       setStatus('idle', '未连接');
       el.scopeMeta.textContent = '等待连接';
@@ -522,13 +999,8 @@
       }
     }
 
-    if (el.wifiInfo) {
-      var wst = state.wifiStatus;
-      var down = (wst !== null && wst !== 3);
-      el.wifiInfo.textContent = state.wifiIp
-        ? state.wifiIp + (state.wifiRssi !== null ? ' · ' + state.wifiRssi + ' dBm' : '')
-        : (down ? '未连接（状态 ' + wst + '）' : '—');
-    }
+    // 顶栏 WiFi 指示 + 面板状态（1 Hz 刷新，避免每帧重排扫描列表）
+    renderWifiStatus();
     if (el.memInfo) {
       el.memInfo.textContent = state.psramBytes
         ? (state.psramBytes / 1048576).toFixed(1) + ' MB · heap ' +
@@ -663,6 +1135,24 @@
     el.disconnectBtn.addEventListener('click', function () { disconnect(false); });
     el.replayBtn.addEventListener('click', playReplay);
 
+    if (el.wifiBtn) el.wifiBtn.addEventListener('click', openWifiDialog);
+    if (el.wifiCloseBtn) el.wifiCloseBtn.addEventListener('click', closeWifiDialog);
+    if (el.wifiDialog) {
+      // 点遮罩关闭（native dialog 里遮罩上的点击 target 就是 dialog 本身）
+      el.wifiDialog.addEventListener('click', function (ev) {
+        if (ev.target === el.wifiDialog) closeWifiDialog();
+      });
+    }
+    if (el.wifiForm) el.wifiForm.addEventListener('submit', submitWifi);
+    if (el.wifiScanBtn) el.wifiScanBtn.addEventListener('click', scanWifi);
+    if (el.wifiClearBtn) el.wifiClearBtn.addEventListener('click', clearWifiSaved);
+    if (el.wifiPassToggle) el.wifiPassToggle.addEventListener('click', toggleWifiPassword);
+    if (el.wifiSsid) {
+      el.wifiSsid.addEventListener('input', function () {
+        if (state.wifiScan.items.length) renderWifiScan();
+      });
+    }
+
     var cmdForm = $('cmdForm');
     if (cmdForm) {
       cmdForm.addEventListener('submit', function (ev) {
@@ -687,6 +1177,8 @@
           readLoopToken++;
           port = null;
           setStatus('error', '设备已拔出');
+          pushEvent({ kind: 'system', text: '串口断开（设备拔出）', uptime: 0 });
+          resetWifiSession();
         }
       });
     }

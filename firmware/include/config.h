@@ -16,6 +16,17 @@
 #endif
 #endif
 
+// WiFi 凭据也可以运行时通过串口/网页写入 NVS（`wifi connect <ssid> <pass>`）。
+// 这里补空默认值有两个作用：
+//   1) 没有 secrets.h 也能编出带完整联网路径的固件，CI 覆盖到真实代码；
+//   2) voice_client 不会因为「没有编译期 SSID」退化成空实现，网页配完网就能直接用。
+#ifndef LAMP_WIFI_SSID
+#define LAMP_WIFI_SSID ""
+#endif
+#ifndef LAMP_WIFI_PASS
+#define LAMP_WIFI_PASS ""
+#endif
+
 #ifndef LAMP_VOICE_SERVER_HOST
 #define LAMP_VOICE_SERVER_HOST "192.168.1.100"
 #endif

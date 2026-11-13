@@ -219,8 +219,19 @@
   /* 重连失败时固件每 10 s 打一行 status，扫到的 AP 也是 [wifi] 前缀。
      这两类以前落到 ignore，恰好是「为什么连不上」的全部证据，现在收成事件。 */
   var AR_WIFI_STATUS = /^\[wifi\]\s+status=(-?\d+)\s+(.+)$/;
-  var AR_WIFI_SCAN = /^\[wifi\]\s+scan:\s+(\d+)\s+AP/;
+  var AR_WIFI_SCAN = /^\[wifi\]\s+scan:\s+(-?\d+)\s+AP/;
   var AR_WIFI_AP = /^\[wifi\]\s+(-?\d+)\s+dBm\s+ch(\d+)\s+(.+?)\s*(<== match)?$/;
+  /* 网页「连接 WiFi」走的命令回执：凭据只存 NVS，密码永远不会回传。 */
+  var AR_WIFI_SAVED = /^\[wifi\]\s+saved ssid="([^"]*)"\s+password=(\w+)/;
+  var AR_WIFI_CONNECTING = /^\[wifi\]\s+connecting ssid="([^"]*)"/;
+  var AR_WIFI_CLEARED = /^\[wifi\]\s+cleared\b/;
+  var AR_WIFI_CRED = /^\[wifi\]\s+credentials ssid="([^"]*)"\s+source=(\S+)\s+password=(\w+)/;
+  var AR_WIFI_CRED_NONE = /^\[wifi\]\s+(?:credentials none|no credentials)/;
+  var AR_WIFI_FALLBACK = /^\[wifi\]\s+falling back to secrets\.h ssid="([^"]*)"/;
+  var AR_WIFI_SCAN_DONE = /^\[wifi\]\s+scan done/;
+  var AR_WIFI_SCAN_FAILED = /^\[wifi\]\s+scan failed code=(-?\d+)/;
+  var AR_WIFI_BAD = /^\[wifi\]\s+bad ([a-z]+):\s*(.*)$/;
+  var AR_UNKNOWN_CMD = /^unknown command:\s*(\S+)/;
   var AR_MEM = /^\[mem\]\s+psram=(\d+)\s+heap=(\d+)/;
   var AR_EMPTY = /^\[asr\]\s+empty result/;
   var AR_NOT_READY = /cloud ASR not ready|wifi down, dropped|no key, dropped/;
@@ -292,6 +303,45 @@
       return { type: 'link', ssid: m[1], ip: m[2], rssi: parseInt(m[3], 10) };
     }
 
+    m = AR_WIFI_SAVED.exec(s);
+    if (m) {
+      return {
+        type: 'wifiSaved', ssid: m[1],
+        hasPassword: m[2] !== 'empty'
+      };
+    }
+
+    m = AR_WIFI_CONNECTING.exec(s);
+    if (m) {
+      return { type: 'wifiConnecting', ssid: m[1] };
+    }
+
+    if (AR_WIFI_CLEARED.test(s)) {
+      return { type: 'wifiCleared' };
+    }
+
+    m = AR_WIFI_CRED.exec(s);
+    if (m) {
+      return {
+        type: 'wifiCred', ssid: m[1], source: m[2],
+        hasPassword: m[3] !== 'empty'
+      };
+    }
+
+    m = AR_WIFI_FALLBACK.exec(s);
+    if (m) {
+      return { type: 'wifiCred', ssid: m[1], source: 'secrets.h', hasPassword: true };
+    }
+
+    if (AR_WIFI_CRED_NONE.test(s)) {
+      return { type: 'wifiCredNone' };
+    }
+
+    m = AR_WIFI_BAD.exec(s);
+    if (m) {
+      return { type: 'wifiError', field: m[1], detail: m[2].trim() };
+    }
+
     m = AR_WIFI_STATUS.exec(s);
     if (m) {
       var wst = parseInt(m[1], 10);
@@ -304,15 +354,32 @@
 
     m = AR_WIFI_SCAN.exec(s);
     if (m) {
-      return { type: 'event', kind: 'system', text: 'WiFi 扫描：看到 ' + m[1] + ' 个 AP' };
+      // 旧固件扫描失败会打 scan: -2 AP(s)，别当成「看到 -2 个网络」。
+      var apCount = parseInt(m[1], 10);
+      return apCount < 0
+        ? { type: 'wifiScanFailed', code: apCount }
+        : { type: 'wifiScan', count: apCount };
+    }
+
+    m = AR_WIFI_SCAN_FAILED.exec(s);
+    if (m) {
+      return { type: 'wifiScanFailed', code: parseInt(m[1], 10) };
+    }
+
+    if (AR_WIFI_SCAN_DONE.test(s)) {
+      return { type: 'wifiScanDone' };
     }
 
     m = AR_WIFI_AP.exec(s);
     if (m) {
-      var hit = /<==/.test(s);
+      var apName = m[3].trim();
       return {
-        type: 'event', kind: hit ? 'link' : 'system',
-        text: 'AP ' + m[3].trim() + ' · ' + m[1] + ' dBm · ch' + m[2] + (hit ? ' ← SSID 命中' : '')
+        type: 'wifiAp',
+        ssid: apName === '<hidden>' ? '' : apName,
+        hidden: apName === '<hidden>',
+        rssi: parseInt(m[1], 10),
+        ch: parseInt(m[2], 10),
+        match: /<==/.test(s)
       };
     }
 
@@ -364,6 +431,12 @@
     if (/^\[status\]/.test(s) || /^\[voice\] cloud=/.test(s) || /^\[asr\] provider=/.test(s) ||
         /^\[llm\]/.test(s)) {
       return { type: 'status', text: s.replace(/^\[[a-z]+\]\s*/, '').slice(0, 120) };
+    }
+
+    // 旧固件收到 wifi 命令会回这一行：网页据此提示「需要重新烧录」。
+    m = AR_UNKNOWN_CMD.exec(s);
+    if (m) {
+      return { type: 'unknownCommand', command: m[1] };
     }
 
     return null;

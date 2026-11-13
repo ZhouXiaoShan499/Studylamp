@@ -43,6 +43,13 @@
   .deck-title span{font-size:11px;color:var(--site-muted-2);letter-spacing:.04em}
   .deck-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 
+  .btn--wifi{display:inline-flex;align-items:center;gap:7px}
+  .btn--wifi svg{width:14px;height:14px;flex:0 0 auto}
+  .wifi-dot{width:6px;height:6px;border-radius:50%;background:var(--site-muted-2);flex:0 0 auto}
+  #wifiBtn[data-state="on"] .wifi-dot{background:#b6cba8;box-shadow:0 0 7px rgba(182,203,168,.7)}
+  #wifiBtn[data-state="off"] .wifi-dot{background:#e5b776;box-shadow:0 0 7px rgba(229,183,118,.45)}
+  #wifiBtn[data-state="idle"] .wifi-dot{background:var(--site-muted-2)}
+
   .src-badge{
     display:inline-flex;align-items:center;gap:8px;
     padding:6px 12px;border:1px solid var(--site-line);border-radius:999px;
@@ -212,6 +219,88 @@
   .deck-foot p{margin:0}
   .deck-foot code{font-family:var(--site-mono);font-size:11px;color:var(--site-text-soft)}
 
+  /* ------------------------------------------------------------ WiFi 面板 */
+  .wifi-dialog{
+    width:min(94vw,482px);max-height:min(90vh,770px);
+    margin:auto;padding:0;border:1px solid var(--site-line-strong);border-radius:16px;
+    background:linear-gradient(180deg,#181b15,#0a0c08);
+    color:var(--site-text);font-family:var(--site-sans);
+    box-shadow:0 28px 90px rgba(0,0,0,.65);overflow:hidden;
+  }
+  .wifi-dialog[open]{display:flex;flex-direction:column;animation:wifiIn .18s ease-out}
+  .wifi-dialog::backdrop{background:rgba(4,5,4,.74);backdrop-filter:blur(5px)}
+  body:has(.wifi-dialog[open]){overflow:hidden}
+  @keyframes wifiIn{from{opacity:0;transform:translateY(10px) scale(.985)}}
+  .wifi-dialog__head{
+    display:flex;align-items:flex-start;justify-content:space-between;gap:14px;
+    padding:18px 20px 14px;border-bottom:1px solid var(--site-line);
+  }
+  .wifi-dialog__kicker{margin:0 0 5px;font-family:var(--site-mono);font-size:9.5px;letter-spacing:.16em;color:var(--site-muted-2)}
+  .wifi-dialog__head h2{margin:0;font-size:17px;font-weight:600;letter-spacing:.01em}
+  .wifi-dialog__close{
+    width:30px;height:30px;flex:0 0 auto;display:grid;place-items:center;
+    border:1px solid var(--site-line);border-radius:9px;background:transparent;
+    color:var(--site-muted);font:18px/1 var(--site-sans);cursor:pointer;
+  }
+  .wifi-dialog__close:hover{background:rgba(242,237,226,.07);color:#fff}
+  .wifi-dialog__body{padding:16px 20px 20px;overflow-y:auto;overscroll-behavior:contain}
+  .wifi-dialog__body::-webkit-scrollbar{width:8px}
+  .wifi-dialog__body::-webkit-scrollbar-thumb{background:rgba(242,237,226,.14);border-radius:4px}
+  .wifi-dialog__status{
+    margin:0 0 14px;padding:11px 13px;border-radius:10px;
+    border:1px solid var(--site-line);background:rgba(242,237,226,.03);
+    font-size:12.5px;line-height:1.65;color:var(--site-text-soft);overflow-wrap:anywhere;
+  }
+  .wifi-dialog__status[data-state="on"]{border-color:rgba(182,203,168,.35);background:rgba(182,203,168,.06);color:#cfe0c2}
+  .wifi-dialog__status[data-state="off"]{border-color:rgba(229,183,118,.3);background:rgba(229,183,118,.05)}
+  .wifi-dialog__status[data-state="error"]{border-color:rgba(255,155,143,.35);background:rgba(255,155,143,.06);color:#ffc4bc}
+
+  .wifi-scan{margin:0 0 16px;padding-bottom:14px;border-bottom:1px solid var(--site-line)}
+  .wifi-scan__head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:9px;font-size:12px;color:var(--site-muted)}
+  .wifi-mini{
+    font:11px var(--site-mono);letter-spacing:.06em;padding:5px 11px;
+    border:1px solid var(--site-line-strong);border-radius:999px;background:transparent;
+    color:var(--site-text-soft);cursor:pointer;
+  }
+  .wifi-mini:hover:not(:disabled){background:rgba(242,237,226,.07);color:#fff}
+  .wifi-mini:disabled{opacity:.42;cursor:not-allowed}
+  .wifi-scan__list{list-style:none;margin:0;padding:0;display:grid;gap:4px;max-height:148px;overflow-y:auto;overscroll-behavior:contain}
+  .wifi-scan__list:empty{display:none}
+  .wifi-ap{
+    display:flex;align-items:baseline;justify-content:space-between;gap:14px;width:100%;
+    padding:7px 10px;border:1px solid transparent;border-radius:8px;background:rgba(242,237,226,.025);
+    color:var(--site-text-soft);font:12px var(--site-sans);text-align:left;cursor:pointer;
+  }
+  .wifi-ap:hover{background:rgba(242,237,226,.07);border-color:var(--site-line)}
+  .wifi-ap[aria-pressed="true"]{border-color:rgba(229,183,118,.45);color:#fff}
+  .wifi-ap b{font-weight:500;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .wifi-ap span{flex:0 0 auto;font-family:var(--site-mono);font-size:10.5px;color:var(--site-muted-2)}
+  .wifi-scan__note{margin:8px 0 0;font-size:11px;line-height:1.65;color:var(--site-muted-2)}
+
+  .wifi-form{display:grid;gap:11px}
+  .wifi-field{display:grid;gap:6px;font-family:var(--site-mono);font-size:9.5px;letter-spacing:.14em;color:var(--site-muted-2)}
+  .wifi-field input{
+    width:100%;padding:9px 11px;border-radius:9px;
+    border:1px solid var(--site-line-strong);background:rgba(242,237,226,.04);
+    color:var(--site-text);font:12.5px var(--site-mono);
+  }
+  .wifi-field input::placeholder{color:var(--site-muted-2);letter-spacing:0;font-family:var(--site-sans)}
+  .wifi-field input:focus{outline:1px solid var(--site-accent);outline-offset:1px}
+  .wifi-pass{position:relative;display:block}
+  .wifi-pass input{padding-right:56px}
+  .wifi-pass button{
+    position:absolute;right:5px;top:50%;transform:translateY(-50%);
+    padding:5px 8px;border:0;border-radius:6px;background:transparent;
+    color:var(--site-muted);font:10.5px var(--site-sans);cursor:pointer;
+  }
+  .wifi-pass button:hover{background:rgba(242,237,226,.08);color:#fff}
+  .wifi-hint{margin:0;min-height:1.4em;font-size:11px;line-height:1.65;color:var(--site-muted-2);overflow-wrap:anywhere}
+  .wifi-hint[data-state="error"]{color:#ff9b8f}
+  .wifi-hint[data-state="busy"]{color:#e5b776}
+  .wifi-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:2px}
+  .wifi-actions .btn{font-size:12px;padding:9px 14px}
+  .wifi-dialog__foot{margin:14px 0 0;padding-top:12px;border-top:1px solid var(--site-line);font-size:10.5px;line-height:1.7;color:var(--site-muted-2)}
+
   .toast{
     position:fixed;left:50%;bottom:22px;transform:translate(-50%,14px);
     max-width:min(92vw,560px);
@@ -262,6 +351,16 @@
     <span class="src-badge" id="srcBadge" data-state="idle"><i aria-hidden="true"></i><span id="srcText">未连接</span></span>
     <button class="btn btn--primary" id="connectBtn" type="button">连接设备</button>
     <button class="btn" id="disconnectBtn" type="button" hidden>断开</button>
+    <button class="btn btn--wifi" id="wifiBtn" type="button" aria-haspopup="dialog" title="配置设备 WiFi">
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M3.4 8.7a13.2 13.2 0 0 1 17.2 0" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        <path d="M6.7 12.2a8.6 8.6 0 0 1 10.6 0" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        <path d="M9.7 15.6a4.2 4.2 0 0 1 4.6 0" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        <circle cx="12" cy="18.9" r="1.1" fill="currentColor"/>
+      </svg>
+      <span>连接 WiFi</span>
+      <i class="wifi-dot" id="wifiDot" aria-hidden="true"></i>
+    </button>
     <button class="btn" id="replayBtn" type="button">播放录制</button>
   </div>
 </header>
@@ -355,6 +454,9 @@
       数据来自 ESP32-S3 原生 USB 串口（Web Serial），<strong>不经过任何服务器</strong>。板子上跑的是 <code>firmware/</code> 那版（provider=4，腾讯云直连）：页面把 <code>[ASR]</code> / <code>[LLM]</code> / <code>[cmd]</code> 翻译成上面的识别结果、意图和动作。音频只走「设备 → 腾讯云」，浏览器拿不到。
     </p>
     <p>
+      <b>换 WiFi 不用重新烧固件</b>：点右上角「连接 WiFi」，填 SSID 和密码后页面会通过串口发一条 <code>wifi connect</code>，设备把凭据写进 NVS 并立即重连；「扫描」会把设备能看到的 2.4 GHz 热点列出来。也可以在命令框直接敲 <code>wifi status</code> / <code>wifi scan</code> / <code>wifi clear</code>。密码只存在设备里，页面不回显、也不上传。
+    </p>
+    <p>
       连接后页面会自动发 <code>mic on</code> 打开电平显示（固件平时不打印 <code>[mic] rms</code>）。觉得不灵敏就在命令框发 <code>vad 120</code>，想回默认发 <code>vad 0</code>；也可以发 <code>status</code> 看完整状态。
     </p>
     <p>
@@ -362,6 +464,54 @@
     </p>
   </footer>
 </main>
+
+<dialog class="wifi-dialog" id="wifiDialog" aria-labelledby="wifiDialogTitle">
+  <div class="wifi-dialog__head">
+    <div>
+      <p class="wifi-dialog__kicker">DEVICE NETWORK</p>
+      <h2 id="wifiDialogTitle">连接 WiFi</h2>
+    </div>
+    <button class="wifi-dialog__close" id="wifiCloseBtn" type="button" aria-label="关闭">×</button>
+  </div>
+
+  <div class="wifi-dialog__body">
+    <p class="wifi-dialog__status" id="wifiDialogStatus" role="status" aria-live="polite">正在读取设备状态…</p>
+
+    <section class="wifi-scan" aria-label="附近网络">
+      <div class="wifi-scan__head">
+        <span>附近网络 <em>2.4 GHz</em></span>
+        <button class="wifi-mini" id="wifiScanBtn" type="button">扫描</button>
+      </div>
+      <ul class="wifi-scan__list" id="wifiScanList"></ul>
+      <p class="wifi-scan__note" id="wifiScanNote">点「扫描」列出附近网络，或直接输入 SSID。</p>
+    </section>
+
+    <form class="wifi-form" id="wifiForm" novalidate>
+      <label class="wifi-field">
+        <span>SSID / 网络名称</span>
+        <input id="wifiSsid" name="ssid" type="text" autocomplete="off" autocapitalize="off"
+               spellcheck="false" maxlength="32" placeholder="路由器名称">
+      </label>
+      <label class="wifi-field">
+        <span>密码</span>
+        <span class="wifi-pass">
+          <input id="wifiPass" name="pass" type="password" autocomplete="off"
+                 spellcheck="false" maxlength="63" placeholder="开放网络留空">
+          <button id="wifiPassToggle" type="button" aria-label="显示密码">显示</button>
+        </span>
+      </label>
+      <p class="wifi-hint" id="wifiHint"></p>
+      <div class="wifi-actions">
+        <button class="btn btn--primary" id="wifiConnectBtn" type="submit">保存并连接</button>
+        <button class="btn" id="wifiClearBtn" type="button">清除已保存</button>
+      </div>
+    </form>
+
+    <p class="wifi-dialog__foot">
+      凭据只写入设备 NVS（掉电保留），不经过服务器。设备只支持 2.4 GHz；5 GHz 热点扫不到。换一个网络时重复一次即可。
+    </p>
+  </div>
+</dialog>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <noscript><p style="padding:20px;font-size:13px;color:#cfc8b9">这个页面需要 JavaScript 才能读取串口实时数据。</p></noscript>
