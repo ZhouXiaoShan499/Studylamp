@@ -1043,7 +1043,6 @@ void setup() {
     WiFi.persistent(false);
     WiFi.mode(WIFI_STA);
     wifiLoadCredentials();
-    if (!wifiSsid.isEmpty()) wifiStartConnect();
 
     pinMode(PIN_STATUS_LED, OUTPUT);
     digitalWrite(PIN_STATUS_LED, LOW);
@@ -1069,6 +1068,9 @@ void setup() {
 #if LAMP_VOICE_UART
     voiceuart::begin(VOICE_UART_BAUD, onVoiceCommand);
 #endif
+
+    // 外设初始化完再开射频：避免开机电流尖峰和 I2S/射频抢资源。
+    if (!wifiSsid.isEmpty()) wifiStartConnect();
 
     ui::logf("{\"ev\":\"boot\",\"fw\":\"%s\",\"heap\":%lu}", FW_VERSION,
              static_cast<unsigned long>(ESP.getFreeHeap()));
