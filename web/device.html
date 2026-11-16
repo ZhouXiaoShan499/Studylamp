@@ -638,8 +638,14 @@
           (function (net) {
             var li = document.createElement('li');
             var sub = net.active ? '在用' : (net.last ? '上次连的' : '备用');
+            li.className = 'tap';
             li.innerHTML = '<div class="nm"><b>' + escapeHtml(net.ssid) + '</b><small>' + sub +
               '</small></div><button class="x" type="button">忘记</button>';
+            // 点名字 = 立刻切过去（用存好的密码）；点「忘记」只删记录。
+            li.addEventListener('click', function () {
+              if (j.online && j.ssid === net.ssid) { toast('已经连着「' + net.ssid + '」'); return; }
+              doConnect(net.ssid, null);
+            });
             li.querySelector('.x').addEventListener('click', function (ev) {
               ev.stopPropagation();
               if (!window.confirm('忘记「' + net.ssid + '」？下次开机不会再自动连它。')) return;
