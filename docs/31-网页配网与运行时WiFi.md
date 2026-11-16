@@ -26,10 +26,25 @@
 | 控件 | 行为 |
 |------|------|
 | 顶栏「连接 WiFi」 | 打开 `<dialog>`；圆点灰色 = 未连接设备，琥珀色 = 已连接串口但设备未联网，绿色 = 设备已联网 |
-| 「扫描」 | 发 `wifi scan`，把固件扫到的 2.4 GHz AP 按 RSSI 排序列出来（最多 20 个，隐藏 SSID 不显示） |
-| 点扫描结果 | 把 SSID 填进输入框，焦点跳到密码框 |
+| 打开面板（自动） | 先发 `wifi status`，320 ms 后自动发一次 `wifi scan`，把附近 2.4 GHz AP 按 RSSI 排序列出来（最多 20 个，隐藏 SSID 不显示），并自动选好一个网络 |
+| 「重新扫描」 | 手动再扫一次（扫描完成后按钮从「扫描」变成「重新扫描」） |
+| 点扫描结果 | 把 SSID 填进输入框，焦点跳到密码框；此后重扫不再改动你选的网络 |
 | SSID / 密码 + 「保存并连接」 | 发 `wifi connect <ssid> <pass>`，等待 `[wifi] saved` → `[wifi] connected` 或失败原因 |
 | 「清除已保存」 | 二次确认后发 `wifi clear`；NVS 清空后回落到 `secrets.h`，没有编译期凭据则保持未配置 |
+
+### 1.1 自动选网规则
+
+打开面板不再需要手打 SSID。扫描结果回来后按三档挑一个填进输入框，并在列表里高亮：
+
+1. **设备当前连着的那个**（固件在扫描行尾打的 `<== match`）；
+2. 否则用**上次连上的那个**（`localStorage` 里的 `lamp.wifi.lastSsid`，换电脑也会重新学）；
+3. 都匹配不上就退回**信号最强**的（列表已按 RSSI 排序）。
+
+自动填只在两种情况下发生：输入框是空的，或里面还停在上一次自动填的值。三条保护：
+
+- **人打过就不动**：只要用户自己敲过字或点过列表，输入框就归用户，重扫也不会被改。
+- **隐藏 hotspot 不被顶替**：设备连着扫不到名字的网络时，输入框保留该网络，不会拿邻居的名字覆盖它。
+- **状态回执晚到也补**：`wifi status` 的回执通常比面板打开晚几十毫秒，到了只补空框，不覆盖已输入内容。
 
 面板里的状态条优先显示设备真实回执，不靠猜：
 
@@ -70,11 +85,18 @@ wifi clear
 | `[wifi] bad ssid\|password\|nvs: …` | 参数错误提示 |
 | `unknown command: wifi` | 旧固件检测，禁用按钮并提示重新烧录 |
 
+> **怎么确认板子上是不是新固件**：看开机横幅或 `status` 的编译时间戳，`=== LAMP-1 MVP firmware 0.1.0-mvp (Nov 16 2026 10:22:41) ===`。`FW_VERSION` 是手写的，长期停在 `0.1.0-mvp`，只有括号里的 `__DATE__ __TIME__` 能区分新旧。
+
 ---
 
 ## 3. 固件改动
 
 ### 3.1 凭据优先级
+
+> **2026-11-16 更新**：这一节描述的是单网络时代的实现。现在 NVS 里存的是
+> `lampwifi/nets`（最多 5 张的 JSON 表）+ `lampwifi/last`，开机自动扫描选网，
+> 详见 [docs/33](33-开机自动联网.md)。`lampwifi/ssid` / `lampwifi/pass` 保留为
+> 「上次成功」的兼容键，老固件回刷后仍能联网。
 
 ```text
 NVS（lampwifi/ssid, lampwifi/pass）  >  secrets.h 的 LAMP_WIFI_SSID / LAMP_WIFI_PASS
@@ -134,12 +156,13 @@ NVS（lampwifi/ssid, lampwifi/pass）  >  secrets.h 的 LAMP_WIFI_SSID / LAMP_WI
 | 项 | 方法 | 结果 |
 |----|------|------|
 | 解析与状态机 | `node tools/test-live-deck.js` | 38 项全通过（含扫描排序、保存/连接/清除、旧固件检测） |
+| 自动选网 | Chrome headless + 假 Web Serial，四个场景：设备已连（有 `match`）/ 未配网（无 `match`）/ 用户先手输 / 隐藏热点 | 4/4 通过：分别选中 OldNet、最强 Home-2.4G、保留手输值、保留 HiddenNet；都会自动发出 `wifi status` + `wifi scan` |
 | 真浏览器交互 | Chrome headless + CDP，注入假 Web Serial：连接 → 打开面板 → 扫描 → 填表 → 保存 → 连接成功/旧固件 | 23 项全通过，1440 / 500 宽截图无溢出 |
 | 固件（带 `secrets.h`） | `pio run -e lamp_s3_tencent` | SUCCESS |
 | 固件（CI 路径，无 `secrets.h`） | 临时移走 `secrets.h`，`pio run -e lamp_s3 -e lamp_s3_bailian -e lamp_s3_tencent -e lamp_s3_lan` | 以 CI 为准，见 PR 检查 |
 | 真机 | 未做（本轮没有接设备） | 串口日志预期：`[wifi] saved …` → `[wifi] connecting …` → `[wifi] connected …` |
 
-> 页面上的「扫描」会阻塞固件主循环约 2 秒（同步 `scanNetworks()`）。这是开发者工具可以接受的代价；产品化时应改成异步扫描或 SoftAP 配网。
+> 打开面板时的自动扫描同样会阻塞固件主循环约 2 秒（同步 `scanNetworks()`），并会让 STA 短暂断开重连；正在跑语音对话时别开面板。这是开发者工具可以接受的代价；产品化时应改成异步扫描或 SoftAP 配网。
 
 ---
 

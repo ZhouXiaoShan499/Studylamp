@@ -293,6 +293,9 @@ constexpr uint16_t CLOUD_TC_LLM_TIMEOUT_MS = 8000;
 
 // ---- misc ----------------------------------------------------------------
 constexpr const char* FW_VERSION = "0.1.0-mvp";
+// 编译时间戳。FW_VERSION 是人手改的，常常忘记动；光看它在串口上分不出
+// 「新刷的」和「板子上还是两周前的」，排查时白绕一圈。
+constexpr const char* FW_BUILD = __DATE__ " " __TIME__;
 constexpr const char* NVS_NAMESPACE = "lamp1";
 constexpr const char* IR_DIR = "/ir";
 constexpr const char* LOG_DIR = "/log";

@@ -19,8 +19,21 @@ void tick(uint32_t now_ms);
 
 void setCommandHandler(CommandHandler handler);
 
+// WiFi 控制台旁路：每一行事件同时推给网页（由 net_console 注册）。
+// 不注册时行为和纯串口固件完全一致。
+using Publisher = void (*)(const char* line);
+void setPublisher(Publisher publisher);
+
 // Mirrors to Serial and appends one JSON line to /log/events.log.
 void logf(const char* format, ...);
+
+// 串口 + 网页都会出现的一行，但不写 /log/events.log。
+// 用于对话类临时输出（[ASR] / [REPLY]），避免把事件日志塞满。
+void emitf(const char* format, ...);
+
+// 执行一行命令：串口输入和网页命令走同一条分词/分发路径。
+// 命令字符串会被复制，调用方可传 const 指针；超长会截断。
+void runCommand(const char* text);
 
 // Short line shown on the OLED (and in `status`).
 void setStatus(const char* text);

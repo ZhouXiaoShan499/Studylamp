@@ -63,6 +63,9 @@ jobs:
       - name: compileall
         run: python -m compileall -q server tools
 
+      - name: 设备页面与内嵌头文件是否同步
+        run: python tools/embed_console.py --check
+
   firmware:
     name: PlatformIO 全环境编译
     runs-on: ubuntu-latest
