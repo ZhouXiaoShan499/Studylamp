@@ -18,6 +18,7 @@ from __future__ import annotations
 import argparse
 import gzip
 import pathlib
+import re
 import sys
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
@@ -61,6 +62,42 @@ def render(raw: bytes) -> str:
     )
 
 
+def parse_bytes(text: str, name: str) -> bytes | None:
+    """从头文件里把指定数组还原成字节串；找不到返回 None。"""
+    match = re.search(
+        rf"const uint8_t {name}\[\] PROGMEM = \{{(.*?)\}};", text, re.S
+    )
+    if match is None:
+        return None
+    return bytes(int(v, 16) for v in re.findall(r"0x([0-9A-Fa-f]{2})", match.group(1)))
+
+
+def check_content(content: str, raw: bytes) -> str:
+    """比对头文件与页面内容，返回空串表示一致，否则返回原因。
+
+    刻意不逐字节比对整个文件：gzip 的输出受 zlib 版本影响
+    （1.2.13 与 1.3.1 压同一份数据，长度一样但 SHA1 不同），
+    直接比字节会让「换台机器跑 CI」变成随机失败。
+    这里只认内容：HTML 段必须逐字节相同，gzip 段必须能解压出同一份 HTML。
+    """
+    html = parse_bytes(content, "kConsoleHtml")
+    if html is None:
+        return "缺少 kConsoleHtml 数组"
+    if html != raw:
+        return f"kConsoleHtml 与页面不一致（头文件 {len(html)} B，页面 {len(raw)} B）"
+
+    packed = parse_bytes(content, "kConsoleHtmlGz")
+    if packed is None:
+        return "缺少 kConsoleHtmlGz 数组"
+    try:
+        unpacked = gzip.decompress(packed)
+    except OSError as exc:
+        return f"kConsoleHtmlGz 无法解压：{exc}"
+    if unpacked != raw:
+        return f"kConsoleHtmlGz 解压后与页面不一致（{len(unpacked)} B vs {len(raw)} B）"
+    return ""
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--check", action="store_true", help="只检查是否与页面一致")
@@ -71,16 +108,21 @@ def main() -> int:
         return 1
 
     raw = read_source()
-    content = render(raw)
 
     if args.check:
-        current = TARGET.read_text(encoding="utf-8") if TARGET.exists() else ""
-        if current != content:
-            print("console_html.h 已过期，请运行 python tools/embed_console.py", file=sys.stderr)
+        if not TARGET.exists():
+            print(f"missing header: {TARGET}", file=sys.stderr)
+            return 1
+        current = TARGET.read_text(encoding="utf-8")
+        reason = check_content(current, raw)
+        if reason:
+            print(f"console_html.h 已过期：{reason}", file=sys.stderr)
+            print("请运行 python tools/embed_console.py", file=sys.stderr)
             return 1
         print(f"console_html.h up to date ({len(raw)} B html)")
         return 0
 
+    content = render(raw)
     # newline="\n"：Windows 上 write_text 默认会把 \n 转成 CRLF，
     # 写出来就和仓库里的 LF 版本不一致了。固定成 LF，本地与 CI 同一份字节。
     TARGET.write_text(content, encoding="utf-8", newline="\n")
