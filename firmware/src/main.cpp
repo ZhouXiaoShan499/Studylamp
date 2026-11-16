@@ -381,6 +381,9 @@ void statusTick(uint32_t now) {
 // ------------------------------------------------------------------- WiFi ---
 // 联网策略在 wifi_link 里：多张网络表、开机先试上次那张、不行就扫描按信号排队。
 // main 这边只剩两件和业务相关的事：解码网页传来的参数、把系统时钟灌给定时器。
+//
+// 旧的单网络实现（wifiStatusName / wifiLoadCredentials / wifiTick 等 10 个函数）
+// 没有删掉，整段以注释形式保留在文件末尾的「已停用」区，回滚或对照时看那里。
 uint32_t wifiLastSync = 0;
 
 int wifiHexDigit(char c) {
@@ -993,3 +996,285 @@ void loop() {
         Serial.println("mic test: done");
     }
 }
+// ===========================================================================
+// 【已停用】旧的「单网络 WiFi」实现（2026-11-16 由 wifilink:: 取代）
+//
+// 为什么留着：wifilink 里的扫描节奏、失败判定、热点兜底时机都是从这段的
+// 实测经验推出来的。排查老问题、或者要回滚到单网络方案时，对着看比翻
+// git 历史直观。整段是注释，不参与编译。
+//
+// 保留内容（全局状态变量 + 10 个函数）：
+//   wifiStatusName       状态码转人话
+//   wifiPrintStatus      wifi status 命令
+//   wifiLoadCredentials  从 NVS / secrets.h 读凭据
+//   wifiStartConnect     首次连接
+//   wifiSaveCredentials  写入凭据并触发连接
+//   wifiClearCredentials 清除凭据
+//   wifiScanAndPrint     扫描并打印
+//   wifiScanNow          wifi scan 命令
+//   wifiTick             重连状态机（被 wifilink::tick 取代）
+//   wifiUrlDecode        网页命令的百分号解码
+//
+// 真要回滚时：
+//   1. 去掉下面每行开头的 `// `（空行是单独的 `//`，删掉即可）
+//   2. 文件顶部补 #include <WiFi.h> 和 #include <Preferences.h>
+//   3. setup() 里换回 WiFi.mode(WIFI_STA); wifiLoadCredentials(); wifiStartConnect();
+//   4. loop() 里换回 wifiTick(now);
+//   5. 注释掉 wifilink::begin() / start() / tick() 三处调用
+// ===========================================================================
+// // ------------------------------------------------------------------- WiFi ---
+// // 凭据来源：NVS（网页「连接 WiFi」或串口 `wifi connect` 写入）优先；
+// // NVS 为空时回落到 secrets.h 的编译期常量。换热点、改密码不用重新烧固件。
+// constexpr const char* kWifiNvsNamespace = "lampwifi";
+//
+// String wifiSsid;
+// String wifiPass;
+// bool wifiFromNvs = false;
+// bool wifiStarted = false;
+// bool wifiScanned = false;
+// bool wifiAnnounced = false;
+// bool wifiNoCredsWarned = false;
+// uint32_t wifiLastAttempt = 0;
+// uint32_t wifiLastSync = 0;
+//
+// // 连不上时把真实原因打出来。只看到 wifi=down 分不清是"热点不在 2.4 GHz"
+// // 还是"密码错"——这两种的处理方式完全不同。
+// const char* wifiStatusName(wl_status_t s) {
+//     switch (s) {
+//         case WL_NO_SSID_AVAIL:   return "no-ssid: 扫不到这个 SSID（热点多半在 5 GHz 或太远）";
+//         case WL_CONNECT_FAILED:  return "auth-failed: 密码或加密方式不对";
+//         case WL_CONNECTION_LOST: return "conn-lost: 连上又断了";
+//         case WL_DISCONNECTED:    return "disconnected: 重连中";
+//         case WL_IDLE_STATUS:     return "idle";
+//         default:                 return "other";
+//     }
+// }
+//
+// int wifiHexDigit(char c) {
+//     if (c >= '0' && c <= '9') return c - '0';
+//     if (c >= 'a' && c <= 'f') return c - 'a' + 10;
+//     if (c >= 'A' && c <= 'F') return c - 'A' + 10;
+//     return -1;
+// }
+//
+// // 网页用 encodeURIComponent() 编码 SSID/密码：空格、引号、中文都不会把命令行拆坏。
+// // 只解码 %XX，不把 '+' 当空格——encodeURIComponent 本身会把 '+' 编成 %2B。
+// String wifiUrlDecode(const char* text) {
+//     String out;
+//     if (text == nullptr) return out;
+//     for (const char* p = text; *p != '\0'; ++p) {
+//         if (*p == '%' && p[1] != '\0' && p[2] != '\0') {
+//             const int hi = wifiHexDigit(p[1]);
+//             const int lo = wifiHexDigit(p[2]);
+//             if (hi >= 0 && lo >= 0) {
+//                 out += static_cast<char>((hi << 4) | lo);
+//                 p += 2;
+//                 continue;
+//             }
+//         }
+//         out += *p;
+//     }
+//     return out;
+// }
+//
+// void wifiPrintStatus() {
+//     const wl_status_t st = WiFi.status();
+//     if (st == WL_CONNECTED) {
+//         Serial.printf("[wifi] connected ssid=\"%s\" ip=%s rssi=%d\n", WiFi.SSID().c_str(),
+//                       WiFi.localIP().toString().c_str(), static_cast<int>(WiFi.RSSI()));
+//     } else {
+//         Serial.printf("[wifi] status=%d %s\n", static_cast<int>(st), wifiStatusName(st));
+//     }
+//     if (wifiSsid.isEmpty()) {
+//         Serial.println("[wifi] credentials none");
+//     } else {
+//         Serial.printf("[wifi] credentials ssid=\"%s\" source=%s password=%s\n", wifiSsid.c_str(),
+//                       wifiFromNvs ? "nvs" : "secrets.h", wifiPass.isEmpty() ? "empty" : "set");
+//     }
+// }
+//
+// void wifiLoadCredentials() {
+//     Preferences prefs;
+//     if (prefs.begin(kWifiNvsNamespace, true)) {
+//         wifiSsid = prefs.getString("ssid", "");
+//         wifiPass = prefs.getString("pass", "");
+//         prefs.end();
+//     }
+//
+//     wifiFromNvs = !wifiSsid.isEmpty();
+//     if (!wifiFromNvs) {
+//         wifiSsid = LAMP_WIFI_SSID;
+//         wifiPass = LAMP_WIFI_PASS;
+//     }
+//
+//     if (wifiSsid.isEmpty()) {
+//         wifiNoCredsWarned = true;
+//         Serial.println("[wifi] no credentials: send 'wifi connect <ssid> <pass>' or write include/secrets.h");
+//     } else {
+//         Serial.printf("[wifi] credentials ssid=\"%s\" source=%s password=%s\n", wifiSsid.c_str(),
+//                       wifiFromNvs ? "nvs" : "secrets.h", wifiPass.isEmpty() ? "empty" : "set");
+//     }
+// }
+//
+// void wifiStartConnect() {
+//     if (wifiSsid.isEmpty()) {
+//         Serial.println("[wifi] no credentials: send 'wifi connect <ssid> <pass>'");
+//         return;
+//     }
+//     WiFi.disconnect(true);
+//     delay(50);  // 等射频复位；紧接着 begin() 才不会继承上一轮的失败状态
+//     WiFi.begin(wifiSsid.c_str(), wifiPass.c_str());  // non-blocking
+//     wifiStarted = true;
+//     wifiScanned = false;
+//     wifiAnnounced = false;
+//     wifiNoCredsWarned = false;
+//     wifiLastAttempt = millis();
+//     Serial.printf("[wifi] connecting ssid=\"%s\"\n", wifiSsid.c_str());
+// }
+//
+// bool wifiSaveCredentials(const String& ssid, const String& pass) {
+//     if (ssid.isEmpty()) {
+//         Serial.println("[wifi] bad ssid: empty");
+//         return false;
+//     }
+//     if (ssid.length() > 32) {
+//         Serial.println("[wifi] bad ssid: longer than 32 bytes");
+//         return false;
+//     }
+//     if (pass.length() > 63) {
+//         Serial.println("[wifi] bad password: longer than 63 bytes");
+//         return false;
+//     }
+//
+//     Preferences prefs;
+//     if (!prefs.begin(kWifiNvsNamespace, false)) {
+//         Serial.println("[wifi] bad nvs: cannot open namespace");
+//         return false;
+//     }
+//     prefs.putString("ssid", ssid);
+//     prefs.putString("pass", pass);
+//     prefs.end();
+//
+//     wifiSsid = ssid;
+//     wifiPass = pass;
+//     wifiFromNvs = true;
+//     // 只报长度和有没有密码，密码本身绝不进串口/日志。
+//     Serial.printf("[wifi] saved ssid=\"%s\" password=%s\n", ssid.c_str(),
+//                   pass.isEmpty() ? "empty" : "set");
+//     wifiStartConnect();
+//     return true;
+// }
+//
+// void wifiClearCredentials() {
+//     Preferences prefs;
+//     if (prefs.begin(kWifiNvsNamespace, false)) {
+//         prefs.remove("ssid");
+//         prefs.remove("pass");
+//         prefs.end();
+//     }
+//
+//     wifiFromNvs = false;
+//     wifiSsid = LAMP_WIFI_SSID;
+//     wifiPass = LAMP_WIFI_PASS;
+//     wifiStarted = false;
+//     wifiScanned = false;
+//     wifiAnnounced = false;
+//     WiFi.disconnect(true);
+//     Serial.println("[wifi] cleared");
+//
+//     if (wifiSsid.isEmpty()) {
+//         wifiNoCredsWarned = false;
+//     } else {
+//         Serial.printf("[wifi] falling back to secrets.h ssid=\"%s\"\n", wifiSsid.c_str());
+//         wifiStartConnect();
+//     }
+// }
+//
+// int wifiScanAndPrint() {
+//     WiFi.scanDelete();
+//     const int n = WiFi.scanNetworks(false, true);
+//     if (n < 0) {
+//         Serial.printf("[wifi] scan failed code=%d\n", n);
+//         WiFi.scanDelete();
+//         return n;
+//     }
+//     Serial.printf("[wifi] scan: %d AP(s) visible\n", n);
+//     for (int i = 0; i < n && i < 20; ++i) {
+//         const String ssid = WiFi.SSID(i);
+//         const bool hidden = ssid.isEmpty();
+//         Serial.printf("[wifi]   %d dBm ch%-2d %s%s\n", static_cast<int>(WiFi.RSSI(i)),
+//                       static_cast<int>(WiFi.channel(i)), hidden ? "<hidden>" : ssid.c_str(),
+//                       (!hidden && ssid == wifiSsid) ? "  <== match" : "");
+//     }
+//     WiFi.scanDelete();
+//     Serial.println("[wifi] scan done");
+//     return n;
+// }
+//
+// void wifiScanNow() {
+//     const bool wasConnected = (WiFi.status() == WL_CONNECTED);
+//     if (!wasConnected) {
+//         // 未连接时必须先彻底断开，否则扫描会和后台的 begin() 抢射频（返回 -2）。
+//         WiFi.disconnect(true);
+//         delay(80);
+//     }
+//     wifiScanAndPrint();
+//     // 扫描可能短暂打断射频：扫完还没连上就立刻重连，别让页面停在断网状态。
+//     if (WiFi.status() != WL_CONNECTED && !wifiSsid.isEmpty()) wifiStartConnect();
+// }
+//
+// void wifiTick(uint32_t now) {
+//     if (wifiSsid.isEmpty()) {
+//         if (!wifiNoCredsWarned) {
+//             wifiNoCredsWarned = true;
+//             Serial.println("[wifi] no credentials: send 'wifi connect <ssid> <pass>' or write include/secrets.h");
+//         }
+//         return;
+//     }
+//
+//     if (WiFi.status() != WL_CONNECTED) {
+//         wifiAnnounced = false;
+//         if (now - wifiLastAttempt >= 10000) {
+//             wifiLastAttempt = now;
+//
+//             if (wifiStarted) {
+//                 const wl_status_t st = WiFi.status();
+//                 Serial.printf("[wifi] status=%d %s\n", static_cast<int>(st), wifiStatusName(st));
+//             }
+//
+//             // 第一次重试时扫一遍空口，把能看到的 AP 列出来（含是否命中目标 SSID）。
+//             // 关键：必须先把 WiFi 彻底断开、停掉后台连接，否则 scanNetworks() 会跟
+//             // begin() 抢射频，直接返回 -2 (SCAN_FAILED)，一个 AP 都列不出来。
+//             if (wifiStarted && !wifiScanned) {
+//                 wifiScanned = true;
+//                 WiFi.disconnect(true);   // 关闭射频，释放出来给扫描用
+//                 delay(80);               // 等射频真正复位
+//                 wifiScanAndPrint();
+//             }
+//
+//             WiFi.begin(wifiSsid.c_str(), wifiPass.c_str());  // non-blocking
+//         }
+//         return;
+//     }
+//
+//     // 连上的那一刻打一条，否则日志里只有 wifi_begin 没有结果，看不出到底通没通。
+//     if (!wifiAnnounced) {
+//         wifiAnnounced = true;
+//         Serial.printf("[wifi] connected ssid=\"%s\" ip=%s rssi=%d\n", WiFi.SSID().c_str(),
+//                       WiFi.localIP().toString().c_str(), static_cast<int>(WiFi.RSSI()));
+//         ui::logf("{\"ev\":\"wifi_ok\",\"ip\":\"%s\"}", WiFi.localIP().toString().c_str());
+//         // 运行时才配网时 cloudasr::begin() 早已跑过，SNTP 没踢出去；
+//         // 这里补一次：TC3 签名要求时钟误差 ≤5 分钟，时钟不对第一跳必失败。
+//         configTime(0, 0, "ntp.tencent.com", "ntp.aliyun.com", "cn.pool.ntp.org");
+//     }
+//     if (now - wifiLastSync >= 5000) {
+//         wifiLastSync = now;
+//         const time_t value = time(nullptr);
+//         if (value > 1600000000L) {
+//             const uint32_t epoch = static_cast<uint32_t>(value);
+//             if (!timers::timeValid() || (timers::epoch() > epoch + 5) || (timers::epoch() + 5 < epoch)) {
+//                 timers::setEpoch(epoch);
+//             }
+//         }
+//     }
+// }
