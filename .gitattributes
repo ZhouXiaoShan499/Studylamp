@@ -5,6 +5,11 @@
 *.bat text eol=crlf
 *.cmd text eol=crlf
 
+# 设备页面与它生成的头文件：CI 用 `embed_console.py --check` 逐字节比对，
+# 换行只要随平台变一次就会红。两边都钉死 LF。
+web/device.html text eol=lf
+firmware/include/console_html.h text eol=lf
+
 *.png binary
 *.yml text eol=lf
 *.yaml text eol=lf

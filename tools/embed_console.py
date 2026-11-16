@@ -25,6 +25,17 @@ SOURCE = ROOT / "web" / "device.html"
 TARGET = ROOT / "firmware" / "include" / "console_html.h"
 
 
+def read_source() -> bytes:
+    """按字节读页面，并把 CRLF 归一成 LF。
+
+    Windows 检出时 git 会按 `* text=auto` 把 device.html 转成 CRLF，
+    而 Linux CI 上是 LF。若照原样打包，两边产出的数组差一个 0x0D，
+    --check 在 CI 上必然失败（本地却通过，最难查的那种）。
+    HTML 对 CRLF/LF 没有语义差别，统一成 LF 让产物与平台无关。
+    """
+    return SOURCE.read_bytes().replace(b"\r\n", b"\n")
+
+
 def as_c_array(name: str, data: bytes) -> str:
     rows = [f"const uint8_t {name}[] PROGMEM = {{"]
     for offset in range(0, len(data), 16):
@@ -59,7 +70,7 @@ def main() -> int:
         print(f"missing page: {SOURCE}", file=sys.stderr)
         return 1
 
-    raw = SOURCE.read_bytes()
+    raw = read_source()
     content = render(raw)
 
     if args.check:
@@ -70,7 +81,9 @@ def main() -> int:
         print(f"console_html.h up to date ({len(raw)} B html)")
         return 0
 
-    TARGET.write_text(content, encoding="utf-8")
+    # newline="\n"：Windows 上 write_text 默认会把 \n 转成 CRLF，
+    # 写出来就和仓库里的 LF 版本不一致了。固定成 LF，本地与 CI 同一份字节。
+    TARGET.write_text(content, encoding="utf-8", newline="\n")
     packed_len = len(gzip.compress(raw, 9, mtime=0))
     print(f"wrote {TARGET.relative_to(ROOT)}: html {len(raw)} B, gzip {packed_len} B")
     return 0
