@@ -465,6 +465,7 @@ pio device monitor -b 115200
 | [31-网页配网与运行时WiFi.md](docs/31-网页配网与运行时WiFi.md) | live.html 的「连接 WiFi」、NVS 凭据与串口协议 |
 | [32-WiFi语音与灯控方案.md](docs/32-WiFi语音与灯控方案.md) | 设备自带 WiFi 控制台：HTTP/WS 接口、兜底热点、手机页面与灯控 |
 | [33-开机自动联网.md](docs/33-开机自动联网.md) | 多网络凭据表、开机自动选网、扫描列表配网 |
+| [34-本次改动与技术栈.md](docs/34-本次改动与技术栈.md) | `feat/wifi-autoconnect` 交付说明：逐文件改动、技术栈、验证边界 |
 
 ### 实测与联调记录（冻结，只作证据引用）
 
