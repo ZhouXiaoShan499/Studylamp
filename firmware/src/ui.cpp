@@ -18,6 +18,7 @@ namespace ui {
 namespace {
 
 CommandHandler handler = nullptr;
+Publisher publisher = nullptr;
 char line[384];
 size_t lineLen = 0;
 char statusText[64] = "boot";
@@ -90,7 +91,7 @@ void begin() {
     delay(50);
     Serial.println();
     // FW_VERSION 是 constexpr const char*，不能和字符串字面量直接拼接
-    Serial.printf("=== LAMP-1 MVP firmware %s ===\n", FW_VERSION);
+    Serial.printf("=== LAMP-1 MVP firmware %s (%s) ===\n", FW_VERSION, FW_BUILD);
     printHelp();
 
     if (!LittleFS.exists(LOG_DIR)) LittleFS.mkdir(LOG_DIR);
@@ -105,6 +106,23 @@ void begin() {
 }
 
 void setCommandHandler(CommandHandler value) { handler = value; }
+
+void setPublisher(Publisher value) { publisher = value; }
+
+void runCommand(const char* text) {
+    if (text == nullptr) return;
+    char copy[sizeof(line)];
+    strncpy(copy, text, sizeof(copy) - 1);
+    copy[sizeof(copy) - 1] = '\0';
+    // 去掉尾部空白（网页偶尔会带 \r\n）
+    size_t len = strlen(copy);
+    while (len > 0 && (copy[len - 1] == '\r' || copy[len - 1] == '\n' || copy[len - 1] == ' ')) {
+        copy[--len] = '\0';
+    }
+    if (len == 0) return;
+    Serial.printf("> %s\n", copy);
+    dispatch(copy);
+}
 
 void tick(uint32_t now_ms) {
     (void)now_ms;
@@ -136,11 +154,22 @@ void logf(const char* format, ...) {
     vsnprintf(buffer, sizeof(buffer), format, args);
     va_end(args);
     Serial.println(buffer);
+    if (publisher != nullptr) publisher(buffer);
 
     File file = LittleFS.open(kLogPath, FILE_APPEND);
     if (!file) return;
     file.println(buffer);
     file.close();
+}
+
+void emitf(const char* format, ...) {
+    char buffer[256];
+    va_list args;
+    va_start(args, format);
+    vsnprintf(buffer, sizeof(buffer), format, args);
+    va_end(args);
+    Serial.println(buffer);
+    if (publisher != nullptr) publisher(buffer);
 }
 
 void setStatus(const char* text) {
@@ -167,7 +196,7 @@ void printHelp() {
     Serial.println(
         "commands:\n"
         "  status                     show lamp / ir / task summary\n"
-        "  light <0-100>              set brightness percent\n"
+        "  light <0-100>|on|off|toggle  brightness / power (same as the web buttons)\n"
         "  cct <2700-6500>            set colour temperature\n"
         "  mode study|office|rest|night\n"
         "  learn <slot>               learn one IR key into slot 0..15\n"
@@ -185,12 +214,20 @@ void printHelp() {
         "  mic on|off|test [seconds]  PDM mic level meter (voice task 1)\n"
         "  vad <rms> | vad 0          VAD sensitivity, 0 = restore default\n"
         "  key <API_KEY> [SECRET]     store cloud ASR key in NVS\n"
-        "  wifi status|scan           WiFi state / scan nearby 2.4 GHz APs\n"
-        "  wifi connect <ssid> <pass> save to NVS and reconnect ('-' = open)\n"
-        "  wifi clear                 erase saved WiFi credentials\n"
+        "  wifi                       saved networks + current state\n"
+        "  wifi scan                  list nearby 2.4 GHz APs\n"
+        "  wifi connect <ssid> [pass] save and connect ('-' = open network)\n"
+        "  wifi join <n>              connect to scan result n (saved password)\n"
+        "  wifi use <n>               connect to saved network n\n"
+        "  wifi forget <n|ssid>       drop one saved network\n"
+        "  wifi auto                  re-run network selection now\n"
+        "  wifi clear                 erase every saved WiFi credential\n"
         "  asr                        cloud ASR status (provider / key / token)\n"
         "  voice status|listen        link status / record one utterance\n"
-        "  voice say <text>           run one text through the command matcher\n");
+        "  voice say <text>           run one text through the command matcher\n"
+        "\n"
+        "网页控制台：连上 WiFi 后打开 http://<设备IP>/ 或 http://lamp1.local/ ，\n"
+        "没配网时设备自开热点 LAMP-1-xxxx（密码 lamp12345），手机直连 192.168.4.1。\n");
 }
 
 }  // namespace ui

@@ -454,7 +454,7 @@
       数据来自 ESP32-S3 原生 USB 串口（Web Serial），<strong>不经过任何服务器</strong>。板子上跑的是 <code>firmware/</code> 那版（provider=4，腾讯云直连）：页面把 <code>[ASR]</code> / <code>[LLM]</code> / <code>[cmd]</code> 翻译成上面的识别结果、意图和动作。音频只走「设备 → 腾讯云」，浏览器拿不到。
     </p>
     <p>
-      <b>换 WiFi 不用重新烧固件</b>：点右上角「连接 WiFi」，填 SSID 和密码后页面会通过串口发一条 <code>wifi connect</code>，设备把凭据写进 NVS 并立即重连；「扫描」会把设备能看到的 2.4 GHz 热点列出来。也可以在命令框直接敲 <code>wifi status</code> / <code>wifi scan</code> / <code>wifi clear</code>。密码只存在设备里，页面不回显、也不上传。
+      <b>换 WiFi 不用重新烧固件</b>：点右上角「连接 WiFi」，面板会自动扫出设备能看到的 2.4 GHz 热点，并替你选好「当前连着的」或「上次用过的」那个，通常只差一个密码；再点「保存并连接」，页面通过串口发一条 <code>wifi connect</code>，设备把凭据写进 NVS 并立即重连。也可以在命令框直接敲 <code>wifi status</code> / <code>wifi scan</code> / <code>wifi clear</code>。密码只存在设备里，页面不回显、也不上传。
     </p>
     <p>
       连接后页面会自动发 <code>mic on</code> 打开电平显示（固件平时不打印 <code>[mic] rms</code>）。觉得不灵敏就在命令框发 <code>vad 120</code>，想回默认发 <code>vad 0</code>；也可以发 <code>status</code> 看完整状态。
@@ -483,7 +483,7 @@
         <button class="wifi-mini" id="wifiScanBtn" type="button">扫描</button>
       </div>
       <ul class="wifi-scan__list" id="wifiScanList"></ul>
-      <p class="wifi-scan__note" id="wifiScanNote">点「扫描」列出附近网络，或直接输入 SSID。</p>
+      <p class="wifi-scan__note" id="wifiScanNote">正在读取设备状态…</p>
     </section>
 
     <form class="wifi-form" id="wifiForm" novalidate>
@@ -508,7 +508,7 @@
     </form>
 
     <p class="wifi-dialog__foot">
-      凭据只写入设备 NVS（掉电保留），不经过服务器。设备只支持 2.4 GHz；5 GHz 热点扫不到。换一个网络时重复一次即可。
+      打开面板时设备会自动扫一遍（约 2 秒），并把当前网络填进 SSID 框，通常只要填密码。凭据只写入设备 NVS（掉电保留），不经过服务器。设备只支持 2.4 GHz；5 GHz 热点扫不到，扫不到时也可以手打名称。
     </p>
   </div>
 </dialog>

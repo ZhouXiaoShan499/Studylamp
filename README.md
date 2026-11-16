@@ -57,7 +57,7 @@ LAMP—1 是一款面向**离开学校之后仍在学习的年轻职场人**的�
 
 | # | 功能 | 说明 | 优先级 | 阶段 | 状态 |
 |---|------|------|--------|------|------|
-| 1 | AI 语音问答 | 拾音 → 离线命令词 / 云端 ASR → LLM → TTS 播报 | P0 | 一 | 🟡 板上离线命令词已跑通（5 条，3/3，prob 0.14–0.47 余量薄）；腾讯云 ASR + LLM 已在真机跑通（200–400 ms / 中位 1.6 s）；TTS 未接，LLM 那路的 Key 现已失效 |
+| 1 | AI 语音问答 | 拾音 → 离线命令词 / 云端 ASR → LLM → TTS 播报 | P0 | 一 | 🟡 板上离线命令词已跑通（5 条，3/3，prob 0.14–0.47 余量薄）；腾讯云 ASR + LLM 已在真机跑通（200–400 ms / 中位 1.6 s）；TTS 未接，LLM 那路的 Key 现已失效。**WiFi 控制台已打通**：手机打开设备网页即可说话、看识别/回答、开关灯，不再需要 USB（[docs/32](docs/32-WiFi语音与灯控方案.md)） |
 | 2 | 机械舵机动作 | 总线舵机转头、点头、待机微动 | P0 | 一 | ⬜ 未接总线舵机 |
 | 3 | 屏幕表情与状态 | 1.09″ TFT 显示聆听 / 思考 / 回答 / 计时 | P1 | 一 | ⬜ 未接入 |
 | 4 | 灯环状态反馈 | WS2812B 灯环表达状态，不做照明 | P1 | 二 | ⬜ 灯环未到 |
@@ -133,6 +133,8 @@ LAMP—1 是一款面向**离开学校之后仍在学习的年轻职场人**的�
 ```
 
 > 这是**目标架构**。当前实际分两段：固定指令在板上离线闭环（`lamp_sr`，不出网、不花钱）；开放问答由设备**直连腾讯云**（`lamp_s3_tencent`，provider=4：一句话识别走 TC3 签名，语义走 TokenHub），不再经过电脑。百炼链路已停用；TTS 与功放未接，所以「回答」目前只出文字、不出声。
+>
+> **人机界面也分了两种**：`web/live.html` 走 Web Serial（USB），是开发者诊断口；`net_console` 在设备上开了 HTTP 80 + WebSocket 81，手机打开 `http://<设备IP>/` 就能说话、看识别与回答、开关灯，没配网时设备自开热点 `LAMP-1-XXXX` 兜底。前者要线，后者不需要。
 
 | 技术模块 | 目标实现 | 现状 |
 |----------|----------|------|
@@ -212,7 +214,7 @@ LAMP—1 是一款面向**离开学校之后仍在学习的年轻职场人**的�
 ```text
 Studylamp/
 ├── README.md                     本文件
-├── docs/                         方案、验证与项目记录（33 篇 Markdown）
+├── docs/                         方案、验证与项目记录（35 篇 Markdown）
 │   ├── 11-AI学习机器人产品定位与开发规划.md   ← 当前主文档（定位，稳定）
 │   ├── 24-项目方案规划.md             ← 执行计划（滚动，排期与验收）
 │   ├── 23-技术栈清单.md               技术栈登记，随代码更新
@@ -223,6 +225,7 @@ Studylamp/
 ├── firmware/                     ESP32-S3 固件（A / B 两条线并行）
 │   ├── src/                      B 线：PlatformIO / Arduino 功能仓库
 │   │   ├── main.cpp              主循环、串口命令、状态机
+│   │   ├── net_console.cpp       WiFi 控制台：HTTP 页面 + WebSocket + 兜底热点
 │   │   ├── voice_client.cpp      语音闭环与会话
 │   │   ├── cloud_asr.cpp         云端 ASR + LLM 混合路由（provider 1–4）
 │   │   ├── local_intent.cpp      本地词表：36 条说法 / 8 个意图
@@ -239,7 +242,7 @@ Studylamp/
 │   ├── idf/lamp_voice/           ESP-IDF 云端语音客户端（备选）
 │   ├── idf/pdm_probe/            ESP-IDF 麦克风探针
 │   ├── micropython/              开发板 bring-up 脚本
-│   └── include/                  config.h（引脚与全部参数）、secrets 模板
+│   └── include/                  config.h（引脚与全部参数）、secrets 模板、console_html.h（页面内嵌）
 ├── server/                       语音服务（开发链路 A 路）
 │   ├── voice_server.py           WS 8765：PCM → Vosk → Ollama（支持 --no-llm）
 │   ├── lamp_server.py            TCP 8766 + HTTP 8080
@@ -250,10 +253,12 @@ Studylamp/
 │   ├── product.html              产品
 │   ├── simulator.html            REV C 数字样机（双舵机 + 在场检测）
 │   ├── technology.html           技术与规格
-│   ├── live.html                 实时监测台（Web Serial）
+│   ├── live.html                 实时监测台（Web Serial，开发者工具）
+│   ├── device.html               WiFi 控制台（编进固件，设备自己提供）
 │   └── assets/
 ├── tools/
 │   ├── mvp_calc.py               BOM / 功耗 / 热 / 经济性计算器
+│   ├── embed_console.py          device.html → firmware/include/console_html.h
 │   ├── tencent_voice_check.py    腾讯云自检：TC3 签名 / ASR / LLM / TTS
 │   ├── bailian_voice_check.py    百炼链路自检
 │   ├── scan_cloud_keys.py        全仓 / 仅 web 的 Key 体检
@@ -288,7 +293,7 @@ start web\index.html
 >
 > Key 只存在浏览器里（勾「在这台电脑记住」才写入 localStorage，否则仅当前标签页的 sessionStorage），请求直连你填的服务商地址，本站没有后端。**Key 不会入库**——与 `secrets.h` 同一口径。
 
-> **实时监测台**（`live.html`）是开发者工具：浏览器通过 Web Serial 直连 ESP32-S3 原生 USB，显示麦克风电平、VAD、命令词命中与事件流，也能直接发 `mic on` / `vad 120` 这类串口命令。右上角「连接 WiFi」可以在网页里填 SSID / 密码或扫描 2.4 GHz 热点，凭据写进设备 NVS，换网不用重新烧固件（需先烧 `firmware/` 这版 Arduino 固件）。需要 Chrome / Edge 桌面版；串口同一时刻只能被一个程序占用，连之前先关掉 `idf.py monitor`。
+> **实时监测台**（`live.html`）是开发者工具：浏览器通过 Web Serial 直连 ESP32-S3 原生 USB，显示麦克风电平、VAD、命令词命中与事件流，也能直接发 `mic on` / `vad 120` 这类串口命令。右上角「连接 WiFi」会自动扫出附近 2.4 GHz 热点并选好当前/上次用过的网络，通常只填一个密码即可（也可手打 SSID），凭据写进设备 NVS，换网不用重新烧固件（需先烧 `firmware/` 这版 Arduino 固件）。需要 Chrome / Edge 桌面版；串口同一时刻只能被一个程序占用，连之前先关掉 `idf.py monitor`。
 
 ### 2. 编译固件
 
@@ -381,6 +386,32 @@ python test_client.py --text "今天适合复习吗"
 
 更完整的接线、串口输出和排障见 `docs/06-语音AI链路实施手册.md`。
 
+### 5. 不用 USB：WiFi 控制台
+
+`firmware/src` 这版固件自带一个网页控制台，手机 / 电脑连上同一个 WiFi 就能直接说话和开关灯，不需要串口线：
+
+```powershell
+cd firmware
+pio run -e lamp_s3_tencent -t upload
+pio device monitor -b 115200
+```
+
+烧完看串口里的一行，直接把它敲进浏览器：
+
+```text
+[net] console ready: http://192.168.1.23/  (http://lamp1.local/)
+```
+
+- **插电即联网**：设备最多记 5 张 WiFi，开机先试上次连上的那张，不在就扫一遍空口、按信号强弱挑一张已保存的；配过一次以后不用再打开任何页面，插电就能直接说话；
+- **已经配过网**：设备和手机在同一个 2.4 GHz 网段，用上面的 IP 或 `http://lamp1.local/`；
+- **没配过网 / 换了新环境**：设备会自己开热点 `LAMP-1-XXXX`（密码 `lamp12345`），手机连上后打开 `http://192.168.4.1/`，在「WiFi 设置」里从扫描列表点一个网络、输一次密码即可；凭据写进 NVS，之后开机自动连（[docs/33](docs/33-开机自动联网.md)）；
+- 页面里「对灯说话」→ 说完一句 → 页面出识别文本；自由问答会多一段回答，并**用手机浏览器念出来**（板子还没喇叭，声音从手机出）；
+- 灯：电源、亮度滑杆、学习 / 办公 / 休息 / 夜灯四个预设，都能直接点。
+
+> 命令和串口完全一致：页面发出去的 `light 60` / `mode study` / `voice listen` 走的是同一个命令分发器。页面本身由设备提供（http），所以没有「https 页面连不上 ws://」的混合内容问题。
+>
+> 这是**台架功能**：没有鉴权、没有 HTTPS，同网段的人都能开灯。`wifi connect` 的密码在局域网里是明文。边界与后续见 [docs/32](docs/32-WiFi语音与灯控方案.md)。
+
 ## 协作流程（GitHub Flow）
 
 `main` 始终保持可编译、可部署，所有改动都走短分支 + Pull Request：
@@ -421,7 +452,7 @@ python test_client.py --text "今天适合复习吗"
 | [21-免唤醒与按键方案.md](docs/21-免唤醒与按键方案.md) | 免唤醒现状澄清，按键触发与语音并行的改造方案 |
 | [22-按键与语音并行硬件方案.md](docs/22-按键与语音并行硬件方案.md) | 按键与语音并行的纯硬件接法（不改代码） |
 
-### 阶段记录（25–31，滚动的实施与总结）
+### 阶段记录（25–32，滚动的实施与总结）
 
 | 文档 | 作用 |
 |------|------|
@@ -432,6 +463,8 @@ python test_client.py --text "今天适合复习吗"
 | [29-腾讯云联调实录.md](docs/29-腾讯云联调实录.md) | 联调实录：错误码、三跳实测、设备端实测、混合路由 |
 | [30-阶段总结-官网实时数据与腾讯云语音.md](docs/30-阶段总结-官网实时数据与腾讯云语音.md) | 11-10 至 11-12 的阶段总结与交接记录 |
 | [31-网页配网与运行时WiFi.md](docs/31-网页配网与运行时WiFi.md) | live.html 的「连接 WiFi」、NVS 凭据与串口协议 |
+| [32-WiFi语音与灯控方案.md](docs/32-WiFi语音与灯控方案.md) | 设备自带 WiFi 控制台：HTTP/WS 接口、兜底热点、手机页面与灯控 |
+| [33-开机自动联网.md](docs/33-开机自动联网.md) | 多网络凭据表、开机自动选网、扫描列表配网 |
 
 ### 实测与联调记录（冻结，只作证据引用）
 

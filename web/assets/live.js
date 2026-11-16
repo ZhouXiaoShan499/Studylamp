@@ -57,7 +57,7 @@
     // 网页配网面板：凭据只经过串口，不经过服务器
     wifiConfigured: false, wifiPasswordSet: false,
     wifiConnecting: false, wifiSupported: null, wifiLastReason: '',
-    wifiScan: { phase: 'idle', expected: -1, items: [], error: '' },
+    wifiScan: { phase: 'idle', expected: -1, items: [], error: '', auto: false, picked: '' },
     psramBytes: 0, heapBytes: 0, lastStatus: ''
   };
   var stats = {
@@ -75,6 +75,11 @@
   var wifiScanTimer = 0;
   var wifiConnectTimer = 0;
   var wifiProbeTimer = 0;
+  var wifiAutoScanTimer = 0;
+  // 上一次「自动填进去」的 SSID。用来判断输入框里的值是人打的还是我们填的，
+  // 人打过就绝不覆盖。
+  var wifiAutoSsid = '';
+  var WIFI_LAST_KEY = 'lamp.wifi.lastSsid';
 
   /* ---------------------------------------------------------------- 工具 */
   function clamp(v, a, b) { return v < a ? a : v > b ? b : v; }
@@ -303,6 +308,8 @@
         state.wifiConnecting = false;
         state.wifiLastReason = '';
         clearWifiConnectTimer();
+        rememberWifiSsid(state.wifiSsid);
+        syncSsidInput();
         pushEvent({ kind: 'link', text: 'WiFi ' + state.wifiSsid + ' · ' + state.wifiIp });
         renderWifiStatus();
         break;
@@ -342,6 +349,7 @@
         state.wifiConfigured = true;
         state.wifiSsid = r.ssid || '';
         state.wifiPasswordSet = !!r.hasPassword;
+        syncSsidInput();
         renderWifiStatus();
         break;
       case 'wifiCredNone':
@@ -376,7 +384,9 @@
       case 'wifiScanDone':
         state.wifiScan.phase = 'done';
         clearWifiScanTimer();
+        autoPickWifiSsid();
         renderWifiScan();
+        renderWifiStatus();
         break;
       case 'wifiScanFailed':
         state.wifiScan.phase = 'error';
@@ -468,6 +478,25 @@
     clearWifiScanTimer();
     clearWifiConnectTimer();
     if (wifiProbeTimer) { clearTimeout(wifiProbeTimer); wifiProbeTimer = 0; }
+    if (wifiAutoScanTimer) { clearTimeout(wifiAutoScanTimer); wifiAutoScanTimer = 0; }
+  }
+
+  /* 记住上一次连上的网络。下次打开面板直接预填，即使扫描失败也不用手敲 SSID。 */
+  function rememberWifiSsid(ssid) {
+    if (!ssid) return;
+    try { window.localStorage.setItem(WIFI_LAST_KEY, ssid); } catch (e) { /* 隐私模式下不可用 */ }
+  }
+
+  function recallWifiSsid() {
+    try { return window.localStorage.getItem(WIFI_LAST_KEY) || ''; } catch (e) { return ''; }
+  }
+
+  /* 设备报回 SSID 往往晚于面板打开（status 回执），到了就补一次预填；只填空框。 */
+  function syncSsidInput() {
+    if (!el.wifiSsid || !el.wifiDialog || !el.wifiDialog.open) return;
+    if (el.wifiSsid.value || !state.wifiSsid) return;
+    el.wifiSsid.value = state.wifiSsid;
+    wifiAutoSsid = state.wifiSsid;
   }
 
   function startWifiScanTimer() {
@@ -525,16 +554,32 @@
     var scan = state.wifiScan;
     if (el.wifiScanNote) {
       if (scan.phase === 'scanning') {
-        el.wifiScanNote.textContent = '扫描中…（约 2 秒）';
+        el.wifiScanNote.textContent = scan.auto
+          ? '正在自动扫描附近网络…（约 2 秒）'
+          : '扫描中…（约 2 秒）';
       } else if (scan.phase === 'done') {
-        el.wifiScanNote.textContent = scan.items.length
-          ? '点一个网络填入 SSID；共 ' + scan.items.length + ' 个可见，已按信号强弱排序。'
-          : '没扫到网络：确认设备离路由器 3 m 内，且热点是 2.4 GHz。';
+        if (!scan.items.length) {
+          el.wifiScanNote.textContent = '没扫到网络：确认设备离路由器 3 m 内，且热点是 2.4 GHz。';
+        } else if (scan.picked) {
+          el.wifiScanNote.textContent = '已自动选中「' + scan.picked + '」，只需填密码；点列表可换一个。共 ' +
+            scan.items.length + ' 个可见。';
+        } else if (el.wifiSsid && el.wifiSsid.value) {
+          el.wifiScanNote.textContent = '已填入「' + el.wifiSsid.value +
+            '」；点列表可换一个，共 ' + scan.items.length + ' 个可见。';
+        } else {
+          el.wifiScanNote.textContent =
+            '点一个网络填入 SSID；共 ' + scan.items.length + ' 个可见，已按信号强弱排序。';
+        }
       } else if (scan.phase === 'error') {
         el.wifiScanNote.textContent = scan.error || '扫描失败。';
+      } else if (state.wifiSupported === false) {
+        el.wifiScanNote.textContent = '当前固件没有 wifi 命令，扫描用不了；烧录最新 firmware/ 后重新连接设备。';
       } else {
-        el.wifiScanNote.textContent = '点「扫描」列出附近网络，或直接输入 SSID。';
+        el.wifiScanNote.textContent = '打开面板会自动扫描附近网络；扫不到时直接输入 SSID。';
       }
+    }
+    if (el.wifiScanBtn) {
+      el.wifiScanBtn.textContent = scan.phase === 'done' ? '重新扫描' : '扫描';
     }
 
     var frag = document.createDocumentFragment();
@@ -555,6 +600,9 @@
         btn.appendChild(meta);
         btn.addEventListener('click', function () {
           if (el.wifiSsid) el.wifiSsid.value = item.ssid;
+          // 人选过就把「自动填的」标记清掉：之后重扫不会再动他选的内容。
+          wifiAutoSsid = '';
+          state.wifiScan.picked = '';
           renderWifiScan();
           if (el.wifiPass) el.wifiPass.focus();
         });
@@ -651,12 +699,69 @@
     } else if (el.wifiDialog.setAttribute) {
       el.wifiDialog.setAttribute('open', '');
     }
-    if (el.wifiSsid && !el.wifiSsid.value && state.wifiSsid) el.wifiSsid.value = state.wifiSsid;
+    // 预填顺序：设备当前连着的网络 → 上次连上的网络。都拿不到就等扫描结果。
+    if (el.wifiSsid && !el.wifiSsid.value) {
+      var known = state.wifiSsid || recallWifiSsid();
+      if (known) { el.wifiSsid.value = known; wifiAutoSsid = known; }
+    }
     renderWifi();
     if (mode === 'live') {
       sendLine('wifi status\n').then(function (ok) { if (ok) probeWifiSupport(); });
+      // 打开面板就自己扫一遍：不用再点「扫描」，也不靠记忆敲 SSID。
+      scheduleAutoScan();
     }
-    setTimeout(function () { if (el.wifiSsid) el.wifiSsid.focus(); }, 40);
+    // SSID 已经有值就直接把光标放到密码框，少按一次 Tab。
+    var focusTarget = (el.wifiSsid && el.wifiSsid.value) ? el.wifiPass : el.wifiSsid;
+    setTimeout(function () { if (focusTarget) focusTarget.focus(); }, 40);
+  }
+
+  function scheduleAutoScan() {
+    if (wifiAutoScanTimer) clearTimeout(wifiAutoScanTimer);
+    // 让 wifi status 的回执先回：扫描在固件里是阻塞 2 s 的，插在前面会把回执压住。
+    wifiAutoScanTimer = setTimeout(function () {
+      wifiAutoScanTimer = 0;
+      if (!el.wifiDialog || !el.wifiDialog.open) return;
+      if (mode !== 'live' || state.wifiSupported === false) return;
+      if (state.wifiScan.phase === 'scanning') return;
+      scanWifi(true);
+    }, 320);
+  }
+
+  /* 扫完自动选一个网络，省掉手打 SSID。只在输入框空着、或还停在我们上次填的值时才接管。 */
+  function autoPickWifiSsid() {
+    var items = state.wifiScan.items;
+    var input = el.wifiSsid;
+    if (!items.length || !input) return;
+    var current = input.value ? input.value.trim() : '';
+    if (current && current !== wifiAutoSsid) return;   // 用户自己敲过，别抢
+
+    var pick = null;
+    var i;
+    var visible = false;
+    for (i = 0; i < items.length; i++) {
+      if (items[i].ssid === current) { visible = true; break; }
+    }
+    // 设备正连着、但它是隐藏热点（扫不到名字）时不能拿邻居的名字覆盖它，
+    // 否则「打开面板」等于悄悄把目标网络改了。
+    if (current && !visible && current === state.wifiSsid) return;
+
+    for (i = 0; i < items.length; i++) {          // 1. 设备当前连着的那个
+      if (items[i].match) { pick = items[i]; break; }
+    }
+    if (!pick) {
+      var last = recallWifiSsid();                // 2. 上次连上的那个
+      if (last) {
+        for (i = 0; i < items.length; i++) {
+          if (items[i].ssid === last) { pick = items[i]; break; }
+        }
+      }
+    }
+    if (!pick) pick = items[0];                   // 3. 退回信号最强的（已排序）
+    if (!pick) return;
+
+    input.value = pick.ssid;
+    wifiAutoSsid = pick.ssid;
+    state.wifiScan.picked = pick.ssid;
   }
 
   function closeWifiDialog() {
@@ -716,13 +821,16 @@
     });
   }
 
-  function scanWifi() {
-    if (mode !== 'live') { toast('先连接设备再扫描'); return; }
-    if (state.wifiSupported === false) { toast('当前固件不支持 wifi 命令，请先烧录新固件'); return; }
+  function scanWifi(auto) {
+    var manual = (auto !== true);
+    if (mode !== 'live') { if (manual) toast('先连接设备再扫描'); return; }
+    if (state.wifiSupported === false) { if (manual) toast('当前固件不支持 wifi 命令，请先烧录新固件'); return; }
     state.wifiScan.phase = 'scanning';
     state.wifiScan.expected = -1;
     state.wifiScan.items = [];
     state.wifiScan.error = '';
+    state.wifiScan.auto = !manual;
+    state.wifiScan.picked = '';
     renderWifiScan();
     renderWifiStatus();
     startWifiScanTimer();

@@ -3,6 +3,7 @@
 #include "cloud_asr.h"
 #include "lighting.h"
 #include "pdm_mic.h"
+#include "ui.h"
 
 #if !LAMP_HAS_VOICE
 
@@ -112,6 +113,16 @@ void copyPreroll() {
 }
 
 #if LAMP_CLOUD_ASR
+// 灯动作落地后统一上报一次：串口、事件日志、网页三处同步。
+// 没有这一条时，网页只能看到识别文本，不知道灯最后到底亮没亮。
+void reportLight(const char* preset) {
+    if (preset != nullptr && preset[0] != '\0') {
+        ui::logf("{\"ev\":\"light_preset\",\"name\":\"%s\"}", preset);
+    }
+    ui::logf("{\"ev\":\"light_set\",\"pct\":%u,\"src\":\"voice\"}",
+             static_cast<unsigned>(lighting::brightness()));
+}
+
 #if LAMP_CLOUD_ASR_PROVIDER >= 2
 // 国产 LLM / 百炼（provider 2、3）返回的动作标签 → 灯光动作。
 void handleIntent(const String& intent) {
@@ -139,16 +150,23 @@ void handleIntent(const String& intent) {
         lighting::setBrightness(static_cast<uint8_t>(next < 5 ? 5 : next));
     } else if (intent.indexOf("night") >= 0) {
         lighting::setPreset(lighting::Preset::Night);
+        reportLight("night");
+        return;
     } else if (intent.indexOf("study") >= 0) {
         lighting::setPreset(lighting::Preset::Study);
+        reportLight("study");
+        return;
     } else if (intent.indexOf("rest") >= 0) {
         lighting::setPreset(lighting::Preset::Rest);
+        reportLight("rest");
+        return;
     } else {
         Serial.printf("[voice] 未识别的动作标签: %s\n", intent.c_str());
         return;
     }
-    Serial.printf("[cmd] intent=\"%s\" -> on=%d pct=%u\n", intent.c_str(),
-                  lighting::isOn() ? 1 : 0, lighting::brightness());
+    ui::emitf("[cmd] intent=\"%s\" -> on=%d pct=%u", intent.c_str(), lighting::isOn() ? 1 : 0,
+              lighting::brightness());
+    reportLight(nullptr);
 }
 #endif  // LAMP_CLOUD_ASR_PROVIDER >= 2
 
@@ -157,6 +175,7 @@ void handleIntent(const String& intent) {
 // 没有喇叭，大模型回什么都听不到，所以不接 LLM，延迟和成本都省下来。
 void handleAsrText(const String& text) {
     if (text.isEmpty()) return;
+    const char* preset = nullptr;
     if (text.indexOf("关灯") >= 0 || text.indexOf("关掉灯") >= 0 || text.indexOf("把灯关") >= 0) {
         lighting::setBrightness(0);
     } else if (text.indexOf("开灯") >= 0 || text.indexOf("打开灯") >= 0 || text.indexOf("把灯开") >= 0) {
@@ -171,16 +190,20 @@ void handleAsrText(const String& text) {
         lighting::setBrightness(100);
     } else if (text.indexOf("夜灯") >= 0) {
         lighting::setPreset(lighting::Preset::Night);
+        preset = "night";
     } else if (text.indexOf("学习模式") >= 0) {
         lighting::setPreset(lighting::Preset::Study);
+        preset = "study";
     } else if (text.indexOf("休息模式") >= 0) {
         lighting::setPreset(lighting::Preset::Rest);
+        preset = "rest";
     } else {
         Serial.printf("[voice] 没匹配到命令: %s\n", text.c_str());
         return;
     }
-    Serial.printf("[cmd] \"%s\" -> on=%d pct=%u\n", text.c_str(), lighting::isOn() ? 1 : 0,
-                  lighting::brightness());
+    ui::emitf("[cmd] \"%s\" -> on=%d pct=%u", text.c_str(), lighting::isOn() ? 1 : 0,
+              lighting::brightness());
+    reportLight(preset);
 }
 #endif  // LAMP_CLOUD_ASR_PROVIDER == 1
 #endif  // LAMP_CLOUD_ASR
@@ -200,17 +223,19 @@ void sendUtterance(uint32_t now) {
     digitalWrite(PIN_STATUS_LED, LOW);
 
     if (text.isEmpty()) {
-        Serial.println("[asr] empty result");
+        ui::emitf("[asr] empty result");
     } else {
+        // 识别文本先报一次：网页要靠它显示「你说了什么」，
+        // 之前只打意图/回答，页面上根本看不到原句。
+        ui::emitf("[ASR] %s", text.c_str());
 #if LAMP_CLOUD_ASR_PROVIDER >= 2
         // 两跳里"想"这一跳可能返回动作标签，也可能返回一句对话（没有喇叭，打到网页上）。
         if (text.startsWith("ANSWER:")) {
-            Serial.printf("[REPLY] %s\n", text.substring(7).c_str());
+            ui::emitf("[REPLY] %s", text.substring(7).c_str());
         } else {
             handleIntent(text);
         }
 #else
-        Serial.printf("[ASR] %s\n", text.c_str());
         handleAsrText(text);
 #endif
     }
@@ -368,6 +393,7 @@ void startUtterance(uint32_t now, float level) {
     captureStart = now;
     lastVoiceAt = now;
     Serial.printf("[voice] recording (rms=%.0f, preroll=%u)\n", level, static_cast<unsigned>(uttSamples));
+    ui::emitf("[voice] recording (rms=%.0f)", level);
 }
 
 }  // namespace
@@ -542,11 +568,12 @@ void sendText(const char* text) {
 #if LAMP_CLOUD_ASR
     // 云端模式没有服务端可发，直接当"已识别的文本"本地执行，用于串口自测。
     Serial.printf("[voice] local text: %s\n", text);
+    ui::emitf("[ASR] %s", text);
 #if LAMP_CLOUD_ASR_PROVIDER >= 2
     // 串口自测也走同一条路由：本地词表 → 未命中才问 LLM。
     const String out = cloudasr::interpret(String(text));
     if (out.startsWith("ANSWER:")) {
-        Serial.printf("[REPLY] %s\n", out.substring(7).c_str());
+        ui::emitf("[REPLY] %s", out.substring(7).c_str());
     } else if (!out.isEmpty()) {
         handleIntent(out);
     }
