@@ -997,6 +997,93 @@
   line-height:1.95;
 }
 .product-hero__aside .site-actions-row{margin-top:24px}
+.product-hero__price{
+  margin-top:18px;
+  padding-top:13px;
+  border-top:1px solid rgba(30,27,22,.14);
+  color:#5d5345;
+  font-size:10px;
+  line-height:1.6;
+}
+.product-hero__price strong{
+  margin:0 2px;
+  color:#1c1a15;
+  font-family:var(--site-mono);
+  font-size:16px;
+  font-weight:500;
+  letter-spacing:-.02em;
+}
+.product-hero__price span{
+  display:block;
+  margin-top:2px;
+  color:#8a7b64;
+  font-family:var(--site-mono);
+  font-size:7.5px;
+  letter-spacing:.03em;
+}
+/* PRODUCT / price band */
+.product-price{
+  position:relative;
+  overflow:hidden;
+  padding-block:clamp(52px,7vw,92px);
+  border-bottom:1px solid var(--site-line);
+  background:
+    radial-gradient(50% 80% at 20% 20%,rgba(229,183,118,.08),transparent 68%),
+    radial-gradient(60% 80% at 90% 80%,rgba(72,89,62,.08),transparent 72%),
+    #0b0d09;
+}
+.product-price__inner{
+  display:grid;
+  grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);
+  gap:clamp(30px,6vw,90px);
+  align-items:center;
+}
+.product-price__amount{
+  margin:0;
+  color:#e5b776;
+  font-family:var(--site-mono);
+  font-size:clamp(64px,9vw,118px);
+  font-weight:400;
+  line-height:.88;
+  letter-spacing:-.075em;
+  font-variant-numeric:tabular-nums;
+}
+.product-price__meta{
+  margin-top:14px;
+  color:#cfc8b9;
+  font-family:var(--site-mono);
+  font-size:9px;
+  letter-spacing:.06em;
+}
+.product-price__note{
+  max-width:400px;
+  margin-top:18px;
+  color:#979b8e;
+  font-size:11.5px;
+  line-height:1.9;
+}
+.product-price__box{padding:clamp(20px,2.6vw,30px);border-radius:18px}
+.product-price__row{padding:13px 0;border-bottom:1px solid var(--site-line)}
+.product-price__row:first-child{padding-top:0}
+.product-price__row span{
+  display:block;
+  color:#7c8174;
+  font-family:var(--site-mono);
+  font-size:7.2px;
+  letter-spacing:.09em;
+}
+.product-price__row p{margin-top:7px;color:#d7d1c4;font-size:11px;line-height:1.75}
+.product-price__actions{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:18px}
+.product-price__fine{margin-top:12px;color:#6f7467;font-size:8.5px;line-height:1.65}
+@media (max-width:900px){
+  .product-price__inner{grid-template-columns:1fr;gap:26px}
+  .product-price__note{max-width:560px}
+}
+@media (max-width:560px){
+  .product-price__amount{font-size:clamp(60px,18vw,84px)}
+  .product-price__box{padding:18px}
+  .product-price__actions{gap:12px}
+}
 .product-hero__stage{
   position:relative;
   margin:clamp(30px,4.6vw,58px) 0 0;
