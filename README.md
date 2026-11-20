@@ -250,13 +250,14 @@ Studylamp/
 │   └── models/                   Vosk 模型，不入库
 ├── web/                          官网、样机与开发者工具（纯静态，无构建）
 │   ├── index.html                首页
-│   ├── product.html              产品
+│   ├── product.html              产品与价格
 │   ├── simulator.html            REV C 数字样机（双舵机 + 在场检测）
 │   ├── technology.html           技术与规格
 │   ├── live.html                 实时监测台（Web Serial，开发者工具）
 │   ├── device.html               WiFi 控制台（编进固件，设备自己提供）
 │   └── assets/
 ├── tools/
+│   ├── bom_calc.py               内部 BOM / 成本计算器（不上网站）
 │   ├── mvp_calc.py               BOM / 功耗 / 热 / 经济性计算器
 │   ├── embed_console.py          device.html → firmware/include/console_html.h
 │   ├── tencent_voice_check.py    腾讯云自检：TC3 签名 / ASR / LLM / TTS
