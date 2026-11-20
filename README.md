@@ -5,9 +5,9 @@
 
 [官网](https://zhouxiaoshan499.github.io/Studylamp/) · [数字样机](https://zhouxiaoshan499.github.io/Studylamp/simulator.html?mode=voice) · [产品定位与开发规划](docs/11-AI学习机器人产品定位与开发规划.md) · [仓库文档](#文档导航)
 
-![LAMP—1 书桌场景概念渲染：白色圆底座、单柱中段一个黑色摩擦关节，顶部白色圆盘头，宽导光环围住黑色凸面视窗，两段平板臂](web/assets/scene-desk.jpg)
+![LAMP—1 书桌场景概念渲染：白色机器人、头顶悬浮状态光环、黑色表情屏、双关节臂与半球底座，放在木书桌上](web/assets/scene-desk.jpg)
 
-*图为 REV C 形态的书桌场景概念渲染（白壳全包 · 宽导光环 · 两段平板臂），非量产。*
+*图为概念外观渲染（白壳 · 悬浮状态光环 · 黑色表情屏 · 双关节臂），非量产；结构与尺寸以工程样机为准。*
 
 > **2026-11-02 定位调整**：项目已**取消 LED 照明模组**，不再开发传统台灯的照明功能。产品从「AI 机器人台灯」转为桌面 AI 机器人。灯环只做状态反馈，不做照明。
 >
@@ -258,7 +258,8 @@ Studylamp/
 │   └── assets/
 ├── tools/
 │   ├── bom_calc.py               内部 BOM / 成本计算器（不上网站）
-│   ├── mvp_calc.py               BOM / 功耗 / 热 / 经济性计算器
+│   ├── make_lamp1_assets.py      概念外观图生成（lamp1.png → web/assets）
+│   ├── mvp_calc.py               BOM / 功耗 / 热 / 经济性计算器（历史台灯口径）
 │   ├── embed_console.py          device.html → firmware/include/console_html.h
 │   ├── tencent_voice_check.py    腾讯云自检：TC3 签名 / ASR / LLM / TTS
 │   ├── bailian_voice_check.py    百炼链路自检
@@ -288,7 +289,7 @@ Studylamp/
 start web\index.html
 ```
 
-> 数字样机是**前端脚本模拟**：不录音、不上传。现在展示 REV C 硬件形态：双舵机转头点头、屏幕表情、状态灯环与摄像头在场检测；照明相关控件已移除。
+> 数字样机是**前端脚本模拟**：不录音、不上传。现在展示 REV C 硬件形态：双舵机转头点头、屏幕表情、状态灯环与摄像头在场检测；照明相关控件已移除。产品页展示的是概念外观，两者不是同一版结构，结构与尺寸以工程样机为准。
 >
 > 语音台的对话框默认走本地脚本（不联网）。展开「接入真实模型」填入任意 OpenAI 兼容接口的 Key（百炼 / DeepSeek / 智谱 / 月之暗面 / OpenAI），回复就改成真实大模型生成；转头、计时、灯环这些动作始终由本地执行，断网也照旧。
 >
