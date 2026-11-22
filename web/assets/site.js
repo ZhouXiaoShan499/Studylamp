@@ -12,9 +12,24 @@
 
   /* --------------------------------------------------------------- header UI */
   if (header) {
+    // 浅色区块（首屏 / 浅带）滚到导航下方时，导航切成浅色方案，
+    // 否则浅底上会压出一条深色横杠。
+    const lightZones = Array.from(document.querySelectorAll('.light-band, .home-hero'));
+    const themeMeta = document.querySelector('meta[name="theme-color"]');
+    const DARK_UI = '#080907';
+    const LIGHT_UI = '#ece9e6';
     let queued = false;
     const syncHeader = () => {
       header.classList.toggle('is-scrolled', window.scrollY > 12);
+      if (lightZones.length) {
+        const edge = header.offsetHeight;
+        const overLight = lightZones.some(zone => {
+          const rect = zone.getBoundingClientRect();
+          return rect.top < edge && rect.bottom > 0;
+        });
+        header.classList.toggle('is-on-light', overLight);
+        if (themeMeta) themeMeta.setAttribute('content', overLight ? LIGHT_UI : DARK_UI);
+      }
       queued = false;
     };
     syncHeader();
@@ -23,6 +38,7 @@
       queued = true;
       requestAnimationFrame(syncHeader);
     }, { passive: true });
+    window.addEventListener('resize', syncHeader, { passive: true });
   }
 
   /* -------------------------------------------------------------- mobile nav */

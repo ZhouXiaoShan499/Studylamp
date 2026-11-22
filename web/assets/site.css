@@ -23,6 +23,19 @@
   --site-max:1520px;
   --site-pad:clamp(18px,2.6vw,40px);
   --site-ease:cubic-bezier(.22,.61,.36,1);
+
+  /* 图片衍生色板 — 采样自 lamp1 概念图（墙面 #aa9e9d / #a8989b）
+     浅带底色不再用暖黄 #e8e1d3（饱和度 32%），改用低饱和暖白（约 5%），
+     否则中性灰调的渲染图衬在黄底上会显脏。 */
+  --paper:#ece9e6;
+  --paper-2:#e4e0dc;
+  --paper-3:#d7d2cc;
+  --paper-line:rgba(34,30,27,.13);
+  --paper-line-soft:rgba(34,30,27,.07);
+  --ink:#221e1b;
+  --ink-soft:#5c554e;
+  --ink-muted:#8a8177;
+  --warm-black:#12100e;
 }
 *,*::before,*::after{box-sizing:border-box}
 html{scroll-behavior:smooth}
@@ -244,6 +257,47 @@ body.site-page h1,body.site-page h2,body.site-page h3,body.site-page h4{margin:0
   background:rgba(8,9,7,.94);
   border-bottom-color:rgba(242,237,226,.1);
 }
+/* 浅色区块上方：导航跟随变浅。site.js 根据当前滚到的区块给 header 加 is-on-light。 */
+.site-header.is-on-light{
+  background:linear-gradient(180deg,rgba(236,233,230,.9),rgba(236,233,230,.74));
+  border-bottom-color:rgba(34,30,27,.07);
+}
+.site-header.is-on-light.is-scrolled{
+  background:rgba(236,233,230,.95);
+  border-bottom-color:rgba(34,30,27,.12);
+}
+.site-header.is-on-light .site-brand{color:var(--ink)}
+.site-header.is-on-light .site-brand__mark{
+  border-color:rgba(168,128,74,.4);
+  background:linear-gradient(145deg,rgba(229,183,118,.3),rgba(229,183,118,.05));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.72);
+}
+.site-header.is-on-light .site-brand__tag{
+  color:var(--ink-muted);
+  border-left-color:rgba(34,30,27,.16);
+}
+.site-header.is-on-light .site-nav a{color:var(--ink-soft)}
+.site-header.is-on-light .site-nav a:hover{color:var(--ink)}
+.site-header.is-on-light .site-nav a[aria-current="page"]{color:var(--ink)}
+.site-header.is-on-light .site-nav a[aria-current="page"]::before{box-shadow:none}
+.site-header.is-on-light .site-status{color:var(--ink-muted)}
+.site-header.is-on-light .site-status i{box-shadow:0 0 0 3px rgba(122,146,104,.1),0 0 8px rgba(122,146,104,.25)}
+.site-header.is-on-light .site-cta{
+  border-color:rgba(168,128,74,.34);
+  background:rgba(229,183,118,.16);
+  color:#7a5326;
+}
+.site-header.is-on-light .site-cta:hover{
+  border-color:rgba(168,128,74,.58);
+  background:rgba(229,183,118,.26);
+  color:#5d3f1c;
+}
+.site-header.is-on-light .site-menu-toggle{
+  border-color:var(--paper-line);
+  background:rgba(255,255,255,.5);
+}
+.site-header.is-on-light .site-menu-toggle .burger::before,
+.site-header.is-on-light .site-menu-toggle .burger::after{background:var(--ink-soft)}
 .site-header__inner{
   width:min(100%,var(--site-max));
   height:100%;
