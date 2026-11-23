@@ -138,7 +138,7 @@ LAMP—1 是一款面向**离开学校之后仍在学习的年轻职场人**的�
 
 | 技术模块 | 目标实现 | 现状 |
 |----------|----------|------|
-| 主控开发 | ESP-IDF / C++ | `firmware/idf/lamp_sr`（ESP-IDF 5.4.3，当前主线）+ `firmware/src`（PlatformIO / Arduino 功能仓库） |
+| 主控开发 | ESP-IDF / C++ | `firmware/idf/lamp_av`（ESP-IDF 5.4.3，目标工程）+ `firmware/idf/lamp_sr`（回滚镜像）+ `firmware/src`（PlatformIO / Arduino 全功能对照） |
 | 语音采集 | I2S | INMP441 已跑通（32 bit 槽宽） |
 | 离线命令词 | esp-sr（AFE + WakeNet + MultiNet） | 5 条命令词已跑通，3/3 正确，prob 0.14–0.47 余量薄 |
 | 语音识别 | 云端 ASR | 腾讯云一句话识别已在真机跑通（TC3 签名 + SNTP 对时，200–400 ms）；百炼已停用（延迟 10–13 s、模型下架）；开发期另用本地 Vosk |
@@ -238,7 +238,8 @@ Studylamp/
 │   │   ├── voice_uart.cpp        离线语音模块 UART（默认关闭）
 │   │   └── ir_engine.cpp / ir_store.cpp   红外后备代码
 │   ├── src/bringup/              按键 → 灯的最小验证
-│   ├── idf/lamp_sr/              A 线（当前主线）：ESP-IDF 5.4.3 + esp-sr 离线命令词
+│   ├── idf/lamp_av/              ★ 目标工程：ESP-IDF 5.4.3，M1 灯/按键 + M2 离线命令词（已上板）
+│   ├── idf/lamp_sr/              A 线（现役回滚镜像）：esp-sr 离线命令词，最简
 │   ├── idf/lamp_voice/           ESP-IDF 云端语音客户端（备选）
 │   ├── idf/pdm_probe/            ESP-IDF 麦克风探针
 │   ├── micropython/              开发板 bring-up 脚本
@@ -299,15 +300,25 @@ start web\index.html
 
 ### 2. 编译固件
 
-**当前主线是 `firmware/idf/lamp_sr`**（ESP-IDF 5.4.3 + esp-sr 2.6.1，板上离线命令词，已烧录到 COM5）。`idf.bat` 里钉死了 IDF 路径与 Python venv，直接用它能避开系统 Python 3.13 的坑：
+**新目标工程是 `firmware/idf/lamp_av`**（ESP-IDF 5.4.3 + esp-sr 2.6.1，已烧到 COM5：
+上电 60 % 灯亮、按键开关、离线命令词识别链已建立）。`idf.bat` 里钉死了 IDF 路径与
+Python venv，直接用它能避开系统 Python 3.13 的坑：
 
 ```powershell
-cd firmware\idf\lamp_sr
+cd firmware\idf\lamp_av
 idf.bat set-target esp32s3
 idf.bat build
-idf.bat -p COM5 flash monitor
+idf.bat -p COM5 flash
 ```
 
+看日志用 miniterm（`idf.py monitor` 在这台机器上会因 GBK 崩）：
+
+```powershell
+D:\Espressif\python_env\idf5.4_py3.11_env\Scripts\python.exe -m serial.tools.miniterm COM5 115200
+```
+
+进度、接线与验收见 [43 号](docs/43-全量迁移与CAM12咪头开关灯可执行方案.md) 与其附录 A。
+最简回滚镜像是 `firmware/idf/lamp_sr`（同一套 IDF，命令相同，把目录换掉即可）：
 传感器接线、串口命令与排障见 [docs/18](docs/18-今天脱离PC的实施方案.md)、[docs/20](docs/20-离线语音实测纪要.md)。
 
 **功能仓库在 `firmware/src`**，需要 PlatformIO + ESP32-S3 平台：
@@ -471,10 +482,12 @@ pio device monitor -b 115200
 | [35-上板验证与合并记录.md](docs/35-上板验证与合并记录.md) | 上电 14 秒自动联网的实测证据、构建卡住的真实原因、合并过程 |
 | [36-仓库体检与清理记录.md](docs/36-仓库体检与清理记录.md) | 仓库体检清单、体积从 230 MB 降到 113 MB 的定位过程、分支与 stash 清理 |
 
-### 第二阶段方案（38–42，目标方案，尚未实施）
+### 第二阶段方案（38–43）
 
-> 这五篇是「让灯自己看 + 听 + 说」的方案与实施计划，**未落地**：`firmware/idf/lamp_av` 尚不存在，
-> 当前在跑的仍是 `firmware/src`（Arduino）与 `firmware/idf/lamp_sr`。读之前先看 [39](docs/39-第一阶段与第二阶段实施计划.md) 的总览。
+> **已开工**：`firmware/idf/lamp_av` 已落地，M1（灯/按键）与 M2（离线命令词识别链）已上板，
+> 麦克风待接回、M2b（CAM12 UAC 咪头）与 M3 起仍待做——进度与证据见
+> [43 号附录 A](docs/43-全量迁移与CAM12咪头开关灯可执行方案.md)。
+> 其余在跑的仍是 `firmware/src`（Arduino，全功能对照）与 `firmware/idf/lamp_sr`（回滚镜像）。
 
 | 文档 | 作用 |
 |------|------|
@@ -483,6 +496,7 @@ pio device monitor -b 115200
 | [40-第二阶段连接路线与P0实施.md](docs/40-第二阶段连接路线与P0实施.md) | CAM12 的实际接法（USB-A → OTG → 板载口）与 P0 四步验证：枚举 → UVC 出图 → UAC 录音 → UAC 放音 |
 | [41-Arduino固件迁移IDF与CAM12语音控制方案.md](docs/41-Arduino固件迁移IDF与CAM12语音控制方案.md) | Arduino 灯固件迁 ESP-IDF 的评估（核心 60–80 h，全功能 +25–40 h）与 M1–M5 增量路线 |
 | [42-固定ESP-IDF实施方案.md](docs/42-固定ESP-IDF实施方案.md) | 定框架（5.4.3）/ 定工程（`lamp_av`）/ 定烧录口（COM5）/ 定分区（app 3 MB + model 6 MB） |
+| [43-全量迁移与CAM12咪头开关灯可执行方案.md](docs/43-全量迁移与CAM12咪头开关灯可执行方案.md) | 执行级方案：逐文件映射（实测行数）、`audio_in` 音频源抽象、三条语音链路、M0–M7 门禁与 19 项验收清单；**附录 A** 是 M1/M2 的落地记录与 `starved` 判读表 |
 
 ### 实测与联调记录（冻结，只作证据引用）
 
