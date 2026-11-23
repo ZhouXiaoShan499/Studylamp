@@ -12,9 +12,9 @@
 
   /* --------------------------------------------------------------- header UI */
   if (header) {
-    // 浅色区块（首屏 / 浅带）滚到导航下方时，导航切成浅色方案，
-    // 否则浅底上会压出一条深色横杠。
-    const lightZones = Array.from(document.querySelectorAll('.light-band, .home-hero'));
+    // 浅色区块（首屏 / 浅带 / 首页光照区）滚到导航下方时，导航切成浅色方案，
+    // 否则浅底上会压出一条深色横杠。三处类名不同，都要列。
+    const lightZones = Array.from(document.querySelectorAll('.light-band, .light-gallery, .home-hero'));
     const themeMeta = document.querySelector('meta[name="theme-color"]');
     const DARK_UI = '#080907';
     const LIGHT_UI = '#ece9e6';
@@ -22,10 +22,12 @@
     const syncHeader = () => {
       header.classList.toggle('is-scrolled', window.scrollY > 12);
       if (lightZones.length) {
-        const edge = header.offsetHeight;
+        // 导航是 position:sticky，占布局位置，首屏区块的 top 恰好等于导航高度，
+        // 用 < 会漏掉"页面停在顶部"这一帧，所以留 1px 容差。
+        const edge = header.getBoundingClientRect().bottom;
         const overLight = lightZones.some(zone => {
           const rect = zone.getBoundingClientRect();
-          return rect.top < edge && rect.bottom > 0;
+          return rect.top <= edge + 1 && rect.bottom > 0;
         });
         header.classList.toggle('is-on-light', overLight);
         if (themeMeta) themeMeta.setAttribute('content', overLight ? LIGHT_UI : DARK_UI);

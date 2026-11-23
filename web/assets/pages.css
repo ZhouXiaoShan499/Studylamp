@@ -542,11 +542,11 @@
    ========================================================================== */
 .light-gallery{
   position:relative;
-  color:#1d1b16;
+  color:var(--ink);
   background:
-    radial-gradient(70% 100% at 70% 0%,rgba(255,248,237,.7),transparent 70%),
-    #e8e1d3;
-  border-bottom:1px solid rgba(30,27,22,.12);
+    radial-gradient(70% 100% at 70% 0%,rgba(255,255,255,.46),transparent 70%),
+    var(--paper);
+  border-bottom:1px solid var(--paper-line);
   padding-block:clamp(74px,8vw,118px);
 }
 .light-gallery::before{
@@ -556,9 +556,9 @@
   mask-image:linear-gradient(180deg,black,transparent 75%);
   -webkit-mask-image:linear-gradient(180deg,black,transparent 75%);
 }
-.light-gallery .site-kicker{color:#786c5a}
+.light-gallery .site-kicker{color:var(--ink-muted)}
 .light-gallery .site-kicker::before{background:linear-gradient(90deg,#a37a45,rgba(163,122,69,.14))}
-.light-gallery .site-title{color:#1e1b16}
+.light-gallery .site-title{color:var(--ink)}
 .light-gallery__head{
   position:relative;
   display:grid;grid-template-columns:minmax(0,1fr) minmax(240px,.48fr);
@@ -932,18 +932,18 @@
    ========================================================================== */
 .light-band{
   position:relative;
-  color:#1c1a15;
+  color:var(--ink);
   background:
-    radial-gradient(70% 80% at 72% -10%,rgba(255,250,242,.72),transparent 62%),
-    #e8e1d3;
-  border-color:rgba(30,27,22,.12);
+    radial-gradient(70% 80% at 72% -10%,rgba(255,255,255,.5),transparent 62%),
+    var(--paper);
+  border-color:var(--paper-line);
 }
-.light-band .site-kicker{color:#746957}
+.light-band .site-kicker{color:var(--ink-muted)}
 .light-band .site-kicker::before{background:linear-gradient(90deg,#a27a46,rgba(162,122,70,.13))}
 .light-band .site-kicker .dot{background:#a27a46;box-shadow:none}
-.light-band .site-title{color:#1e1b16}
-.light-band .site-lead{color:#605748}
-.light-band .site-text-link{color:#4d4437;border-color:rgba(30,27,22,.23)}
+.light-band .site-title{color:var(--ink)}
+.light-band .site-lead{color:var(--ink-soft)}
+.light-band .site-text-link{color:var(--ink-soft);border-color:rgba(34,30,27,.23)}
 .light-band .site-text-link:hover{color:#91662e;border-color:rgba(145,102,46,.48)}
 .light-band .site-button--primary{--btn-color:#17130e}
 
@@ -1100,17 +1100,18 @@
   margin:clamp(30px,4.6vw,58px) 0 0;
   overflow:hidden;
   aspect-ratio:1.6;
-  border:1px solid rgba(30,27,22,.19);
+  border:1px solid var(--paper-line-soft);
   border-radius:clamp(18px,2.5vw,28px);
-  background:#e6ddcc;
-  box-shadow:0 20px 65px rgba(45,35,22,.18);
+  background:var(--paper);
+  box-shadow:0 26px 72px rgba(58,46,36,.13);
 }
 .product-hero__stage img{width:100%;height:100%;object-fit:cover;object-position:center 48%}
 .product-hero__stage::after{
   content:"";position:absolute;inset:0;pointer-events:none;
-  background:linear-gradient(0deg,rgba(24,17,8,.62) 0%,rgba(24,17,8,.18) 26%,transparent 48%),
-             linear-gradient(90deg,rgba(24,17,8,.22),transparent 38%);
-  box-shadow:inset 0 0 0 1px rgba(255,255,255,.04);
+  /* 原来是 rgba(24,17,8,.62) 的深棕压暗，浅图上会显脏；
+     改成中性黑，只压住底部 42% 保证引言可读，不再给整张图染色。 */
+  background:linear-gradient(0deg,rgba(16,14,12,.46) 0%,rgba(16,14,12,.14) 23%,transparent 42%);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.1);
 }
 .product-stage-label--top{top:17px;left:18px}
 .product-stage-label--right{top:17px;right:18px}
@@ -1159,7 +1160,7 @@
 /* ==========================================================================
    PRODUCT / structure
    ========================================================================== */
-.product-structure{padding-block:clamp(46px,6vw,80px);border-bottom:1px solid rgba(30,27,22,.13)}
+.product-structure{padding-block:clamp(46px,6vw,80px);border-bottom:1px solid var(--paper-line)}
 .structure-grid{
   display:grid;
   grid-template-columns:minmax(0,max-content) minmax(0,1fr);
@@ -1170,19 +1171,21 @@
 .structure-plate{
   margin:0;
   padding:clamp(16px,2vw,24px);
-  border:1px solid rgba(30,27,22,.16);
+  border:1px solid var(--paper-line);
   border-radius:clamp(16px,2vw,22px);
+  /* 原来是 rgba(255,255,255,.9) 纯白板：图里的墙面是 #a7979a 暖灰，
+     白板衬上去像"照片贴在白卡纸上"；改成半透明纸色，和图片同族。 */
   background:
-    linear-gradient(180deg,rgba(255,255,255,.9),rgba(250,248,244,.72));
-  box-shadow:0 18px 48px rgba(45,35,22,.1),inset 0 1px 0 rgba(255,255,255,.9);
+    linear-gradient(180deg,rgba(255,255,255,.56),rgba(255,255,255,.16));
+  box-shadow:0 18px 44px rgba(58,46,36,.07),inset 0 1px 0 rgba(255,255,255,.7);
 }
 .structure-plate__frame{
   position:relative;
   display:flex;align-items:center;justify-content:center;
   padding:clamp(26px,3.4vw,44px) clamp(22px,3vw,40px);
   border-radius:clamp(10px,1.2vw,14px);
-  background:#fbfaf7;
-  border:1px solid rgba(30,27,22,.1);
+  background:#f2efec;
+  border:1px solid var(--paper-line-soft);
   overflow:hidden;
   text-decoration:none;
   color:inherit;
@@ -1190,8 +1193,8 @@
   transition:border-color .3s ease,background .3s ease;
 }
 a.structure-plate__frame:hover{
-  border-color:rgba(30,27,22,.26);
-  background:#fff;
+  border-color:var(--paper-line);
+  background:#f7f5f3;
 }
 .structure-grid > .structure-plate .structure-plate__frame img{
   width:auto;
@@ -1222,14 +1225,15 @@ a.structure-plate__frame:hover{
 .structure-plate__frame img{
   position:relative;z-index:1;
   width:100%;max-width:440px;height:auto;
-  border-radius:8px;
-  border:1px solid rgba(30,27,22,.09);
-  background:#fff;
+  border-radius:6px;
+  /* 去掉 1px 白边与纯白底：图自带暖灰墙面，白边会割出一道硬轮廓 */
+  border:0;
+  background:transparent;
 }
 .structure-plate__tag,
 .structure-plate__note{
   position:absolute;z-index:2;
-  color:#8a7b64;
+  color:var(--ink-muted);
   font-family:var(--site-mono);
   font-size:7px;letter-spacing:.13em;
   white-space:nowrap;
@@ -1238,32 +1242,34 @@ a.structure-plate__frame:hover{
 .structure-plate__note{bottom:13px;right:16px}
 .structure-plate figcaption{
   margin-top:14px;padding-inline:2px;
-  color:#6d6353;
+  color:var(--ink-soft);
   font-size:10.5px;line-height:1.72;
 }
 
 .structure-specs{
   display:grid;
   gap:1px;
-  background:rgba(30,27,22,.12);
-  border:1px solid rgba(30,27,22,.12);
+  /* 单元格比区块底色浅一档（浮起的白卡），分隔线才有层次；
+     原来 cells #e4e0dc 与底色 #ece9e6 只差 3% 明度，整张表糊成一块。 */
+  background:rgba(34,30,27,.14);
+  border:1px solid var(--paper-line);
   border-radius:clamp(14px,1.8vw,18px);
   overflow:hidden;
 }
 .structure-spec{
   padding:clamp(15px,1.9vw,20px) clamp(16px,2.1vw,22px);
-  background:#f0eadf;
+  background:#f6f3f0;
 }
 .structure-spec__index{
   display:block;
-  color:#8f8168;
+  color:var(--ink-muted);
   font-family:var(--site-mono);
   font-size:7px;letter-spacing:.14em;
   margin-bottom:9px;
 }
 .structure-spec strong{
   display:block;
-  color:#1e1b16;
+  color:var(--ink);
   font-size:clamp(21px,2.4vw,27px);
   font-weight:350;
   letter-spacing:-.035em;
@@ -1273,19 +1279,19 @@ a.structure-plate__frame:hover{
   margin-left:3px;
   font-style:normal;
   font-size:.52em;
-  color:#8a7b64;
+  color:var(--ink-muted);
   letter-spacing:0;
 }
 .structure-spec p{
   margin:7px 0 0;
-  color:#6d6353;
+  color:var(--ink-soft);
   font-size:10.5px;line-height:1.66;
 }
 .structure-specs__note{
   margin:0;
   padding:14px clamp(16px,2.1vw,22px) 15px;
-  background:#efe8dc;
-  color:#8a7b64;
+  background:#e8e4e0;
+  color:var(--ink-soft);
   font-family:var(--site-mono);
   font-size:7.5px;line-height:1.7;letter-spacing:.04em;
 }
@@ -1525,7 +1531,7 @@ a.structure-plate__frame:hover{
   align-items:center;
 }
 .product-motion__copy .site-title{margin-bottom:24px}
-.product-motion__copy .site-lead{max-width:430px;color:#605748}
+.product-motion__copy .site-lead{max-width:430px;color:var(--ink-soft)}
 .motion-sequence{
   display:grid;grid-template-columns:repeat(4,minmax(0,1fr));
   margin-top:30px;
@@ -1557,31 +1563,41 @@ a.structure-plate__frame:hover{
   font-size:6.5px;letter-spacing:.03em;
 }
 .product-motion__copy .site-text-link{margin-top:25px}
+/* 圆顶不再是"挖空的深色洞"：改为纸面上的拱形图片版块（plate），
+   边缘刻意收干净，图注移到拱形之外，避免底部渐隐糊成一片雾。 */
 .product-motion__media{
   position:relative;
   margin:0;
+  background:none;
+  border:0;
+}
+.product-motion__frame{
+  position:relative;
   overflow:hidden;
   aspect-ratio:1.03;
   border-radius:50% 50% 8% 8% / 34% 34% 6% 6%;
-  background:#0b0d09;
-  border:1px solid rgba(30,27,22,.19);
+  background:var(--paper);
+  border:1px solid var(--paper-line-soft);
+  box-shadow:0 20px 54px rgba(58,46,36,.09);
 }
-.product-motion__media img{
+.product-motion__frame img{
   width:100%;height:100%;object-fit:cover;
   object-position:50% 0%;
-  filter:saturate(.9) brightness(.94);
+  /* 原来 saturate(.9) brightness(.94) 是为了把图压进深色底，现在不需要 */
+  filter:none;
 }
-.product-motion__media::after{
+.product-motion__frame::after{
   content:"";position:absolute;inset:0;pointer-events:none;
-  background:linear-gradient(0deg,rgba(5,6,4,.7) 0%,transparent 38%);
+  border-radius:inherit;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.18);
 }
-.product-motion__media .product-stage-label{top:19px;left:20px}
 .product-motion__media figcaption{
-  position:absolute;z-index:3;left:22px;right:22px;bottom:18px;
-  color:#bdb4a5;
+  margin-top:13px;
+  color:var(--ink-soft);
   font-size:9.5px;
   line-height:1.6;
 }
+.product-motion__media .product-stage-label{top:19px;left:20px}
 .motion-ring{
   position:absolute;z-index:2;
   right:-17%;top:-24%;
@@ -1597,7 +1613,7 @@ a.structure-plate__frame:hover{
 }
 .motion-tick{
   position:absolute;z-index:3;
-  color:#7d6038;
+  color:#4a423a;
   font-family:var(--site-mono);
   font-size:7px;letter-spacing:.06em;
 }
@@ -1609,16 +1625,16 @@ a.structure-plate__frame:hover{
 }
 @media (max-width:760px){
   .product-motion__inner{grid-template-columns:1fr;gap:35px}
-  .product-motion__media{aspect-ratio:1.15;max-width:600px;width:100%;justify-self:center;border-radius:46% 46% 8% 8% / 31% 31% 6% 6%}
+  .product-motion__frame{aspect-ratio:1.15;max-width:600px;width:100%;margin-inline:auto;border-radius:46% 46% 8% 8% / 31% 31% 6% 6%}
   .product-motion__copy .site-title{font-size:clamp(37px,8vw,52px)}
 }
 @media (max-width:430px){
-  .product-motion__media{aspect-ratio:1.02;border-radius:44% 44% 8% 8% / 29% 29% 6% 6%}
+  .product-motion__frame{aspect-ratio:1.02;border-radius:44% 44% 8% 8% / 29% 29% 6% 6%}
   .motion-sequence > div{padding:12px 7px 13px 0}
   .motion-sequence > div + div{padding-left:7px}
   .motion-sequence strong{font-size:10px}
   .motion-sequence small{font-size:5.5px}
-  .product-motion__media figcaption{font-size:8px;left:16px;right:16px;bottom:14px}
+  .product-motion__media figcaption{font-size:8.5px}
   .motion-tick--a{right:15px}
   .motion-tick--b{left:15px}
 }
@@ -1731,7 +1747,7 @@ a.structure-plate__frame:hover{
 }
 .moment-card + .moment-card{border-left:1px solid rgba(30,27,22,.14)}
 .moment-card__top{display:flex;align-items:flex-start;justify-content:space-between;gap:15px}
-.moment-time{color:#6e6252;font-family:var(--site-mono);font-size:10px;letter-spacing:.05em}
+.moment-time{color:var(--ink-muted);font-family:var(--site-mono);font-size:10px;letter-spacing:.05em}
 .moment-orb{
   width:42px;height:42px;flex:0 0 auto;border-radius:50%;
   box-shadow:0 0 44px var(--orb-glow);
@@ -1743,7 +1759,7 @@ a.structure-plate__frame:hover{
 .moment-card h3{
   margin-top:auto;
   padding-top:35px;
-  color:#28231b;
+  color:var(--ink);
   font-size:clamp(22px,2.4vw,30px);
   font-weight:350;
   letter-spacing:-.05em;
@@ -1751,16 +1767,16 @@ a.structure-plate__frame:hover{
 .moment-card p{
   max-width:270px;
   margin-top:12px;
-  color:#645a4b;
+  color:var(--ink-soft);
   font-size:11px;line-height:1.8;
 }
 .moment-data{
   margin-top:18px;
-  color:#5b5142;
+  color:var(--ink-soft);
   font-family:var(--site-mono);
   font-size:9px;letter-spacing:.025em;
 }
-.moment-data i{margin:0 3px;color:#a08d73;font-style:normal}
+.moment-data i{margin:0 3px;color:var(--ink-muted);font-style:normal}
 .timer-band{
   display:grid;
   grid-template-columns:minmax(0,1fr) auto auto;
@@ -1768,24 +1784,24 @@ a.structure-plate__frame:hover{
   gap:clamp(18px,3vw,35px);
   margin-top:25px;
   padding:18px 20px;
-  border:1px solid rgba(30,27,22,.13);
+  border:1px solid var(--paper-line);
   border-radius:14px;
-  background:rgba(255,250,243,.29);
+  background:rgba(255,255,255,.42);
 }
 .timer-band__copy .site-kicker{margin-bottom:7px}
-.timer-band__copy p{color:#6b6152;font-size:10px;line-height:1.6}
+.timer-band__copy p{color:var(--ink-soft);font-size:10px;line-height:1.6}
 .timer-band__chips{display:flex;align-items:center;gap:5px}
 .timer-band__chips span{
   display:inline-flex;align-items:center;justify-content:center;
   width:30px;height:27px;
-  border:1px solid rgba(30,27,22,.15);
+  border:1px solid var(--paper-line);
   border-radius:5px;
-  color:#715f49;
+  color:var(--ink-soft);
   font-family:var(--site-mono);
   font-size:8px;
 }
-.timer-band__chips span.is-active{background:#272119;color:#f3e7d4;border-color:#272119}
-.timer-band__chips small{margin-left:3px;color:#8b7d69;font-family:var(--site-mono);font-size:6.5px}
+.timer-band__chips span.is-active{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.timer-band__chips small{margin-left:3px;color:var(--ink-muted);font-family:var(--site-mono);font-size:6.5px}
 .timer-band .site-text-link{white-space:nowrap;font-size:9.5px}
 @media (max-width:820px){
   .moment-grid{grid-template-columns:1fr}
