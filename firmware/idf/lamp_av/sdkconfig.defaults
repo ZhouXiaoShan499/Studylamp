@@ -1,0 +1,36 @@
+# 目标芯片在 idf.py set-target 时写入，这里只放必须覆盖的项。
+
+# ---- flash / 分区 ---------------------------------------------------------
+CONFIG_ESPTOOLPY_FLASHSIZE_16MB=y
+CONFIG_ESPTOOLPY_FLASHSIZE="16MB"
+# 自定义分区表：esp-sr 编译期强制要求存在标签为 model 的分区
+CONFIG_PARTITION_TABLE_CUSTOM=y
+CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions.csv"
+
+# ---- PSRAM（AFE + MultiNet 必需）-----------------------------------------
+# 不开也能编译、能烧，然后一运行就 "SR_RINGBUF: Memory exhausted" 无限重启，
+# 日志完全看不出和 PSRAM 有关。本板是 8 MB octal PSRAM。
+CONFIG_SPIRAM=y
+CONFIG_SPIRAM_MODE_OCT=y
+CONFIG_SPIRAM_SPEED_80M=y
+CONFIG_SPIRAM_USE_MALLOC=y
+CONFIG_SPIRAM_MALLOC_ALWAYSINTERNAL=4096
+CONFIG_SPIRAM_TRY_ALLOCATE_WIFI_LWIP=y
+
+# ---- 性能 ---------------------------------------------------------------
+CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ_240=y
+CONFIG_FREERTOS_HZ=1000
+CONFIG_ESP_MAIN_TASK_STACK_SIZE=8192
+CONFIG_COMPILER_OPTIMIZATION_PERF=y
+
+# ---- 日志 ---------------------------------------------------------------
+CONFIG_LOG_DEFAULT_LEVEL_INFO=y
+
+# ---- ESP-SR 模型选择 ----------------------------------------------------
+# 中文命令词：MultiNet7（仅 S3 / P4 / S31 支持，识别率比 mn5/mn6 好）
+CONFIG_SR_MN_CN_MULTINET7_QUANT=y
+# 唤醒词：你好小智（wn9，中文，不依赖 esp-dl 的 int16 变体）
+# 不启用任何 WakeNet 时 AFE 也能跑，但官方明确 MultiNet 必须配合 WakeNet 使用，
+# 所以先按官方路径走。代码里 GATE_BY_WAKEUP 可关掉门控。
+CONFIG_SR_WN_WN9_NIHAOXIAOZHI_TTS=y
+

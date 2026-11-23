@@ -1,0 +1,38 @@
+menu "Lamp AV"
+
+    choice LAMP_AUDIO_SRC
+        prompt "音频源（16 kHz / 单声道 / int16 由实现负责对齐）"
+        default LAMP_AUDIO_SRC_I2S
+        help
+            所有音频源都在 audio_in.c 里收敛成同一种格式，识别链路
+            （AFE + MultiNet）对源无感知。换麦克风只改这里。
+
+        config LAMP_AUDIO_SRC_I2S
+            bool "INMP441（I2S，GPIO16/18/17）"
+            help
+                M2 的默认源。裸麦没有 AGC，实现里带 +18 dB 前置增益。
+
+        config LAMP_AUDIO_SRC_UAC
+            bool "CAM12 UAC 咪头（usb_stream，占位）"
+            help
+                M2b：需要先把 usb_stream 组件 vendored 进 components/。
+                现在选中它只会在启动时报 "not supported"，不会静默出静音。
+    endchoice
+
+    config LAMP_BTN_ACTIVE_LOW
+        bool "按键低有效（HW-483 上拉版）"
+        default y
+        help
+            HW-483 有两种版本。接反的表现是"永远按住"或"完全没反应"。
+            开机日志会打印 btn GPIO4 idle=...，松手时若显示 PRESSED 就把这一项关掉。
+
+    config LAMP_SINGLE_CHANNEL
+        bool "只接了一路灯（面包板：HW-479 的 G 在 GPIO5）"
+        default n
+        help
+            关（默认）= 双通道，按色温表把亮度分给暖/冷两路，和 Arduino
+            firmware/src/lighting.cpp 的行为完全一致。
+            开 = 亮度全给冷通道，避免分给没接线的暖通道后"看着不够亮"。
+            面包板上调试时打开它更接近肉眼预期；正式灯板必须关掉。
+
+endmenu
