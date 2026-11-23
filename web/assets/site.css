@@ -259,11 +259,13 @@ body.site-page h1,body.site-page h2,body.site-page h3,body.site-page h4{margin:0
 }
 /* 浅色区块上方：导航跟随变浅。site.js 根据当前滚到的区块给 header 加 is-on-light。 */
 .site-header.is-on-light{
-  background:linear-gradient(180deg,rgba(236,233,230,.9),rgba(236,233,230,.74));
+  /* 必须接近实色：导航是 sticky，页面停在顶部时它背后是深色 body，
+     半透明浅色会和 #080907 混成灰条（0.9 叠加后约 #d5d2cf）。 */
+  background:linear-gradient(180deg,rgba(236,233,230,.985),rgba(236,233,230,.95));
   border-bottom-color:rgba(34,30,27,.07);
 }
 .site-header.is-on-light.is-scrolled{
-  background:rgba(236,233,230,.95);
+  background:rgba(236,233,230,.97);
   border-bottom-color:rgba(34,30,27,.12);
 }
 .site-header.is-on-light .site-brand{color:var(--ink)}
