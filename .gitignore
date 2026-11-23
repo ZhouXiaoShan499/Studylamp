@@ -56,6 +56,10 @@ server/logs/
 _tmp_*.txt
 .dsh-write-probe.txt
 
+# 本地验证产物：截图（shots*）、一次性探针脚本、Chrome 临时配置目录（cr-*），
+# 以及临时 GitHub token（.ghtok）。全部可重新生成，体积约 786 MB，不入库。
+output/
+
 # 工业设计稿（AI 生成渲染图与中间稿，体积大；仅本地参考，不入库）
 # 网页实际引用的图纸已复制到 web/assets/，正常入库
 docs/design/
