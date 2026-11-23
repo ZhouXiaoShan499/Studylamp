@@ -1,5 +1,5 @@
 /* ==========================================================================
-   LAMP—1 site shell
+   学习辅助灯 site shell
    Shared by the marketing pages and the interactive simulator.
    ========================================================================== */
 :root{
@@ -562,14 +562,14 @@ body.site-page h1,body.site-page h2,body.site-page h3,body.site-page h4{margin:0
 .footer-note p{color:#8d9184;font-size:10.5px;line-height:1.8}
 .footer-wordmark{
   margin:0 -0.02em;
-  padding:12px 0 3px;
+  padding:16px 0 6px;
   color:transparent;
   -webkit-text-stroke:1px rgba(242,237,226,.075);
-  font-family:var(--site-mono);
-  font-size:clamp(74px,15.4vw,238px);
+  font-family:var(--site-sans);
+  font-size:clamp(46px,10.6vw,164px);
   font-weight:500;
-  line-height:.74;
-  letter-spacing:-.075em;
+  line-height:1.05;
+  letter-spacing:.01em;
   white-space:nowrap;
   user-select:none;
   pointer-events:none;
@@ -654,7 +654,7 @@ body.site-page h1,body.site-page h2,body.site-page h3,body.site-page h4{margin:0
   .site-menu__foot .site-button{width:100%}
   .site-footer__inner{padding-top:48px}
   .site-footer__top{grid-template-columns:1fr;gap:30px;padding-bottom:36px}
-  .footer-wordmark{font-size:clamp(66px,19vw,160px);-webkit-text-stroke-width:.8px}
+  .footer-wordmark{font-size:clamp(34px,11.4vw,110px);-webkit-text-stroke-width:.8px}
   .site-footer__bottom{align-items:flex-start;flex-direction:column;gap:11px}
   .footer-brand-copy{max-width:none}
 }
