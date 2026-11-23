@@ -37,11 +37,12 @@
   --ink-muted:#8a8177;
   --warm-black:#12100e;
 
-  /* 字号阶梯 — 全站 15px 以下只用这六级。
+  /* 字号阶梯 — 全站 15px 以下只用这五级，物理下限 11px。
      原来散着 5px / 5.5 / 6 / 6.5 / 7 / 7.2 / 7.5 / 8 / 8.5 / 9 / 9.5 / 10 /
      10.5 / 11 / 11.5 / 12 / 12.5 / 13 / 14 共 19 种，中文在 8px 下几乎不可读。
-     正文起点提到 14px，注释 12px，英文角标最小 10px。 */
-  --t-micro:10px;
+     正文起点 14px，注释 12px，标签/角标 11px。
+     10px 这一档已经取消：它原本只服务英文角标，但 11px 的英文大写配字距
+     反而更像标签而不是噪点，于是把 micro 合进 label，全站不再有 10px 正文。 */
   --t-label:11px;
   --t-note:12px;
   --t-small:13px;
@@ -148,7 +149,7 @@ body.site-page h1,body.site-page h2,body.site-page h3,body.site-page h4{margin:0
   display:flex;align-items:center;gap:12px;
   color:var(--site-muted);
   font-family:var(--site-mono);
-  font-size:var(--t-micro);
+  font-size:var(--t-label);
   letter-spacing:.12em;
 }
 .site-eyebrow-rule::after{content:"";height:1px;flex:1;background:var(--site-line)}
@@ -232,7 +233,7 @@ body.site-page h1,body.site-page h2,body.site-page h3,body.site-page h4{margin:0
   backdrop-filter:blur(10px);
   color:#b8b8ab;
   font-family:var(--site-mono);
-  font-size:var(--t-micro);
+  font-size:var(--t-label);
   letter-spacing:.09em;
   white-space:nowrap;
 }
@@ -390,7 +391,7 @@ body.site-page h1,body.site-page h2,body.site-page h3,body.site-page h4{margin:0
   display:inline-flex;align-items:center;gap:7px;
   color:#7e8376;
   font-family:var(--site-mono);
-  font-size:var(--t-micro);
+  font-size:var(--t-label);
   letter-spacing:.08em;
   white-space:nowrap;
 }
@@ -482,7 +483,7 @@ body.site-page h1,body.site-page h2,body.site-page h3,body.site-page h4{margin:0
 .site-menu__nav a span{
   color:#6f7468;
   font-family:var(--site-mono);
-  font-size:var(--t-micro);
+  font-size:var(--t-label);
   letter-spacing:.1em;
 }
 .site-menu__nav a[aria-current="page"]{color:var(--site-accent)}
@@ -698,7 +699,7 @@ body.site-page h1,body.site-page h2,body.site-page h3,body.site-page h4{margin:0
   border-radius:3px;
   color:#f0d4a8;
   font-family:var(--site-mono);
-  font-size:var(--t-micro);
+  font-size:var(--t-label);
   font-weight:400;
   letter-spacing:.08em;
 }
