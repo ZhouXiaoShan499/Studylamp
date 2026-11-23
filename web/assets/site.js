@@ -12,9 +12,11 @@
 
   /* --------------------------------------------------------------- header UI */
   if (header) {
-    // 浅色区块（首屏 / 浅带 / 首页光照区）滚到导航下方时，导航切成浅色方案，
-    // 否则浅底上会压出一条深色横杠。三处类名不同，都要列。
-    const lightZones = Array.from(document.querySelectorAll('.light-band, .light-gallery, .home-hero'));
+    // 浅色区块（首屏 / 浅带）滚到导航下方时，导航切成浅色方案，
+    // 否则浅底上会压出一条深色横杠。两处类名不同，都要列。
+    // （首页原来的四通道区也是浅底，2026-11-23 该区移除，选择器一并撤掉；
+    //   恢复时看 assets/pages-retired.css 的说明。）
+    const lightZones = Array.from(document.querySelectorAll('.light-band, .home-hero'));
     const themeMeta = document.querySelector('meta[name="theme-color"]');
     const DARK_UI = '#080907';
     const LIGHT_UI = '#ece9e6';
